@@ -1,117 +1,5 @@
 #!/usr/bin/env perl
 
-=head1 NAME 
-                                                                       
-pairfq.pl - Match paired-end sequences from separate FastA/Q files
-
-=head1 SYNOPSIS    
- 
-pairfq.pl -f s_1_1_trim.fq -r s_1_2_trim.fq -fp s_1_1_trim_paired.fq -rp s_1_2_trim_paired.fq -fs s_1_1_trim_unpaired.fq -rs s_1_2_trim_unpaired.fq
-
-=head1 DESCRIPTION
-     
-Re-pair paired-end sequences that may have been separated by quality trimming.
-This script also writes the unpaired forward and reverse sequences to separate 
-files so that they may be used for assembly or mapping. The input may be FastA
-or FastQ format in either Illumina 1.3+ or Illumina 1.8 format.
-
-=head1 DEPENDENCIES
-
-This script uses the Perl modules AnyDBM_File and AnyDBM_File::Importer. AnyDBM_File
-is used to create a database with either DB_File or SQLite and AnyDBM_File::Importer
-allows symbols from other packages to be imported. In this script, symbols from DB_File
-are imported so that the database may be stored in memory.
-
-=head1 LICENSE
- 
-   The MIT License
-
-   Copyright (c) 2013, S. Evan Staton.
-
-   Permission is hereby granted, free of charge, to any person obtaining
-   a copy of this software and associated documentation files (the
-   "Software"), to deal in the Software without restriction, including
-   without limitation the rights to use, copy, modify, merge, publish,
-   distribute, sublicense, and/or sell copies of the Software, and to
-   permit persons to whom the Software is furnished to do so, subject to
-   the following conditions:
-
-   The above copyright notice and this permission notice shall be
-   included in all copies or substantial portions of the Software.
-
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
-   BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-   ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-   SOFTWARE.
- 
-=head1 TESTED WITH:
-
-=over
-
-=item *
-Perl 5.14.1 (Red Hat Enterprise Linux Server release 5.7 (Tikanga))
-
-=item *
-Perl 5.14.2 (Red Hat Enterprise Linux Desktop release 6.2 (Santiago); Fedora 17)
-
-=back
-
-=head1 AUTHOR 
-
-S. Evan Staton                                                
-
-=head1 CONTACT
- 
-statonse at gmail dot com
-
-=head1 REQUIRED ARGUMENTS
-
-=over 2
-
-=item -f, --forward
-
-The file of forward sequences from an Illumina paired-end sequencing run.
-
-=item -r, --reverse                                                                                                                                                       
-The file of reverse sequences from an Illumina paired-end sequencing run.
-
-=item -fp, --forw_paired
-
-The output file to place the paired forward reads.
-
-=item -rp, --rev_paired                                                                                                                                                  
-The output file to place the paired reverse reads. 
-
-=item -fs, --forw_unpaired                                                                                                                                                  
-The output file to place the unpaired forward reads. 
-
-=item -rs, --rev_unpaired                                                                                                                                                  
-The output file to place the unpaired reverse reads. 
-
-=back
-
-=head1 OPTIONS
-
-=over 2
-
-=item -im, --in_memory
-
-Construct the database in memory. May be faster, but will obviously use more memory.
-
-=item -h, --help
-
-Print a usage statement. 
-
-=item -m, --man
-
-Print the full documentation.
-
-=cut
- 
 use 5.010;
 use strict;
 use warnings;
@@ -162,27 +50,28 @@ unless (defined $memory) {
 }
 
 my @raux = undef;
-my ($fname, $fseq, $fqual, $fid, $rname, $rseq, $rqual, $rid);
+my ($fname, $rcomm, $fseq, $fqual, $fid, $rname, $rcomm, $rseq, $rqual, $rid);
 my ($fct, $rct, $fpct, $rpct, $pct, $fsct, $rsct, $sct) = (0, 0, 0, 0, 0, 0, 0, 0);
 open my $r, '<', $rread or die "\nERROR: Could not open file: $rread\n";
 
-while (($rname, $rseq, $rqual) = readfq(\*$r, \@raux)) {
+while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$r, \@raux)) {
     $rct++;
     if ($rname =~ /(\/\d)$/) {
 	$rname =~ s/$1//;
-    } 
-    elsif ($rname =~ /\s(\d\:\w\:\d\:\w+)$/) { 
-	$rid = $1; chomp $rid;
-	$rid =~ s/^.//;
-	$rname =~ s/\s.*//;
-	$rname .= "|".$rid;
-    } else {
-	die "\nERROR: Could not determine Illumina encoding. Exiting.\n";
     }
-    $rseqhash{$rname} = join "\t",$rseq, $rqual if defined $rqual;
+    elsif (defined $rcomm && $rcomm =~ /^\d/) {
+	$rcomm =~ s/^\d//;
+	$rname = mk_key($rname, $rcomm);
+    }
+    else {
+	die "\nERROR: Could not determine FastA/Q format. Please see ... Exiting.\n";
+    }
+
+    $rseqhash{$rname} = mk_key($rseq, $rqual) if defined $rqual;
     $rseqhash{$rname} = $rseq if !defined $rqual;
 }
 close $r;
+
 open my $f, '<', $fread or die "\nERROR: Could not open file: $fread\n";
 open my $fp, '>', $fpread or die "\nERROR: Could not open file: $fpread\n";
 open my $rp, '>', $rpread or die "\nERROR: Could not open file: $rpread\n";
@@ -190,57 +79,64 @@ open my $fs, '>', $fsread or die "\nERROR: Could not open file: $fsread\n";
 
 my ($forw_id, $rev_id);
 my @faux = undef;
-while (($fname, $fseq, $fqual) = readfq(\*$f, \@faux)) {
+while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
     $fct++;
     if ($fname =~ /(\/\d)$/) {
 	$fname =~ s/\/\d//;
     }
-    elsif ($fname =~ /\s(\d\:\w\:\d\:\w+)$/) {
-        $fid = $1; chomp $fid;
-        $fid =~ s/^.//;
-	$fname =~ s/\s.*//;
-	$fname .= "|".$fid;
-    } else {
-	die "\nERROR: Could not determine Illumina encoding. Exiting.\n";
+    elsif (defined $fcomm && $fcomm =~ /^\d/) {
+        $fcomm =~ s/^\d//;
+	$fname = mk_key($fname, $fcomm);
     }
-    if ($fname =~ /\|/) {
-	my ($name, $id) = split /\|/, $fname;
-	$forw_id = $name." 1".$id;
-	$rev_id  = $name." 2".$id;
+    else {
+        die "\nERROR: Could not determine FastA/Q format. Please see ... Exiting.\n";
+    }
+
+    if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
+	my ($name, $comm) = split /\|/, $fname;
+	$forw_id = $name.q{ 1}.$comm;
+	$rev_id  = $name.q{ 2}.$comm;
     }
     if (exists $rseqhash{$fname}) {
 	$fpct++; $rpct++;
 	if (defined $fqual) {
-	    my ($rread, $rqual) = split /\t/, $rseqhash{$fname};
-	    if ($fname =~ /\|/) {
+	    my ($rread, $rqual) = mk_vec($rseqhash{$fname});
+	    if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
 		say $fp join "\n","@".$forw_id, $fseq, "+", $fqual;
 		say $rp join "\n","@".$rev_id, $rread, "+", $rqual;
-	    } else {
+	    } 
+	    else {
 		say $fp join "\n","@".$fname."/1", $fseq, "+", $fqual;
                 say $rp join "\n","@".$fname."/2", $rread, "+", $rqual;
 	    }
-	} else {
-	    if ($fname =~ /\|/) {
+	} 
+	else {
+	    if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
 		say $fp join "\n",">".$forw_id, $fseq;
 		say $rp join "\n",">".$rev_id, $rseqhash{$fname};
-	    } else {
+	    } 
+	    else {
                 say $fp join "\n",">".$fname."/1", $fseq;
                 say $rp join "\n",">".$fname."/2", $rseqhash{$fname};
             }
 	}
         delete $rseqhash{$fname};
-    } else {
+    } 
+    else {
 	$fsct++;
 	if (defined $fqual) {
-	    if ($fname =~ /\|/) {
+	    if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
 		say $fs join "\n","@".$forw_id, $fseq, "+", $fqual;
-	    } else {
+	    } 
+	    else {
 		say $fs join "\n","@".$fname."/1", $fseq, "+", $fqual;
 	    }
-	} else {
-	    if ($fname =~ /\|/) {
+	} 
+	else {
+	    if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
 		say $fs join "\n",">".$forw_id, $fseq;
-	    } else {
+	    } 
+	    else {
 		say $fs join "\n",">".$fname."/1", $fseq;
 	    }
 	}
@@ -250,26 +146,30 @@ close $f;
 close $fp;
 close $rp;
 close $fs;
+
 open my $rs, '>', $rsread or die "\nERROR: Could not open file: $rsread\n";
 
 my $rev_id_up;
 while (my ($rname_up, $rseq_up) = each %rseqhash) {
     $rsct++;
-    if ($rname_up =~ /\|/) {
-	my ($uname, $uid) = split /\|/, $rname_up;
-	$rev_id_up .= $uname." "."2".$uid;
+    if ($rname_up =~ /\N{INVISIBLE SEPARATOR}/) {
+	my ($uname, $uid) = mk_vec($rname_up);
+	$rev_id_up .= $uname.q{ 2}.$uid;
     }
-    if ($rseq_up =~ /\t/) {
-	my ($rread_up, $rqual_up) = split /\t/, $rseq_up;
+    if ($rseq_up =~ /\N{INVISIBLE SEPARATOR}/) {
+	my ($rread_up, $rqual_up) = mk_vec($rseq_up);
 	if ($rname_up =~ /\|/) {
 	    say $rs join "\n","@".$rev_id_up, $rread_up, "+", $rqual_up;
-	} else {
+	} 
+	else {
 	    say $rs join "\n","@".$rname_up."/2", $rread_up, "+", $rqual_up;
 	}
-    } else {
-	if ($rname_up =~ /\|/) {
+    } 
+    else {
+	if ($rname_up =~ /\N{INVISIBLE SEPARATOR}/) {
 	    say $rs join "\n",">".$rev_id_up, $rseq_up;
-	} else {
+	} 
+	else {
 	    say $rs join "\n",">".$rname_up."/2", $rseq_up;
 	}
     }
@@ -292,7 +192,6 @@ say "Total forward unpaired reads in $fsread:    $fsct";
 say "Total reverse unpaired reads in $rsread:    $rsct";
 
 exit;
-
 #
 # Subs
 #
@@ -313,16 +212,8 @@ sub readfq {
             return;
         }
     }
-    my $name;
-    if (/^.?(\S+)\s(\d)\S+/) {          # Illumina 1.8+
-	$name = $1."/".$2;
-    }
-    elsif (/^.?(\S+)/) {            # Illumina 1.3+
-	$name = $1;
-    } else {
-	$name = '';                 # ?
-    }
-    #my $name = /^.(\S+)/? $1 : ''; # Heng Li's original regex
+    my ($name, $comm) = /^.(\S+)(?:\s+)(\S+)/ ? ($1, $2) : 
+                        /^.(\S+)/ ? ($1, '') : ('', '');
     my $seq = '';
     my $c;
     $aux->[0] = undef;
@@ -334,19 +225,23 @@ sub readfq {
     }
     $aux->[0] = $_;
     $aux->[1] = 1 if (!defined($aux->[0]));
-    return ($name, $seq) if ($c ne '+');
+    return ($name, $comm, $seq) if ($c ne '+');
     my $qual = '';
     while (<$fh>) {
         chomp;
         $qual .= $_;
         if (length($qual) >= length($seq)) {
             $aux->[0] = undef;
-            return ($name, $seq, $qual);
+            return ($name, $comm, $seq, $qual);
         }
     }
     $aux->[1] = 1;
     return ($name, $seq);
 }
+
+sub mk_key { join "\N{INVISIBLE SEPARATOR}", @_ }
+
+sub mk_vec { split "\N{INVISIBLE SEPARATOR}", shift }
 
 sub usage {
     my $script = basename($0);
