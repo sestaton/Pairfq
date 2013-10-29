@@ -114,13 +114,9 @@ Print the full documentation.
 
 ##TODO: 
 
-use 5.010;
-use utf8;
+use v5.10;
 use strict;
 use warnings;
-use warnings FATAL => "utf8";
-use charnames qw(:full :short);
-use Encode qw(encode decode);
 use File::Basename;
 use Getopt::Long;
 use Data::Dumper;
@@ -174,11 +170,11 @@ unless (defined $memory) {
 }
 
 my @raux = undef;
-my ($fname, $fcomm, $fseq, $fqual, $fid, $rname, $rcomm, $rseq, $rqual, $rid);
+my ($fname, $fseq, $fqual, $fid, $rname, $rseq, $rqual, $rid);
 my ($fct, $rct, $fpct, $rpct, $pct, $fsct, $rsct, $sct) = (0, 0, 0, 0, 0, 0, 0, 0);
 open my $r, '<', $rread or die "\nERROR: Could not open file: $rread\n";
 
-while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$r, \@raux)) {
+while (($rname, $rseq, $rqual) = readfq(\*$r, \@raux)) {
     $rct++;
     if ($rname =~ /(\/\d)$/) {
 	$rname =~ s/$1//;
@@ -304,6 +300,7 @@ say "Total forward unpaired reads in $fsread:    $fsct";
 say "Total reverse unpaired reads in $rsread:    $rsct";
 
 exit;
+
 #
 # Subs
 #
@@ -312,48 +309,52 @@ sub readfq {
     @$aux = [undef, 0] if (!@$aux);
     return if ($aux->[1]);
     if (!defined($aux->[0])) {
-	while (<$fh>) {
-	    chomp;
-	    if (substr($_, 0, 1) eq '>' || substr($_, 0, 1) eq '@') {
-		$aux->[0] = $_;
-		last;
-	    }
-	}
-	if (!defined($aux->[0])) {
-	    $aux->[1] = 1;
-	    return;
-	}
+        while (<$fh>) {
+            chomp;
+            if (substr($_, 0, 1) eq '>' || substr($_, 0, 1) eq '@') {
+                $aux->[0] = $_;
+                last;
+            }
+        }
+        if (!defined($aux->[0])) {
+            $aux->[1] = 1;
+            return;
+        }
     }
-    my ($name, $comm) = /^.(\S+)(?:\s+)(\S+)/ ? ($1, $2) : 
-	                /^.(\S+)/ ? ($1, '') : ('', '');
+    my $name;
+    if (/^.?(\S+)\s(\d)\S+/) {          # Illumina 1.8+
+	$name = $1."/".$2;
+    }
+    elsif (/^.?(\S+)/) {            # Illumina 1.3+
+	$name = $1;
+    } else {
+	$name = '';                 # ?
+    }
+    #my $name = /^.(\S+)/? $1 : ''; # Heng Li's original regex
     my $seq = '';
     my $c;
     $aux->[0] = undef;
     while (<$fh>) {
-	chomp;
-	$c = substr($_, 0, 1);
-	last if ($c eq '>' || $c eq '@' || $c eq '+');
-	$seq .= $_;
+        chomp;
+        $c = substr($_, 0, 1);
+        last if ($c eq '>' || $c eq '@' || $c eq '+');
+        $seq .= $_;
     }
     $aux->[0] = $_;
     $aux->[1] = 1 if (!defined($aux->[0]));
-    return ($name, $comm, $seq) if ($c ne '+');
+    return ($name, $seq) if ($c ne '+');
     my $qual = '';
     while (<$fh>) {
-	chomp;
-	$qual .= $_;
-	if (length($qual) >= length($seq)) {
-	    $aux->[0] = undef;
-	    return ($name, $comm, $seq, $qual);
-	}
+        chomp;
+        $qual .= $_;
+        if (length($qual) >= length($seq)) {
+            $aux->[0] = undef;
+            return ($name, $seq, $qual);
+        }
     }
     $aux->[1] = 1;
     return ($name, $seq);
 }
-
-sub mk_key { join "\N{INVISIBLE SEPARATOR}", @_ }
-
-sub mk_vec { split "\N{INVISIBLE SEPARATOR}", shift }
 
 sub usage {
     my $script = basename($0);
