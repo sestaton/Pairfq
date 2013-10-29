@@ -2,3 +2,52 @@ Pairfq
 ======
 
 Sync paired-end FastA/Q files and keep orphaned reads
+
+**INSTALLATION**
+
+There are no dependencies or build process required to use Pairfq. Perl must be installed, but there are no external modules required.
+
+**USAGE**
+
+You can specify the full path to the script, or move to a working directory and use it in place. Just type `perl pairfq.pl` and you will see a menu describing the usage. 
+
+    $ perl pairfq.pl
+
+    ERROR: Command line not parsed correctly. Check input.
+
+    USAGE: pairfq.pl [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-im] [-h] [-im]
+
+    Required:
+        -f|forward        :       File of foward reads (usually with "/1" or " 1" in the header).
+        -r|reverse        :       File of reverse reads (usually with "/2" or " 2" in the header).
+        -fp|forw_paired   :       Name for the file of paired forward reads.
+        -rp|rev_paired    :       Name for the file of paired reverse reads.
+        -fs|forw_unpaired :       Name for the file of singleton forward reads.
+        -rs|rev_unpaired  :       Name for the file of singleton reverse reads.
+
+    Options:
+        -im|in_memory     :       Construct a database in memory for faster execution.
+         -h|help           :       Print a usage statement.
+         -m|man            :       Print the full documentation.
+
+Running the command `perl pairfq.pl -m` will print the full documentation.
+
+**EXPECTED FORMATS**
+
+The input will be two files (i.e., forward and reverse) in [FASTA](http://en.wikipedia.org/wiki/FASTA_format) or [FASTQ](http://en.wikipedia.org/wiki/FASTQ_format) format that are expected to have reads out of order due to quality trimming.
+
+Currently, data from the Casava pipeline version 1.4 are supported. For example,
+
+    @HWUSI-EAS100R:6:73:941:1973#0/1
+
+As well Casava 1.8+ format,
+
+    @EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG
+
+The overall format of the sequence name and comment may vary, but there must be an integer (1 or 2) at the end of the sequence name or as the first character in the comment (following a space after the sequence name). If your data is missing this pair information it will be necessary to fix them first (see below). 
+
+**UTILITIES**
+
+Adding the pair information to the data can be done with the `make_fq_pairs.pl` script.
+
+Separating the interleaved file into separate files can be done with the `interleaved_to_pairs.pl` script.
