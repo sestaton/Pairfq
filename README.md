@@ -5,11 +5,11 @@ Sync paired-end FastA/Q files and keep orphaned reads
 
 **INSTALLATION**
 
-There are no dependencies or build process required to use Pairfq. Perl must be installed, but there are no external modules required.
+You can specify the full path to the script, or move to a working directory and use it in place. Perl must be installed to use Pairfq, but there are no external modules required.
 
 **USAGE**
 
-You can specify the full path to the script, or move to a working directory and use it in place. Just type `perl pairfq.pl` and you will see a menu describing the usage. 
+Just type `perl pairfq.pl` and you will see a menu describing the usage. 
 
     $ perl pairfq.pl
 
@@ -48,6 +48,6 @@ The overall format of the sequence name and comment may vary, but there must be 
 
 **UTILITIES**
 
-Adding the pair information to the data can be done with the `make_fq_pairs.pl` script.
+Adding the pair information to the data can be done with the `make_fasta_pairs.pl` script.
 
 Separating the interleaved file into separate files can be done with the `interleaved_to_pairs.pl` script.
