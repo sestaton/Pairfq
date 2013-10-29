@@ -110,23 +110,15 @@ Print a usage statement.
 
 Print the full documentation.
 
-=cut      
-
-##TODO: 
-
-use v5.10;
+=cut
+ 
+use 5.010;
 use strict;
 use warnings;
 use File::Basename;
 use Getopt::Long;
 use Data::Dumper;
-BEGIN {
-  @AnyDBM_File::ISA = qw( DB_File SQLite_File )
-      unless @AnyDBM_File::ISA == 1; # if loaded already, AnyDBM_File::ISA has a length of one;
-}
-use AnyDBM_File;
-use vars qw( $DB_BTREE &R_DUP );
-use AnyDBM_File::Importer qw(:bdb);
+use DB_File;
 use Pod::Usage;
 
 my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $memory, $help, $man);
@@ -165,7 +157,7 @@ my $db_file = "pairfq.bdb";
 unlink $db_file if -e $db_file;
 
 unless (defined $memory) { 
-   tie %rseqhash, 'AnyDBM_File', $db_file, O_RDWR|O_CREAT, 0666, $DB_BTREE
+   tie %rseqhash, 'DB_File', $db_file, O_RDWR|O_CREAT, 0666, $DB_BTREE
        or die "\nERROR: Could not open DBM file $db_file: $!\n";
 }
 
@@ -179,7 +171,7 @@ while (($rname, $rseq, $rqual) = readfq(\*$r, \@raux)) {
     if ($rname =~ /(\/\d)$/) {
 	$rname =~ s/$1//;
     } 
-    elsif ($rname =~ /\s(\d\:\w\:\d\:\w+)$/) { # as below, may need to add some abstraction to this regex 
+    elsif ($rname =~ /\s(\d\:\w\:\d\:\w+)$/) { 
 	$rid = $1; chomp $rid;
 	$rid =~ s/^.//;
 	$rname =~ s/\s.*//;
@@ -203,7 +195,7 @@ while (($fname, $fseq, $fqual) = readfq(\*$f, \@faux)) {
     if ($fname =~ /(\/\d)$/) {
 	$fname =~ s/\/\d//;
     }
-    elsif ($fname =~ /\s(\d\:\w\:\d\:\w+)$/) {   # may need to add some abstraction to this regex
+    elsif ($fname =~ /\s(\d\:\w\:\d\:\w+)$/) {
         $fid = $1; chomp $fid;
         $fid =~ s/^.//;
 	$fname =~ s/\s.*//;
