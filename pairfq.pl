@@ -50,7 +50,7 @@ unless (defined $memory) {
 }
 
 my @raux = undef;
-my ($fname, $rcomm, $fseq, $fqual, $fid, $rname, $rcomm, $rseq, $rqual, $rid);
+my ($fname, $fcomm, $fseq, $fqual, $fid, $rname, $rcomm, $rseq, $rqual, $rid);
 my ($fct, $rct, $fpct, $rpct, $pct, $fsct, $rsct, $sct) = (0, 0, 0, 0, 0, 0, 0, 0);
 open my $r, '<', $rread or die "\nERROR: Could not open file: $rread\n";
 
@@ -77,6 +77,10 @@ open my $fp, '>', $fpread or die "\nERROR: Could not open file: $fpread\n";
 open my $rp, '>', $rpread or die "\nERROR: Could not open file: $rpread\n";
 open my $fs, '>', $fsread or die "\nERROR: Could not open file: $fsread\n";
 
+binmode $fp, ":utf8";
+binmode $rp, ":utf8";
+binmode $fs, ":utf8";
+
 my ($forw_id, $rev_id);
 my @faux = undef;
 while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
@@ -93,7 +97,7 @@ while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
     }
 
     if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
-	my ($name, $comm) = split /\|/, $fname;
+	my ($name, $comm) = mk_vec($fname);
 	$forw_id = $name.q{ 1}.$comm;
 	$rev_id  = $name.q{ 2}.$comm;
     }
@@ -148,6 +152,7 @@ close $rp;
 close $fs;
 
 open my $rs, '>', $rsread or die "\nERROR: Could not open file: $rsread\n";
+binmode $rs, ":utf8";
 
 my $rev_id_up;
 while (my ($rname_up, $rseq_up) = each %rseqhash) {
