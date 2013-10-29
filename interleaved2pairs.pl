@@ -31,11 +31,11 @@ open my $r, '>', $reverse;
         my ($seqid, @seqparts) = split /\n/, $line;
         my $seq = join '', @seqparts;
         next unless defined $seqid && defined $seq;
-	say $f join "\n", ">".$seqid, $seq if $seqid =~ m/1$/;
-	say $r join "\n", ">".$seqid, $seq if $seqid =~ m/2$/;
+	say $f join "\n", ">".$seqid, $seq if $seqid =~ m/1$|\s+1/;
+	say $r join "\n", ">".$seqid, $seq if $seqid =~ m/2$|\s+2/;
     }
 }
 
-close $i;
+close $in;
 close $f;
 close $r;
