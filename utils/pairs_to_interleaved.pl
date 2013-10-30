@@ -90,6 +90,7 @@ use strict;
 use warnings;
 use warnings FATAL => "utf8";
 use charnames qw(:full :short);
+use Encode qw(encode decode);
 use File::Basename;
 use DB_File;
 use Getopt::Long;
@@ -119,35 +120,37 @@ open my $out, '>', $outfile or die "\nERROR: Could not open file: $!\n";
 binmode $out, ":utf8";
 
 my @raux = undef;
-my ($rname, $rcomm, $rseq, $rqual);
+my ($rname, $rcomm, $rseq, $rqual, $rname_k, $rname_enc);
 
 while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$r, \@raux)) {
     $rname =~ s/\d$// if defined $rname && $rname =~ /\/\d$/;
     if (defined $rcomm && $rcomm =~ /^\d/) {
 	$rcomm =~ s/^\d//;
-	$rname = mk_key($rname, $rcomm);
+	$rname_k = mk_key($rname, $rcomm);
+	$rname_enc = encode('UTF-8', $rname_k);
     }
-    if (defined $rname && exists $pairs->{$rname}) {
+    if (defined $rname && exists $pairs->{$rname_enc}) {
 	if (defined $rcomm) {
-	    my ($name, $comm) = mk_vec($rname);
+	    #my ($name, $comm) = mk_vec($rname);
 	    if (defined $rqual) {
-		my ($seqf, $qualf) = mk_vec($pairs->{$rname});
-		say $out join "\n", "@".$rname.q{ 1}.$comm, $seqf, '+', $qualf;
-		say $out join "\n", "@".$rname.q{ 2}.$comm, $rseq, '+', $rqual;
+		my ($seqf, $qualf) = mk_vec($pairs->{$rname_enc});
+		say $out join "\n", "@".$rname.q{ 1}.$comm, $seqf, "+", $qualf;
+		say $out join "\n", "@".$rname.q{ 2}.$comm, $rseq, "+", $rqual;
 	    }
 	    else {
-		say $out join "\n", ">".$name.q{ 1}.$comm, $pairs->{$rname};
+		# problem with initialized vars at 141 and 142
+		say $out join "\n", ">".$name.q{ 1}.$comm, $pairs->{$rname_enc};
 		say $out join "\n", ">".$name.q{ 2}.$comm, $rseq;
 	    }
 	}
 	else {
 	    if (defined $rqual) {
-		my ($seqf, $qualf) = mk_vec($pairs->{$rname});
-		say $out join "\n", "@".$rname.q{/1}, $seqf, '+', $qualf;
-		say $out join "\n", "@".$rname.q{/2}, $rseq, '+', $rqual;
+		my ($seqf, $qualf) = mk_vec($pairs->{$rname_enc});
+		say $out join "\n", "@".$rname.q{/1}, $seqf, "+", $qualf;
+		say $out join "\n", "@".$rname.q{/2}, $rseq, "+", $rqual;
 	    }
 	    else {
-		say $out join "\n", ">".$rname.q{/1}, $pairs->{$rname};
+		say $out join "\n", ">".$rname.q{/1}, $pairs->{$rname_enc};
 		say $out join "\n", ">".$rname.q{/2}, $rseq;                                               
 	    }
 	}
@@ -178,7 +181,7 @@ sub store_pair {
     }
 
     my @faux = undef;
-    my ($fname, $fcomm, $fseq, $fqual);
+    my ($fname, $fcomm, $fseq, $fqual, $fname_k, $fname_enc);
     my ($fct, $rct) = (0, 0);
     open my $f, '<', $file or die "\nERROR: Could not open file: $!\n";
 
@@ -186,10 +189,13 @@ sub store_pair {
 	$fname =~ s/\d$// if $fname =~ /\/\d$/;
 	if (defined $fcomm && $fcomm =~ /^\d/) {
 	    $fcomm =~ s/^\d//;
-	    $fname = mk_key($fname, $fcomm);
+	    $fname_k = mk_key($fname, $fcomm);
+	    $fname_enc = encode('UTF-8', $fname_k);
 	}
-	$pairs{$fname} = mk_key($fseq, $fqual) if defined $fqual;
-	$pairs{$fname} = $fseq if !defined $fqual;
+	$pairs{$fname_enc} = mk_key($fseq, $fqual) if defined $fqual && defined $fcomm;
+	$pairs{$fname} = mk_key($fseq, $fqual) if defined $fqual && !defined $fcomm;
+	$pairs{$fname_enc} = $fseq if !defined $fqual && defined $fcomm;
+	$pairs{$fname} = $fseq if !defined $fqual && !defined $fcomm;
     }
     close $f;
     

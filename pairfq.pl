@@ -138,7 +138,7 @@ if (!$fread  || !$rread  ||
 my ($rseqpairs, $db_file, $rct) = store_pair($rread);
 
 my @faux = undef;
-my ($fname, $fcomm, $fseq, $fqual, $forw_id, $rev_id, $fname_enc);
+my ($fname, $fcomm, $fseq, $fqual, $forw_id, $rev_id, $fname_k, $fname_enc);
 my ($fct, $fpct, $rpct, $pct, $fsct, $rsct, $sct) = (0, 0, 0, 0, 0, 0, 0);
 
 open my $f, '<', $fread or die "\nERROR: Could not open file: $fread\n";
@@ -157,7 +157,8 @@ while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
     }
     elsif (defined $fcomm && $fcomm =~ /^\d/) {
         $fcomm =~ s/^\d//;
-	$fname = mk_key($fname, $fcomm);
+	$fname_k = mk_key($fname, $fcomm);
+	$fname_enc = encode('UTF-8', $fname);
     }
     else {
 	say "\nERROR: Could not determine FastA/Q format. ".
@@ -166,16 +167,16 @@ while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
     }
     
     if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
-	my ($name, $comm) = mk_vec($fname);
+	my ($name, $comm) = mk_vec($fname_k);
 	$forw_id = $name.q{ 1}.$comm;
 	$rev_id  = $name.q{ 2}.$comm;
     }
-    $fname_enc = encode('UTF-8', $fname);
-    if (exists $rseqpairs->{$fname_enc}) {
+
+    if (exists $rseqpairs->{$fname_k}) {
 	$fpct++; $rpct++;
 	if (defined $fqual) {
-	    my ($rread, $rqual) = mk_vec($rseqpairs->{$fname});
-	    if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
+	    my ($rread, $rqual) = mk_vec($rseqpairs->{$fname_k});
+	    if ($fname =~ /\N{INVISIBLE SEPARATOR}/) { # defined $fname_k is probably more efficient
 		say $fp join "\n","@".$forw_id, $fseq, "+", $fqual;
 		say $rp join "\n","@".$rev_id, $rread, "+", $rqual;
 	    } 
@@ -309,7 +310,7 @@ sub store_pair {
 		exit(1);
 	    }
 	    $rseqpairs{$rname_enc} = mk_key($rseq, $rqual) if defined $rqual && defined $rcomm;
-	    $rseqpairs{$rname} = mk_key($rseq, $rqual) if defined $rqual;
+	    $rseqpairs{$rname} = mk_key($rseq, $rqual) if defined $rqual && !defined $rcomm;
 	    $rseqpairs{$rname_enc} = $rseq if !defined $rqual && defined $rcomm;
 	    $rseqpairs{$rname} = $rseq if !defined $rqual && !defined $rcomm;
 	}
