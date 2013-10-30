@@ -113,8 +113,11 @@ Print the full documentation.
 =cut
 
 use 5.010;
+use utf8;
 use strict;
 use warnings;
+use warnings FATAL => "utf8";
+use charnames qw(:full :short);
 use File::Basename;
 use Getopt::Long;
 use Data::Dumper;
