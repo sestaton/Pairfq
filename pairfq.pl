@@ -1,5 +1,117 @@
 #!/usr/bin/env perl
 
+=head1 NAME 
+                                                                       
+pairfq.pl - Match paired-end sequences from separate FastA/Q files
+
+=head1 SYNOPSIS    
+ 
+pairfq.pl -f s_1_1_trim.fq -r s_1_2_trim.fq -fp s_1_1_trim_paired.fq -rp s_1_2_trim_paired.fq -fs s_1_1_trim_unpaired.fq -rs s_1_2_trim_unpaired.fq
+
+=head1 DESCRIPTION
+     
+Re-pair paired-end sequences that may have been separated by quality trimming.
+This script also writes the unpaired forward and reverse sequences to separate 
+files so that they may be used for assembly or mapping. The input may be FastA
+or FastQ format in either Illumina 1.3+ or Illumina 1.8 format.
+
+=head1 DEPENDENCIES
+
+This script uses the Perl modules AnyDBM_File and AnyDBM_File::Importer. AnyDBM_File
+is used to create a database with either DB_File or SQLite and AnyDBM_File::Importer
+allows symbols from other packages to be imported. In this script, symbols from DB_File
+are imported so that the database may be stored in memory.
+
+=head1 LICENSE
+ 
+   The MIT License
+
+   Copyright (c) 2013, S. Evan Staton.
+
+   Permission is hereby granted, free of charge, to any person obtaining
+   a copy of this software and associated documentation files (the
+   "Software"), to deal in the Software without restriction, including
+   without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense, and/or sell copies of the Software, and to
+   permit persons to whom the Software is furnished to do so, subject to
+   the following conditions:
+
+   The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+   BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+   ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+ 
+=head1 TESTED WITH:
+
+=over
+
+=item *
+Perl 5.14.1 (Red Hat Enterprise Linux Server release 5.7 (Tikanga))
+
+=item *
+Perl 5.14.2 (Red Hat Enterprise Linux Desktop release 6.2 (Santiago); Fedora 17)
+
+=back
+
+=head1 AUTHOR 
+
+S. Evan Staton                                                
+
+=head1 CONTACT
+ 
+statonse at gmail dot com
+
+=head1 REQUIRED ARGUMENTS
+
+=over 2
+
+=item -f, --forward
+
+The file of forward sequences from an Illumina paired-end sequencing run.
+
+=item -r, --reverse                                                                                                                                                       
+The file of reverse sequences from an Illumina paired-end sequencing run.
+
+=item -fp, --forw_paired
+
+The output file to place the paired forward reads.
+
+=item -rp, --rev_paired                                                                                                                                                  
+The output file to place the paired reverse reads. 
+
+=item -fs, --forw_unpaired                                                                                                                                                  
+The output file to place the unpaired forward reads. 
+
+=item -rs, --rev_unpaired                                                                                                                                                  
+The output file to place the unpaired reverse reads. 
+
+=back
+
+=head1 OPTIONS
+
+=over 2
+
+=item -im, --in_memory
+
+Construct the database in memory. May be faster, but will obviously use more memory.
+
+=item -h, --help
+
+Print a usage statement. 
+
+=item -m, --man
+
+Print the full documentation.
+
+=cut
+
 use 5.010;
 use strict;
 use warnings;
