@@ -17,10 +17,8 @@ or FastQ format in either Illumina 1.3+ or Illumina 1.8 format.
 
 =head1 DEPENDENCIES
 
-This script uses the Perl modules AnyDBM_File and AnyDBM_File::Importer. AnyDBM_File
-is used to create a database with either DB_File or SQLite and AnyDBM_File::Importer
-allows symbols from other packages to be imported. In this script, symbols from DB_File
-are imported so that the database may be stored in memory.
+Only core Perl is required, no external dependencies. See below for information
+on which Perls have been tested.
 
 =head1 LICENSE
  
@@ -57,6 +55,9 @@ Perl 5.14.1 (Red Hat Enterprise Linux Server release 5.7 (Tikanga))
 
 =item *
 Perl 5.14.2 (Red Hat Enterprise Linux Desktop release 6.2 (Santiago); Fedora 17)
+
+=item *
+Perl 5.18.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga))
 
 =back
 
@@ -179,7 +180,7 @@ while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$r, \@raux)) {
 	$rname = mk_key($rname, $rcomm);
     }
     else {
-	die "\nERROR: Could not determine FastA/Q format. Please see ... Exiting.\n";
+	die "\nERROR: Could not determine FastA/Q format. Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
     }
 
     $rseqhash{$rname} = mk_key($rseq, $rqual) if defined $rqual;
