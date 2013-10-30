@@ -48,7 +48,7 @@ The overall format of the sequence name and comment may vary, but there must be 
 
 **UTILITIES**
 
-In the Pairfq/utils subdirectory are several stand-alone scripts for working with paired-end FastA/Q files. Briefly, the scripts included are:
+In the Pairfq/utils subdirectory are several stand-alone scripts for working with paired-end FastA/Q files. Briefly, the scripts (and their functions) included are:
 
 * **pairs_to_interleaved.pl**
 
@@ -61,3 +61,21 @@ In the Pairfq/utils subdirectory are several stand-alone scripts for working wit
 * **add_pair_info.pl**
 
   * Add the pair information back to the data. After filtering or sampling Casava 1.8+ data, the pair information is often lost, making downstream analyses difficult. For example, `@EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG` usually becomes `@EAS139:136:FC706VJ:2:2104:15343:197393`. This script will add the pair information back (to become `@EAS139:136:FC706VJ:2:2104:15343:197393/`). There is no way to know what was in the comment, so will not be restored. 
+
+As with `pairfq.pl`, typing the name of the script will print the usage statement, while typing the name of the script followed by `-m` or `--man` will print the full documentation.
+
+**ISSUES**
+
+Report any issues at: https://github.com/sestaton/Pairfq/issues
+
+Be aware that Pairfq will not work for every data set given the wide range of FastA/Q formats. Feel free to fork the project and modify the code to your needs, or submit code changes if you find any bugs. 
+
+**ATTRIBUTION**
+
+This project would not be possible without the excellent [readfq](https://github.com/lh3/readfq) library written by Heng Li. The code used by Pairfq has been modified for error handling and to parse the comment line in the Casava header.
+
+**LICENSE**
+
+The MIT License should included with the project. If not, it can be found at: http://opensource.org/licenses/mit-license.php
+
+Copyright (C) 2013 S. Evan Staton
