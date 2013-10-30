@@ -134,39 +134,11 @@ if (!$fread  || !$rread  ||
     exit(1);
 }
 
-my %rseqhash;
-$DB_BTREE->{cachesize} = 100000;
-$DB_BTREE->{flags} = R_DUP;
-my $db_file = "pairfq.bdb";
-unlink $db_file if -e $db_file;
+my ($rseqpairs, $db_file, $rct) = store_pair($rread);
 
-unless (defined $memory) { 
-   tie %rseqhash, 'DB_File', $db_file, O_RDWR|O_CREAT, 0666, $DB_BTREE
-       or die "\nERROR: Could not open DBM file $db_file: $!\n";
-}
-
-my @raux = undef;
-my ($fname, $fcomm, $fseq, $fqual, $fid, $rname, $rcomm, $rseq, $rqual, $rid);
-my ($fct, $rct, $fpct, $rpct, $pct, $fsct, $rsct, $sct) = (0, 0, 0, 0, 0, 0, 0, 0);
-open my $r, '<', $rread or die "\nERROR: Could not open file: $rread\n";
-
-while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$r, \@raux)) {
-    $rct++;
-    if ($rname =~ /(\/\d)$/) {
-	$rname =~ s/$1//;
-    }
-    elsif (defined $rcomm && $rcomm =~ /^\d/) {
-	$rcomm =~ s/^\d//;
-	$rname = mk_key($rname, $rcomm);
-    }
-    else {
-	die "\nERROR: Could not determine FastA/Q format. Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
-    }
-
-    $rseqhash{$rname} = mk_key($rseq, $rqual) if defined $rqual;
-    $rseqhash{$rname} = $rseq if !defined $rqual;
-}
-close $r;
+my @faux = undef;
+my ($fname, $fcomm, $fseq, $fqual, $forw_id, $rev_id);
+my ($fct, $fpct, $rpct, $pct, $fsct, $rsct, $sct) = (0, 0, 0, 0, 0, 0, 0);
 
 open my $f, '<', $fread or die "\nERROR: Could not open file: $fread\n";
 open my $fp, '>', $fpread or die "\nERROR: Could not open file: $fpread\n";
@@ -177,8 +149,6 @@ binmode $fp, ":utf8";
 binmode $rp, ":utf8";
 binmode $fs, ":utf8";
 
-my ($forw_id, $rev_id);
-my @faux = undef;
 while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
     $fct++;
     if ($fname =~ /(\/\d)$/) {
@@ -189,38 +159,40 @@ while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
 	$fname = mk_key($fname, $fcomm);
     }
     else {
-        die "\nERROR: Could not determine FastA/Q format. Please see ... Exiting.\n";
+	say "\nERROR: Could not determine FastA/Q format. ".
+	    "Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
+	exit(1);
     }
-
+    
     if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
 	my ($name, $comm) = mk_vec($fname);
 	$forw_id = $name.q{ 1}.$comm;
 	$rev_id  = $name.q{ 2}.$comm;
     }
-    if (exists $rseqhash{$fname}) {
+    if (exists $rseqpairs->{$fname}) {
 	$fpct++; $rpct++;
 	if (defined $fqual) {
-	    my ($rread, $rqual) = mk_vec($rseqhash{$fname});
+	    my ($rread, $rqual) = mk_vec($rseqpairs->{$fname});
 	    if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
 		say $fp join "\n","@".$forw_id, $fseq, "+", $fqual;
 		say $rp join "\n","@".$rev_id, $rread, "+", $rqual;
 	    } 
 	    else {
-		say $fp join "\n","@".$fname."/1", $fseq, "+", $fqual;
-                say $rp join "\n","@".$fname."/2", $rread, "+", $rqual;
+		say $fp join "\n","@".$fname.q{/1}, $fseq, "+", $fqual;
+                say $rp join "\n","@".$fname.q{/2}, $rread, "+", $rqual;
 	    }
 	} 
 	else {
 	    if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
 		say $fp join "\n",">".$forw_id, $fseq;
-		say $rp join "\n",">".$rev_id, $rseqhash{$fname};
+		say $rp join "\n",">".$rev_id, $rseqpairs->{$fname};
 	    } 
 	    else {
-                say $fp join "\n",">".$fname."/1", $fseq;
-                say $rp join "\n",">".$fname."/2", $rseqhash{$fname};
+                say $fp join "\n",">".$fname.q{/1}, $fseq;
+                say $rp join "\n",">".$fname.q{/2}, $rseqpairs->{$fname};
             }
 	}
-        delete $rseqhash{$fname};
+        delete $rseqpairs->{$fname};
     } 
     else {
 	$fsct++;
@@ -229,7 +201,7 @@ while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
 		say $fs join "\n","@".$forw_id, $fseq, "+", $fqual;
 	    } 
 	    else {
-		say $fs join "\n","@".$fname."/1", $fseq, "+", $fqual;
+		say $fs join "\n","@".$fname.q{/1}, $fseq, "+", $fqual;
 	    }
 	} 
 	else {
@@ -237,7 +209,7 @@ while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
 		say $fs join "\n",">".$forw_id, $fseq;
 	    } 
 	    else {
-		say $fs join "\n",">".$fname."/1", $fseq;
+		say $fs join "\n",">".$fname.q{/1}, $fseq;
 	    }
 	}
     }
@@ -251,7 +223,7 @@ open my $rs, '>', $rsread or die "\nERROR: Could not open file: $rsread\n";
 binmode $rs, ":utf8";
 
 my $rev_id_up;
-while (my ($rname_up, $rseq_up) = each %rseqhash) {
+while (my ($rname_up, $rseq_up) = each %$rseqpairs) {
     $rsct++;
     if ($rname_up =~ /\N{INVISIBLE SEPARATOR}/) {
 	my ($uname, $uid) = mk_vec($rname_up);
@@ -280,7 +252,7 @@ close $rs;
 
 $pct = $fpct + $rpct;
 $sct = $fsct + $rsct;
-untie %rseqhash if defined $memory;
+untie %$rseqpairs if defined $memory;
 unlink $db_file if -e $db_file;
 
 say "Total forward reads in $fread:              $fct";
@@ -296,6 +268,48 @@ exit;
 #
 # Subs
 #
+sub store_pair {
+    my ($file) = @_;
+
+    my $rct = 0;
+    my %rseqpairs;
+    $DB_BTREE->{cachesize} = 100000;
+    $DB_BTREE->{flags} = R_DUP;
+    my $db_file = "pairfq.bdb";
+    unlink $db_file if -e $db_file;
+
+    unless (defined $memory) { 
+	tie %rseqpairs, 'DB_File', $db_file, O_RDWR|O_CREAT, 0666, $DB_BTREE
+	    or die "\nERROR: Could not open DBM file $db_file: $!\n";
+    }
+
+    my @raux = undef;
+    my ($rname, $rcomm, $rseq, $rqual);
+
+    open my $r, '<', $file or die "\nERROR: Could not open file: $file\n";
+
+    while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$r, \@raux)) {
+	$rct++;
+	if ($rname =~ /(\/\d)$/) {
+	    $rname =~ s/$1//;
+	}
+	elsif (defined $rcomm && $rcomm =~ /^\d/) {
+	    $rcomm =~ s/^\d//;
+	    $rname = mk_key($rname, $rcomm);
+	}
+	else {
+	    say "\nERROR: Could not determine FastA/Q format. ".
+		"Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
+	    exit(1);
+	}
+        $rseqpairs{$rname} = mk_key($rseq, $rqual) if defined $rqual;
+	$rseqpairs{$rname} = $rseq if !defined $rqual;
+    }
+    close $r;
+    
+    return(\%rseqpairs, $db_file, $rct);
+}
+
 sub readfq {
     my ($fh, $aux) = @_;
     @$aux = [undef, 0] if (!@$aux);
@@ -313,8 +327,11 @@ sub readfq {
             return;
         }
     }
-    my ($name, $comm) = /^.(\S+)(?:\s+)(\S+)/ ? ($1, $2) : 
-                        /^.(\S+)/ ? ($1, '') : ('', '');
+    my ($name, $comm);
+    defined $_ && do {
+        ($name, $comm) = /^.(\S+)(?:\s+)(\S+)/ ? ($1, $2) : 
+             	         /^.(\S+)/ ? ($1, '') : ('', '');
+    };
     my $seq = '';
     my $c;
     $aux->[0] = undef;
