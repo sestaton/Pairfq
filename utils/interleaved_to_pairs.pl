@@ -2,18 +2,17 @@
 
 =head1 NAME 
                                                                        
-pairfq.pl - Match paired-end sequences from separate FastA/Q files
+interleaved_to_pairs.pl - Split forward and reverse reads into separate files
 
 =head1 SYNOPSIS    
  
-pairfq.pl -f s_1_1_trim.fq -r s_1_2_trim.fq -fp s_1_1_trim_paired.fq -rp s_1_2_trim_paired.fq -fs s_1_1_trim_unpaired.fq -rs s_1_2_trim_unpaired.fq
+interleaved_to_pairs.pl -i seq_interl.fq -f seq_1.fq -r seq_2.fq
 
 =head1 DESCRIPTION
      
-Re-pair paired-end sequences that may have been separated by quality trimming.
-This script also writes the unpaired forward and reverse sequences to separate 
-files so that they may be used for assembly or mapping. The input may be FastA
-or FastQ format in either Illumina 1.3+ or Illumina 1.8 format.
+Interleaving paired-end files is necessary for some assembly or mapping programs, but
+that format is not advantageous for all operations. This script will take the interleaved
+file and split the forward and reverse reads in to separate files.
 
 =head1 DEPENDENCIES
 
@@ -53,35 +52,21 @@ statonse at gmail dot com
 
 =over 2
 
+=item -i, --infile
+
+The file of interleaved FastA/Q forward and reverse reads.
+
 =item -f, --forward
 
-The file of forward sequences from an Illumina paired-end sequencing run.
+The file to place the forward reads.
 
-=item -r, --reverse                                                                                                                                                       
-The file of reverse sequences from an Illumina paired-end sequencing run.
+=item -r, --reverse
 
-=item -fp, --forw_paired
-
-The output file to place the paired forward reads.
-
-=item -rp, --rev_paired                                                                                                                                                  
-The output file to place the paired reverse reads. 
-
-=item -fs, --forw_unpaired                                                                                                                                                  
-The output file to place the unpaired forward reads. 
-
-=item -rs, --rev_unpaired                                                                                                                                                  
-The output file to place the unpaired reverse reads. 
+The file to place the reverse reads.
 
 =back
 
 =head1 OPTIONS
-
-=over 2
-
-=item -im, --in_memory
-
-Construct the database in memory. May be faster, but will obviously use more memory.
 
 =item -h, --help
 
@@ -99,7 +84,6 @@ use warnings;
 use Getopt::Long;
 use autodie qw(open);
 
-my $usage = "\n$0 -i interleaved.fasta -f reads_1.fas -r reads_2.fas\n\n";
 my $forward;
 my $reverse;
 my $infile; 
@@ -110,7 +94,11 @@ GetOptions(
 	   'r|reverse=s' => \$reverse,
 	   );
 
-die $usage if !$infile or !$forward or !$reverse;
+if (!$infile || !$forward || !$reverse) {
+    say "\nERROR: Command line not parsed correctly. Exiting.";
+    usage();
+    exit(1);
+}
 
 open my $in, '<', $infile;
 open my $f, '>', $forward;
@@ -133,21 +121,67 @@ close $in;
 close $f;
 close $r;
 
+#
+# subroutines
+#
+sub readfq {
+    my ($fh, $aux) = @_;
+    @$aux = [undef, 0] if (!@$aux);
+    return if ($aux->[1]);
+    if (!defined($aux->[0])) {
+        while (<$fh>) {
+            chomp;
+            if (substr($_, 0, 1) eq '>' || substr($_, 0, 1) eq '@') {
+                $aux->[0] = $_;
+                last;
+            }
+        }
+        if (!defined($aux->[0])) {
+            $aux->[1] = 1;
+            return;
+        }
+    }
+    my ($name, $comm);
+    defined $_ && do {
+        ($name, $comm) = /^.(\S+)(?:\s+)(\S+)/ ? ($1, $2) : 
+                         /^.(\S+)/ ? ($1, '') : ('', '');
+    };
+    my $seq = '';
+    my $c;
+    $aux->[0] = undef;
+    while (<$fh>) {
+        chomp;
+        $c = substr($_, 0, 1);
+        last if ($c eq '>' || $c eq '@' || $c eq '+');
+        $seq .= $_;
+    }
+    $aux->[0] = $_;
+    $aux->[1] = 1 if (!defined($aux->[0]));
+    return ($name, $comm, $seq) if ($c ne '+');
+    my $qual = '';
+    while (<$fh>) {
+        chomp;
+        $qual .= $_;
+        if (length($qual) >= length($seq)) {
+            $aux->[0] = undef;
+            return ($name, $comm, $seq, $qual);
+        }
+    }
+    $aux->[1] = 1;
+    return ($name, $seq);
+}
+
 sub usage {
     my $script = basename($0);
     print STDERR<<EOF
-USAGE: $script [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-im] [-h] [-im]
+USAGE: $script [-i] [-f] [-r] [-h] [-m]
 
 Required:
-    -f|forward        :       File of foward reads (usually with "/1" or " 1" in the header).
-    -r|reverse        :       File of reverse reads (usually with "/2" or " 2" in the header).
-    -fp|forw_paired   :       Name for the file of paired forward reads.
-    -rp|rev_paired    :       Name for the file of paired reverse reads.
-    -fs|forw_unpaired :       Name for the file of singleton forward reads.
-    -rs|rev_unpaired  :       Name for the file of singleton reverse reads.
+    -i|infile         :       File of interleaved forward and reverse reads.
+    -f|forward        :       File to place the foward reads.
+    -r|reverse        :       File to place the reverse reads.
 
 Options:
-    -im|in_memory     :       Construct a database in memory for faster execution.
     -h|help           :       Print a usage statement.
     -m|man            :       Print the full documentation.
 
