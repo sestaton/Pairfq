@@ -2,18 +2,18 @@
 
 =head1 NAME 
                                                                        
-pairfq.pl - Match paired-end sequences from separate FastA/Q files
+add_pair_info.pl - Append pair information to the sequence name
 
 =head1 SYNOPSIS    
  
-pairfq.pl -f s_1_1_trim.fq -r s_1_2_trim.fq -fp s_1_1_trim_paired.fq -rp s_1_2_trim_paired.fq -fs s_1_1_trim_unpaired.fq -rs s_1_2_trim_unpaired.fq
+add_pair_info.pl -i seq_1.fq -o seq_1_pair.fq -p 1
 
 =head1 DESCRIPTION
      
-Re-pair paired-end sequences that may have been separated by quality trimming.
-This script also writes the unpaired forward and reverse sequences to separate 
-files so that they may be used for assembly or mapping. The input may be FastA
-or FastQ format in either Illumina 1.3+ or Illumina 1.8 format.
+With Casava 1.8+ and other data, the pair information is in the comment, separated
+from the sequence name by a space. This information is usually lost if any quality trimming
+or sequence sampling is done. This script will restore the pair information in the Casava 1.4 style.
+The input may be FastA or FastQ.
 
 =head1 DEPENDENCIES
 
@@ -53,35 +53,23 @@ statonse at gmail dot com
 
 =over 2
 
-=item -f, --forward
+=item -i, --infile
 
-The file of forward sequences from an Illumina paired-end sequencing run.
+The file of sequences without the pair information in the sequence name.
 
-=item -r, --reverse                                                                                                                                                       
-The file of reverse sequences from an Illumina paired-end sequencing run.
+=item -o, --outfile
+              
+The file of sequences that will contain the sequence names with the pair information.
 
-=item -fp, --forw_paired
+=item -p, pairnum
 
-The output file to place the paired forward reads.
-
-=item -rp, --rev_paired                                                                                                                                                  
-The output file to place the paired reverse reads. 
-
-=item -fs, --forw_unpaired                                                                                                                                                  
-The output file to place the unpaired forward reads. 
-
-=item -rs, --rev_unpaired                                                                                                                                                  
-The output file to place the unpaired reverse reads. 
+The number to append to the sequence name. Integer. Must be 1 or 2.
 
 =back
 
 =head1 OPTIONS
 
 =over 2
-
-=item -im, --in_memory
-
-Construct the database in memory. May be faster, but will obviously use more memory.
 
 =item -h, --help
 
@@ -99,7 +87,6 @@ use warnings;
 use autodie qw(open);
 use Getopt::Long;
 
-my $usage = "$0 -i file -o fixed -p num";
 my $infile;
 my $outfile;
 my $pairnum;
@@ -111,7 +98,11 @@ GetOptions(
 	   'p|pairnum=i'   => \$pairnum,
 	   );
 
-say $usage and exit(1) if !$infile or !$pairnum or !$outfile;
+if (!$infile || !$outfile || !$pairnum) {
+    say "\nERROR: Command line not parsed correctly. Exiting.";
+    usage();
+    exit(1);
+}
 
 if ($pairnum == 1) {
     $pair = "/1";
@@ -120,7 +111,7 @@ elsif ($pairnum == 2) {
     $pair = "/2";
 }
 else {
-    say "ERROR: $pairnum is not correct. Must be 1 or 2. Exiting.";
+    say "\nERROR: $pairnum is not correct. Must be 1 or 2. Exiting.";
     exit(1);
 }
 
@@ -199,18 +190,14 @@ sub mk_vec { split "\N{INVISIBLE SEPARATOR}", shift }
 sub usage {
     my $script = basename($0);
     print STDERR<<EOF
-USAGE: $script [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-im] [-h] [-im]
+USAGE: $script [-i] [-o] [-p] [-h] [-m]
 
 Required:
-    -f|forward        :       File of foward reads (usually with "/1" or " 1" in the header).
-    -r|reverse        :       File of reverse reads (usually with "/2" or " 2" in the header).
-    -fp|forw_paired   :       Name for the file of paired forward reads.
-    -rp|rev_paired    :       Name for the file of paired reverse reads.
-    -fs|forw_unpaired :       Name for the file of singleton forward reads.
-    -rs|rev_unpaired  :       Name for the file of singleton reverse reads.
+    -i|infile        :       The file of sequences without the pair information in the sequence name.
+    -o|outfile       :       The file of sequences that will contain the sequence names with the pair information.
+    -p|pairnum       :       The number to append to the sequence name. Integer (Must be 1 or 2).
 
 Options:
-    -im|in_memory     :       Construct a database in memory for faster execution.
     -h|help           :       Print a usage statement.
     -m|man            :       Print the full documentation.
 
