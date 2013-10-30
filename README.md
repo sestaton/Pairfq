@@ -26,9 +26,9 @@ Just type `perl pairfq.pl` and you will see a menu describing the usage.
         -rs|rev_unpaired  :       Name for the file of singleton reverse reads.
 
     Options:
-        -im|in_memory     :       Construct a database in memory for faster execution.
-         -h|help           :       Print a usage statement.
-         -m|man            :       Print the full documentation.
+         -im|in_memory    :       Construct a database in memory for faster execution.
+         -h|help          :       Print a usage statement.
+         -m|man           :       Print the full documentation.
 
 Running the command `perl pairfq.pl -m` will print the full documentation.
 
@@ -52,7 +52,7 @@ In the Pairfq/utils subdirectory are several stand-alone scripts for working wit
 
 * **pairs_to_interleaved.pl**
 
-  * Interleave the paired reads for assembly.
+  * Interleave the paired reads for assembly or mapping.
 
 * **interleaved_to_pairs.pl**
 
