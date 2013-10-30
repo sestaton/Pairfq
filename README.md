@@ -44,7 +44,7 @@ As well Casava 1.8+ format,
 
     @EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG
 
-The overall format of the sequence name and comment may vary, but there must be an integer (1 or 2) at the end of the sequence name or as the first character in the comment (following a space after the sequence name). If your data is missing this pair information it will be necessary to fix them first (see below). 
+The overall format of the sequence name and comment may vary, but there must be an integer (1 or 2) at the end of the sequence name or as the first character in the comment (following a space after the sequence name). If your data is missing this pair information it will be necessary to fix them first (with the `add_pair_info.pl` script, see below). 
 
 **UTILITIES**
 
@@ -60,9 +60,9 @@ In the Pairfq/utils subdirectory are several stand-alone scripts for working wit
 
 * **add_pair_info.pl**
 
-  * Add the pair information back to the data. After filtering or sampling Casava 1.8+ data, the pair information is often lost, making downstream analyses difficult. For example, `@EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG` usually becomes `@EAS139:136:FC706VJ:2:2104:15343:197393`. This script will add the pair information back (to become `@EAS139:136:FC706VJ:2:2104:15343:197393/`). There is no way to know what was in the comment, so will not be restored. 
+  * Add the pair information back to the data. After filtering or sampling Casava 1.8+ data, the pair information is often lost, making downstream analyses difficult. For example, `@EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG` usually becomes `@EAS139:136:FC706VJ:2:2104:15343:197393`. This script will add the pair information back (to become `@EAS139:136:FC706VJ:2:2104:15343:197393/1`). There is no way to know what was in the comment, so will not be restored. 
 
-As with `pairfq.pl`, typing the name of the script will print the usage statement, while typing the name of the script followed by `-m` or `--man` will print the full documentation.
+As with `pairfq.pl`, invoking any of the scripts with no arguments will print the usage statement, while supplying the arguments `-m` or `--man` will print the full documentation.
 
 **ISSUES**
 
