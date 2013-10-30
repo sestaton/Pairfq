@@ -52,12 +52,12 @@ In the Pairfq/utils subdirectory are several stand-alone scripts for working wit
 
 * **pairs_to_interleaved.pl**
 
-...* Interleave the paired reads for assembly.
+...Interleave the paired reads for assembly.
 
 * **interleaved_to_pairs.pl**
 
-...* Separate the interleaved FastA/Q file into separate files for the forward and reverse reads.
+...Separate the interleaved FastA/Q file into separate files for the forward and reverse reads.
 
 * **add_pair_info.pl**
 
-...* Add the pair information back to the data. After filtering or sampling Casava 1.8+ data, the pair information is often lost, making downstream analyses difficult. For example, `@EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG` usually becomes `@EAS139:136:FC706VJ:2:2104:15343:197393`. This script will add the pair information back (to become `@EAS139:136:FC706VJ:2:2104:15343:197393/`). There is no way to know what was in the comment, so will not be restored. 
+...Add the pair information back to the data. After filtering or sampling Casava 1.8+ data, the pair information is often lost, making downstream analyses difficult. For example, `@EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG` usually becomes `@EAS139:136:FC706VJ:2:2104:15343:197393`. This script will add the pair information back (to become `@EAS139:136:FC706VJ:2:2104:15343:197393/`). There is no way to know what was in the comment, so will not be restored. 
