@@ -82,6 +82,7 @@ Print the full documentation.
 use 5.010;
 use strict;
 use warnings;
+use File::Basename;
 use Getopt::Long;
 
 my $forward;

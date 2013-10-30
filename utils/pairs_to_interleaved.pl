@@ -90,7 +90,7 @@ use strict;
 use warnings;
 use warnings FATAL => "utf8";
 use charnames qw(:full :short);
-use autodie qw(open);
+use File::Basename;
 use DB_File;
 use Getopt::Long;
 
