@@ -12,7 +12,8 @@ interleaved_to_pairs.pl -i seq_interl.fq -f seq_1.fq -r seq_2.fq
      
 Interleaving paired-end files is necessary for some assembly or mapping programs, but
 that format is not advantageous for all operations. This script will take the interleaved
-file and split the forward and reverse reads in to separate files.
+file and split the forward and reverse reads in to separate files. The input may be FastA or
+FastQ, and the output will be the same as the input format.
 
 =head1 DEPENDENCIES
 
@@ -82,7 +83,6 @@ use 5.010;
 use strict;
 use warnings;
 use Getopt::Long;
-use autodie qw(open);
 
 my $forward;
 my $reverse;
@@ -100,20 +100,25 @@ if (!$infile || !$forward || !$reverse) {
     exit(1);
 }
 
-open my $in, '<', $infile;
-open my $f, '>', $forward;
-open my $r, '>', $reverse; 
+open my $in, '<', $infile or die "\nERROR: Could not open file: $!\n";
+open my $f, '>', $forward or die "\nERROR: Could not open file: $!\n";
+open my $r, '>', $reverse or die "\nERROR: Could not open file: $!\n"; 
 
-{
-    local $/ = '>';
+my @aux = undef;
+my ($name, $comm, $seq, $qual);
 
-    while (my $line = <$in>) {
-        chomp $line;
-        my ($seqid, @seqparts) = split /\n/, $line;
-        my $seq = join '', @seqparts;
-        next unless defined $seqid && defined $seq;
-	say $f join "\n", ">".$seqid, $seq if $seqid =~ m/1$|\s+1/;
-	say $r join "\n", ">".$seqid, $seq if $seqid =~ m/2$|\s+2/;
+while (($name, $comm, $seq, $qual) = readfq(\*in, \@aux)) {
+    if (defined $comm && $comm =~ /^1/ || $name =~ /1$/) {
+	say $f join "\n", ">".$name, $seq if !defined $qual && !defined $comm;
+	say $f join "\n", ">".$name.q{ }.$comm, $seq, if !defined $qual && defined $comm;
+	say $f join "\n", "@".$name, $seq, '+', $qual if defined $qual && !defined $comm;
+	say $f join "\n", "@".$name.q{ }.$comm, $seq, '+', $qual if defined $qual && defined $comm;
+    }
+    elsif (defined $comm && $comm =~ /^2/ || $name =~ /1$/) {
+	say $r join "\n", ">".$name, $seq if !defined $qual && !defined $comm;
+	say $r join "\n", ">".$name.q{ }.$comm, $seq if !defined $qual && defined $comm;
+	say $r join "\n", "@".$name, $seq, "+", $qual if defined $qual && !defined $comm;
+	say $r join "\n", "@".$name.q{ }.$comm, $seq, "+", $qual if defined $qual && defined $comm;
     }
 }
 
@@ -121,6 +126,7 @@ close $in;
 close $f;
 close $r;
 
+exit;
 #
 # subroutines
 #
