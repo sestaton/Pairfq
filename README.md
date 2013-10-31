@@ -5,7 +5,7 @@ Sync paired-end FastA/Q files and keep orphaned reads
 
 **INSTALLATION**
 
-You can specify the full path to the script, or move to a working directory and use it in place. Perl must be installed to use Pairfq, but there are no external modules required.
+Perl version 5.12 (or greater) must be installed to use Pairfq, but there are no external modules required. You can specify the full path to the script, or move to a working directory and use it in place.
 
 **USAGE**
 
