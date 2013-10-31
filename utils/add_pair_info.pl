@@ -92,11 +92,15 @@ my $infile;
 my $outfile;
 my $pairnum;
 my $pair;
+my $help;
+my $man;
 
 GetOptions(
 	   'i|infile=s'    => \$infile,
 	   'o|outfile=s'   => \$outfile,
 	   'p|pairnum=i'   => \$pairnum,
+	   'h|help'        => \$help,
+	   'm|man'         => \$man,
 	   ) || pod2usage( "Try '$0 --man' for more information." );
 
 #
