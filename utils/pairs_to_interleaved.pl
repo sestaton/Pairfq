@@ -121,7 +121,7 @@ usage() and exit(0) if $help;
 pod2usage( -verbose => 2 ) if $man;
 
 if (!$forward || !$reverse || !$outfile) {
-    say "\nERROR: Command line not parsed correctly. Exiting.";
+    say "\nERROR: Command line not parsed correctly. Exiting.\n";
     usage();
     exit(1);
 }
@@ -141,8 +141,8 @@ while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$r, \@raux)) {
 	$rname = mk_key($rname, $rcomm);
     }
 
-    if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
-        my ($name, $comm) = mk_vec($fname);
+    if ($rname =~ /\N{INVISIBLE SEPARATOR}/) {
+        my ($name, $comm) = mk_vec($rname);
         $forw_id = $name.q{ 1}.$comm;
         $rev_id  = $name.q{ 2}.$comm;
     }
@@ -157,18 +157,18 @@ while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$r, \@raux)) {
 	    }
 	    else {
 		# problem with initialized vars at 141 and 142
-		say $out join "\n", "@".$rname.q{/1}, $seqf, "+", $qualf;
-                say $out join "\n", "@".$rname.q{/2}, $rseq, "+", $rqual;
+		say $out join "\n", "@".$rname.q{1}, $seqf, "+", $qualf;
+                say $out join "\n", "@".$rname.q{2}, $rseq, "+", $rqual;
 	    }
 	}
 	else {
 	    if ($rname =~ /\N{INVISIBLE SEPARATOR}/) {
-		say $out join "\n", ">".$forw_id, $seqf;
+		say $out join "\n", ">".$forw_id, $pairs->{$rname};
 		say $out join "\n", ">".$rev_id, $rseq;
 	    }
 	    else {
-		say $out join "\n", ">".$rname.q{/1}, $pairs->{$rname};
-		say $out join "\n", ">".$rname.q{/2}, $rseq;                                               
+		say $out join "\n", ">".$rname.q{1}, $pairs->{$rname};
+		say $out join "\n", ">".$rname.q{2}, $rseq;                                               
 	    }
 	}
     }
