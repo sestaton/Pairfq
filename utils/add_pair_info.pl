@@ -81,12 +81,12 @@ Print the full documentation.
 
 =cut
 
-use 5.010;
+use 5.012;
 use strict;
 use warnings;
 use File::Basename;
-use autodie qw(open);
 use Getopt::Long;
+use Pod::Usage;
 
 my $infile;
 my $outfile;
@@ -97,7 +97,14 @@ GetOptions(
 	   'i|infile=s'    => \$infile,
 	   'o|outfile=s'   => \$outfile,
 	   'p|pairnum=i'   => \$pairnum,
-	   );
+	   ) || pod2usage( "Try '$0 --man' for more information." );
+
+#
+# Check @ARGV
+#
+usage() and exit(0) if $help;
+
+pod2usage( -verbose => 2 ) if $man;
 
 if (!$infile || !$outfile || !$pairnum) {
     say "\nERROR: Command line not parsed correctly. Exiting.";
