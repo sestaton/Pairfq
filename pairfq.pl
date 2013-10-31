@@ -105,6 +105,7 @@ use Getopt::Long;
 use Data::Dumper;
 use DB_File;
 use Pod::Usage;
+use Data::Dump qw(dd);
 
 my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $memory, $help, $man);
 
@@ -157,8 +158,8 @@ while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
     }
     elsif (defined $fcomm && $fcomm =~ /^\d/) {
         $fcomm =~ s/^\d//;
-	$fname_k = mk_key($fname, $fcomm);
-	$fname_enc = encode('UTF-8', $fname);
+	$fname = mk_key($fname, $fcomm);
+	#$fname_enc = encode('UTF-8', $fname);
     }
     else {
 	say "\nERROR: Could not determine FastA/Q format. ".
@@ -166,41 +167,45 @@ while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
 	exit(1);
     }
     
-    if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
-	my ($name, $comm) = mk_vec($fname_k);
+    $fname_enc = encode('UTF-8', $fname);
+
+    if ($fname =~ /\N{INVISIBLE SEPARATOR}) {
+	my ($name, $comm) = mk_vec($fname);
 	$forw_id = $name.q{ 1}.$comm;
 	$rev_id  = $name.q{ 2}.$comm;
     }
 
-    if (exists $rseqpairs->{$fname_k}) {
+    if (exists $rseqpairs->{$fname} || exists $rseqpairs->{$fname_enc}) {
 	$fpct++; $rpct++;
 	if (defined $fqual) {
-	    my ($rread, $rqual) = mk_vec($rseqpairs->{$fname_k});
-	    if ($fname =~ /\N{INVISIBLE SEPARATOR}/) { # defined $fname_k is probably more efficient
+	    if ($fname =~ /\N{INVISIBLE SEPARATOR}) {
+		my ($rread, $rqual) = mk_vec($rseqpairs->{$fname_enc});
 		say $fp join "\n","@".$forw_id, $fseq, "+", $fqual;
 		say $rp join "\n","@".$rev_id, $rread, "+", $rqual;
 	    } 
 	    else {
+		my ($rread, $rqual) = mk_vec($rseqpairs->{$fname});
 		say $fp join "\n","@".$fname.q{/1}, $fseq, "+", $fqual;
                 say $rp join "\n","@".$fname.q{/2}, $rread, "+", $rqual;
 	    }
 	} 
 	else {
-	    if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
+	    if ($fname =~ /\N{INVISIBLE SEPARATOR}) {
 		say $fp join "\n",">".$forw_id, $fseq;
 		say $rp join "\n",">".$rev_id, $rseqpairs->{$fname_enc};
 	    } 
 	    else {
                 say $fp join "\n",">".$fname.q{/1}, $fseq;
-                say $rp join "\n",">".$fname.q{/2}, $rseqpairs->{$fname_enc};
+                say $rp join "\n",">".$fname.q{/2}, $rseqpairs->{$fname};
             }
 	}
-        delete $rseqpairs->{$fname_enc};
+        delete $rseqpairs->{$fname} if exists $rseqpairs->{$fname};
+	delete $rseqpairs->{$fname_enc} if exists $rseqpairs->{$fname_enc};
     } 
     else {
 	$fsct++;
 	if (defined $fqual) {
-	    if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
+	    if (defined $fname_enc) {
 		say $fs join "\n","@".$forw_id, $fseq, "+", $fqual;
 	    } 
 	    else {
@@ -208,7 +213,7 @@ while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
 	    }
 	} 
 	else {
-	    if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
+	    if (defined $fname_enc) {
 		say $fs join "\n",">".$forw_id, $fseq;
 	    } 
 	    else {
@@ -234,7 +239,9 @@ while (my ($rname_up, $rseq_up) = each %$rseqpairs) {
     }
     if ($rseq_up =~ /\N{INVISIBLE SEPARATOR}/) {
 	my ($rread_up, $rqual_up) = mk_vec($rseq_up);
+	#say join "\t", $rread_up, $rname_up;
 	if ($rname_up =~ /\|/) {
+	    #say join "\t", $rread_up, $rname_up;
 	    say $rs join "\n","@".$rev_id_up, $rread_up, "+", $rqual_up;
 	} 
 	else {
@@ -301,18 +308,19 @@ sub store_pair {
 	    }
 	    elsif (defined $rcomm && $rcomm =~ /^\d/) {
 		$rcomm =~ s/^\d//;
-		$rname_k = mk_key($rname, $rcomm);
-		$rname_enc = encode('UTF-8', $rname_k);
+		$rname = mk_key($rname, $rcomm);
+#		$rname_enc = encode('UTF-8', $rname_k);
 	    }
 	    else {
 		say "\nERROR: Could not determine FastA/Q format. ".
 		    "Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
 		exit(1);
 	    }
+	    $rname_enc = encode('UTF-8', $rname);
 	    $rseqpairs{$rname_enc} = mk_key($rseq, $rqual) if defined $rqual && defined $rcomm;
-	    $rseqpairs{$rname} = mk_key($rseq, $rqual) if defined $rqual && !defined $rcomm;
+	    $rseqpairs{$rname} = mk_key($rseq, $rqual) if defined $rqual;
 	    $rseqpairs{$rname_enc} = $rseq if !defined $rqual && defined $rcomm;
-	    $rseqpairs{$rname} = $rseq if !defined $rqual && !defined $rcomm;
+	    $rseqpairs{$rname} = $rseq if !defined $rqual;
 	}
 	close $r;
     }
