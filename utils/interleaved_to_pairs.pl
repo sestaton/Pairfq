@@ -79,21 +79,33 @@ Print the full documentation.
 
 =cut
 
-use 5.010;
+use 5.012;
 use strict;
 use warnings;
 use File::Basename;
 use Getopt::Long;
+use Pod::Usage;
 
 my $forward;
 my $reverse;
-my $infile; 
+my $infile;
+my $help;
+my $man;
 
 GetOptions(
 	   'i|infile=s'  => \$infile,
 	   'f|forward=s' => \$forward,
 	   'r|reverse=s' => \$reverse,
-	   );
+	   'h|help'      => \$help,
+	   'm|man'       => \$man,
+	   ) || pod2usage( "Try '$0 --man' for more information." );
+
+#
+# Check @ARGV
+#
+usage() and exit(0) if $help;
+
+pod2usage( -verbose => 2 ) if $man;
 
 if (!$infile || !$forward || !$reverse) {
     say "\nERROR: Command line not parsed correctly. Exiting.";
