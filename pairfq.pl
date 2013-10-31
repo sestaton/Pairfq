@@ -99,7 +99,7 @@ use strict;
 use warnings;
 use warnings FATAL => "utf8";
 use charnames qw(:full :short);
-use Encode qw(encode);
+use Encode qw(encode decode);
 use File::Basename;
 use Getopt::Long;
 use DB_File;
@@ -153,7 +153,7 @@ binmode $fs, ":utf8";
 while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
     $fct++;
     if ($fname =~ /(\/\d)$/) {
-	$fname =~ s/\/\d//;
+	$fname =~ s/$1//;
     }
     elsif (defined $fcomm && $fcomm =~ /^\d/) {
         $fcomm =~ s/^\d//;
@@ -216,6 +216,8 @@ while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
 	    }
 	}
     }
+    $forw_id = undef;
+    $rev_id = undef;
 }
 close $f;
 close $fp;
@@ -228,26 +230,17 @@ binmode $rs, ":utf8";
 my $rev_id_up;
 while (my ($rname_up, $rseq_up) = each %$rseqpairs) {
     $rsct++;
-    if ($rname_up =~ /\N{INVISIBLE SEPARATOR}/) {
-	my ($uname, $uid) = mk_vec($rname_up);
-	$rev_id_up .= $uname.q{ 2}.$uid;
-    }
-    if ($rseq_up =~ /\N{INVISIBLE SEPARATOR}/) {
+    if ($rseq_up =~ /\N{INVISIBLE SEPARATOR}/ && $rname_up =~ /\N{INVISIBLE SEPARATOR}/) {
 	my ($rread_up, $rqual_up) = mk_vec($rseq_up);
-	if ($rname_up =~ /\|/) {
-	    say $rs join "\n","@".$rev_id_up, $rread_up, "+", $rqual_up;
-	} 
-	else {
-	    say $rs join "\n","@".$rname_up."/2", $rread_up, "+", $rqual_up;
-	}
+	my ($uname, $uid) = mk_vec($rname_up);
+        $rev_id_up .= $uname.q{ 2}.$uid;
+	say $rs join "\n","@".$rev_id_up, $rread_up, "+", $rqual_up;
+    } 
+    elsif (!$rseq_up !~ /\N{INVISIBLE SEPARATOR}/ && $rname_up =~ /\N{INVISIBLE SEPARATOR}/) {
+	say $rs join "\n",">".$rev_id_up, $rseq_up;
     } 
     else {
-	if ($rname_up =~ /\N{INVISIBLE SEPARATOR}/) {
-	    say $rs join "\n",">".$rev_id_up, $rseq_up;
-	} 
-	else {
-	    say $rs join "\n",">".$rname_up."/2", $rseq_up;
-	}
+	say $rs join "\n",">".$rname_up."/2", $rseq_up;
     }
     $rev_id_up = undef;
 }
@@ -260,12 +253,12 @@ unlink $db_file if -e $db_file;
 
 say "Total forward reads in $fread:              $fct";
 say "Total reverse reads in $rread:              $rct";
-say "Total paired reads in $fpread and $rpread:  $pct";
 say "Total forward paired reads in $fpread:      $fpct";
 say "Total reverse paired reads in $rpread:      $rpct";
-say "Total upaired reads in $fsread and $rsread: $sct"; 
 say "Total forward unpaired reads in $fsread:    $fsct";
-say "Total reverse unpaired reads in $rsread:    $rsct";
+say "Total reverse unpaired reads in $rsread:    $rsct\n";
+say "Total paired reads in $fpread and $rpread:  $pct";
+say "Total upaired reads in $fsread and $rsread: $sct";
 
 exit;
 #
