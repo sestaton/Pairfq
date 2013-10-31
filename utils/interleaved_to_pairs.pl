@@ -120,7 +120,7 @@ open my $r, '>', $reverse or die "\nERROR: Could not open file: $!\n";
 my @aux = undef;
 my ($name, $comm, $seq, $qual);
 
-while (($name, $comm, $seq, $qual) = readfq(\*in, \@aux)) {
+while (($name, $comm, $seq, $qual) = readfq(\*$in, \@aux)) {
     if (defined $comm && $comm =~ /^1/ || $name =~ /1$/) {
 	say $f join "\n", ">".$name, $seq if !defined $qual && !defined $comm;
 	say $f join "\n", ">".$name.q{ }.$comm, $seq, if !defined $qual && defined $comm;
