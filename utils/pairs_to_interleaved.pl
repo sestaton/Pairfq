@@ -285,7 +285,7 @@ sub mk_vec { split "\N{INVISIBLE SEPARATOR}", shift }
 sub usage {
     my $script = basename($0);
     print STDERR<<EOF
-USAGE: $script [-f] [-r] [-fp] [-o] [-im] [-h] [-m]
+USAGE: $script [-f] [-r] [-o] [-im] [-h] [-m]
 
 Required:
     -f|forward        :       File of foward reads (usually with "/1" or " 1" in the header).
