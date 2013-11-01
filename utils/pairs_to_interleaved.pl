@@ -126,19 +126,26 @@ if (!$forward || !$reverse || !$outfile) {
     exit(1);
 }
 
-my ($pairs, $db_file) = store_pair($forward);
+my ($pairs, $db_file, $ct) = store_pair($forward);
 open my $r, '<', $reverse or die "\nERROR: Could not open file: $!\n";
 open my $out, '>', $outfile or die "\nERROR: Could not open file: $!\n";
 binmode $out, ":utf8";
 
 my @raux = undef;
-my ($rname, $rcomm, $rseq, $rqual, $forw_id, $rev_id);
+my ($rname, $rcomm, $rseq, $rqual, $forw_id, $rev_id, $rname_enc);
 
 while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$r, \@raux)) {
-    $rname =~ s/\d$// if defined $rname && $rname =~ /\/\d$/;
-    if (defined $rcomm && $rcomm =~ /^\d/) {
+    if ($rname =~ /(\/\d)$/) {
+	$rname =~ s/$1//;
+    }
+    elsif (defined $rcomm && $rcomm =~ /^\d/) {
 	$rcomm =~ s/^\d//;
 	$rname = mk_key($rname, $rcomm);
+    }
+    else {
+        say "\nERROR: Could not determine FastA/Q format. ".
+            "Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
+        exit(1);
     }
 
     if ($rname =~ /\N{INVISIBLE SEPARATOR}/) {
@@ -147,28 +154,28 @@ while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$r, \@raux)) {
         $rev_id  = $name.q{ 2}.$comm;
     }
 
-    $rname = encode('UTF-8', $rname);
-    if (exists $pairs->{$rname}) {
+    $rname_enc = encode('UTF-8', $rname);
+    if (exists $pairs->{$rname_enc}) {
 	if (defined $rqual) {
-	    my ($seqf, $qualf) = mk_vec($pairs->{$rname});
+	    my ($seqf, $qualf) = mk_vec($pairs->{$rname_enc});
 	    if ($rname =~ /\N{INVISIBLE SEPARATOR}/) {
 		say $out join "\n", "@".$forw_id, $seqf, "+", $qualf;
 		say $out join "\n", "@".$rev_id, $rseq, "+", $rqual;
 	    }
 	    else {
 		# problem with initialized vars at 141 and 142
-		say $out join "\n", "@".$rname.q{1}, $seqf, "+", $qualf;
-                say $out join "\n", "@".$rname.q{2}, $rseq, "+", $rqual;
+		say $out join "\n", "@".$rname.q{/1}, $seqf, "+", $qualf;
+                say $out join "\n", "@".$rname.q{/2}, $rseq, "+", $rqual;
 	    }
 	}
 	else {
 	    if ($rname =~ /\N{INVISIBLE SEPARATOR}/) {
-		say $out join "\n", ">".$forw_id, $pairs->{$rname};
+		say $out join "\n", ">".$forw_id, $pairs->{$rname_enc};
 		say $out join "\n", ">".$rev_id, $rseq;
 	    }
 	    else {
-		say $out join "\n", ">".$rname.q{1}, $pairs->{$rname};
-		say $out join "\n", ">".$rname.q{2}, $rseq;                                               
+		say $out join "\n", ">".$rname.q{/1}, $pairs->{$rname_enc};
+		say $out join "\n", ">".$rname.q{/2}, $rseq;                                               
 	    }
 	}
     }
@@ -186,36 +193,49 @@ exit;
 sub store_pair {
     my ($file) = @_;
 
-    my %pairs;
+    my $ct = 0;
+    my %seqpairs;
     $DB_BTREE->{cachesize} = 100000;
     $DB_BTREE->{flags} = R_DUP;
-    my $db_file = "pairs_to_interleaved.bdb";
+    my $db_file = "pairfq.bdb";
     unlink $db_file if -e $db_file;
 
-    unless (defined $memory) {
-	my $db = tie %pairs, 'DB_File', $db_file, O_RDWR|O_CREAT, 0666, $DB_BTREE
-	    or die "\nERROR: Could not open DBM file $db_file: $!\n";
-	$db->Filter_Value_Push("utf8");
+    unless (defined $memory) { 
+        my $db = tie %seqpairs, 'DB_File', $db_file, O_RDWR|O_CREAT, 0666, $DB_BTREE
+            or die "\nERROR: Could not open DBM file $db_file: $!\n";
+        $db->Filter_Value_Push("utf8");
     }
 
-    my @faux = undef;
-    my ($fname, $fcomm, $fseq, $fqual);
-    my ($fct, $rct) = (0, 0);
-    open my $f, '<', $file or die "\nERROR: Could not open file: $!\n";
+    my @aux = undef;
+    my ($name, $comm, $seq, $qual);
 
-    while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
-	$fname =~ s/\d$// if $fname =~ /\/\d$/;
-	if (defined $fcomm && $fcomm =~ /^\d/) {
-	    $fcomm =~ s/^\d//;
-	    $fname = mk_key($fname, $fcomm);
-	}
-	$fname = encode('UTF-8', $fname);
-	$pairs{$fname} = mk_key($fseq, $fqual) if defined $fqual;
-	$pairs{$fname} = $fseq if !defined $fqual;
+    open my $f, '<', $file or die "\nERROR: Could not open file: $file\n";
+
+    {
+        local @SIG{qw(INT TERM HUP)} = sub { if (defined $memory && -e $db_file) { untie %seqpairs; unlink $db_file if -e $db_file; } };
+
+        while (($name, $comm, $seq, $qual) = readfq(\*$f, \@aux)) {
+            $ct++;
+            if ($name =~ /(\/\d)$/) {
+                $name =~ s/$1//;
+            }
+            elsif (defined $comm && $comm =~ /^\d/) {
+                $comm =~ s/^\d//;
+                $name = mk_key($name, $comm);
+            }
+            else {
+                say "\nERROR: Could not determine FastA/Q format. ".
+                    "Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
+                exit(1);
+            }
+
+            $name = encode('UTF-8', $name);
+            $seqpairs{$name} = mk_key($seq, $qual) if defined $qual;
+            $seqpairs{$name} = $seq if !defined $qual;
+        }
+        close $f;
     }
-    close $f;
-    
-    return (\%pairs, $db_file);
+    return (\%seqpairs, $db_file, $ct);
 }
 
 sub readfq {
