@@ -81,7 +81,8 @@ The output file to place the unpaired reverse reads.
 
 =item -im, --in_memory
 
-Construct the database in memory. May be faster, but will obviously use more memory.
+The computation should be done in memory instead of on the disk. This will be faster, but may use a large amount
+of RAM if there are many millions of sequences in each input file.
 
 =item -h, --help
 
@@ -383,6 +384,7 @@ Required:
 
 Options:
     -im|in_memory     :       Construct a database in memory for faster execution.
+                              NB: This may result in large RAM usage for a large number of sequences. 
     -h|help           :       Print a usage statement.
     -m|man            :       Print the full documentation.
 
