@@ -106,6 +106,7 @@ use DB_File;
 use DBM_Filter;
 use Pod::Usage;
 use Devel::Peek;
+use Try::Tiny;
 
 my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $memory, $help, $man);
 
@@ -167,7 +168,8 @@ while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
     }
     
     if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
-	my ($name, $comm) = mk_vec($fname);
+	my ($name, $comm);
+	try { ($name, $comm) = mk_vec($fname); } catch { "Error: mk_vec at 171: $_"; } ;
 	$forw_id = $name.q{ 1}.$comm;
 	$rev_id  = $name.q{ 2}.$comm;
     }
@@ -231,9 +233,9 @@ binmode $rs, ":utf8";
 while (my ($rname_up, $rseq_up) = each %$rseqpairs) {
     $rsct++;
     my $rname_unenc = decode('UTF-8', $rname_up);
-    my $rseq_unenc = decode('UTF-8', $rseq_up);
     my ($name_up_unenc, $comm_up_unenc) = mk_vec($rname_unenc);
-    my ($seq_up_unenc, $qual_up_unenc) = mk_vec($rseq_unenc);
+    my ($seq_up_unenc, $qual_up_unenc) = mk_vec($rseq_up);
+
     my $rev_id_up .= $name_up_unenc.q{ 2}.$comm_up_unenc if defined $comm_up_unenc;
     
     if (defined $comm_up_unenc && defined $qual_up_unenc) {
@@ -242,6 +244,9 @@ while (my ($rname_up, $rseq_up) = each %$rseqpairs) {
     elsif (defined $comm_up_unenc && !defined $qual_up_unenc) {
 	say $rs join "\n",">".$rev_id_up, $rseq_up;
     } 
+    elsif (!defined $comm_up_unenc && defined $qual_up_unenc) {
+	say $rs join "\n", "@".$name_up_unenc.q{/2}, $seq_up_unenc, "+", $qual_up_unenc;
+    }
     else {
 	say $rs join "\n",">".$name_up_unenc.q{/2}, $rseq_up;
     }
