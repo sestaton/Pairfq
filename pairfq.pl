@@ -105,8 +105,6 @@ use Getopt::Long;
 use DB_File;
 use DBM_Filter;
 use Pod::Usage;
-use Devel::Peek;
-use Try::Tiny;
 
 my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $memory, $help, $man);
 
@@ -169,7 +167,7 @@ while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
     
     if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
 	my ($name, $comm);
-	try { ($name, $comm) = mk_vec($fname); } catch { "Error: mk_vec at 171: $_"; } ;
+	($name, $comm) = mk_vec($fname);
 	$forw_id = $name.q{ 1}.$comm;
 	$rev_id  = $name.q{ 2}.$comm;
     }
