@@ -105,6 +105,7 @@ use Getopt::Long;
 use DB_File;
 use DBM_Filter;
 use Pod::Usage;
+use Devel::Peek;
 
 my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $memory, $help, $man);
 
@@ -171,11 +172,11 @@ while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
 	$rev_id  = $name.q{ 2}.$comm;
     }
 
-    $fname = encode('UTF-8', $fname);
-    if (exists $rseqpairs->{$fname}) {
+    $fname_enc = encode('UTF-8', $fname);
+    if (exists $rseqpairs->{$fname_enc}) {
 	$fpct++; $rpct++;
 	if (defined $fqual) {
-	    my ($rread, $rqual) = mk_vec($rseqpairs->{$fname});
+	    my ($rread, $rqual) = mk_vec($rseqpairs->{$fname_enc});
 	    if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
 		say $fp join "\n","@".$forw_id, $fseq, "+", $fqual;
 		say $rp join "\n","@".$rev_id, $rread, "+", $rqual;
@@ -188,14 +189,14 @@ while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
 	else {
 	    if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
 		say $fp join "\n",">".$forw_id, $fseq;
-		say $rp join "\n",">".$rev_id, $rseqpairs->{$fname};
+		say $rp join "\n",">".$rev_id, $rseqpairs->{$fname_enc};
 	    } 
 	    else {
                 say $fp join "\n",">".$fname.q{/1}, $fseq;
-                say $rp join "\n",">".$fname.q{/2}, $rseqpairs->{$fname};
+                say $rp join "\n",">".$fname.q{/2}, $rseqpairs->{$fname_enc};
             }
 	}
-        delete $rseqpairs->{$fname};
+        delete $rseqpairs->{$fname_enc};
     } 
     else {
 	$fsct++;
@@ -227,22 +228,23 @@ close $fs;
 open my $rs, '>', $rsread or die "\nERROR: Could not open file: $rsread\n";
 binmode $rs, ":utf8";
 
-my $rev_id_up;
 while (my ($rname_up, $rseq_up) = each %$rseqpairs) {
     $rsct++;
-    if ($rseq_up =~ /\N{INVISIBLE SEPARATOR}/ && $rname_up =~ /\N{INVISIBLE SEPARATOR}/) {
-	my ($rread_up, $rqual_up) = mk_vec($rseq_up);
-	my ($uname, $uid) = mk_vec($rname_up);
-        $rev_id_up .= $uname.q{ 2}.$uid;
-	say $rs join "\n","@".$rev_id_up, $rread_up, "+", $rqual_up;
+    my $rname_unenc = decode('UTF-8', $rname_up);
+    my $rseq_unenc = decode('UTF-8', $rseq_up);
+    my ($name_up_unenc, $comm_up_unenc) = mk_vec($rname_unenc);
+    my ($seq_up_unenc, $qual_up_unenc) = mk_vec($rseq_unenc);
+    my $rev_id_up .= $name_up_unenc.q{ 2}.$comm_up_unenc if defined $comm_up_unenc;
+    
+    if (defined $comm_up_unenc && defined $qual_up_unenc) {
+	say $rs join "\n","@".$rev_id_up, $seq_up_unenc, "+", $qual_up_unenc;
     } 
-    elsif (!$rseq_up !~ /\N{INVISIBLE SEPARATOR}/ && $rname_up =~ /\N{INVISIBLE SEPARATOR}/) {
+    elsif (defined $comm_up_unenc && !defined $qual_up_unenc) {
 	say $rs join "\n",">".$rev_id_up, $rseq_up;
     } 
     else {
-	say $rs join "\n",">".$rname_up."/2", $rseq_up;
+	say $rs join "\n",">".$name_up_unenc.q{/2}, $rseq_up;
     }
-    $rev_id_up = undef;
 }
 close $rs;
 
