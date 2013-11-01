@@ -31,12 +31,6 @@ Copyright (C) 2013 S. Evan Staton
 =over
 
 =item *
-Perl 5.14.1 (Red Hat Enterprise Linux Server release 5.7 (Tikanga))
-
-=item *
-Perl 5.14.2 (Red Hat Enterprise Linux Desktop release 6.2 (Santiago); Fedora 17)
-
-=item *
 Perl 5.18.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga))
 
 =back
@@ -127,7 +121,7 @@ while (($name, $comm, $seq, $qual) = readfq(\*$in, \@aux)) {
 	say $f join "\n", "@".$name, $seq, '+', $qual if defined $qual && !defined $comm;
 	say $f join "\n", "@".$name.q{ }.$comm, $seq, '+', $qual if defined $qual && defined $comm;
     }
-    elsif (defined $comm && $comm =~ /^2/ || $name =~ /1$/) {
+    elsif (defined $comm && $comm =~ /^2/ || $name =~ /2$/) {
 	say $r join "\n", ">".$name, $seq if !defined $qual && !defined $comm;
 	say $r join "\n", ">".$name.q{ }.$comm, $seq if !defined $qual && defined $comm;
 	say $r join "\n", "@".$name, $seq, "+", $qual if defined $qual && !defined $comm;
