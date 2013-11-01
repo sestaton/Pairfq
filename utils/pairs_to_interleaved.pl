@@ -115,7 +115,7 @@ usage() and exit(0) if $help;
 pod2usage( -verbose => 2 ) if $man;
 
 if (!$forward || !$reverse || !$outfile) {
-    say "\nERROR: Command line not parsed correctly. Exiting.\n";
+    say "\nERROR: Command line not parsed correctly. Check input.\n";
     usage();
     exit(1);
 }
