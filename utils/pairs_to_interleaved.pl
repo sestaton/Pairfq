@@ -30,12 +30,6 @@ Copyright (C) 2013 S. Evan Staton
 =over
 
 =item *
-Perl 5.14.1 (Red Hat Enterprise Linux Server release 5.7 (Tikanga))
-
-=item *
-Perl 5.14.2 (Red Hat Enterprise Linux Desktop release 6.2 (Santiago); Fedora 17)
-
-=item *
 Perl 5.18.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga))
 
 =back
