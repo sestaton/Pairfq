@@ -72,7 +72,7 @@ Be aware that Pairfq will not work for every data set given the wide range of Fa
 
 **ATTRIBUTION**
 
-This project would not be possible without the excellent [readfq](https://github.com/lh3/readfq) library written by Heng Li. The code used by Pairfq has been modified for error handling and to parse the comment line in the Casava header.
+This project uses the [readfq](https://github.com/lh3/readfq) library written by Heng Li. The readfq code has been modified for error handling and to parse the comment line in the Casava header.
 
 **LICENSE**
 
