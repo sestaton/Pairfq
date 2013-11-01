@@ -157,7 +157,6 @@ while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$r, \@raux)) {
 		say $out join "\n", "@".$rev_id, $rseq, "+", $rqual;
 	    }
 	    else {
-		# problem with initialized vars at 141 and 142
 		say $out join "\n", "@".$rname.q{/1}, $seqf, "+", $qualf;
                 say $out join "\n", "@".$rname.q{/2}, $rseq, "+", $rqual;
 	    }
