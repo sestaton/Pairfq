@@ -34,7 +34,7 @@ Running the command `perl pairfq.pl -m` will print the full documentation.
 
 **EXPECTED FORMATS**
 
-The input will be two files (i.e., forward and reverse) in [FASTA](http://en.wikipedia.org/wiki/FASTA_format) or [FASTQ](http://en.wikipedia.org/wiki/FASTQ_format) format that are expected to have reads out of order due to quality trimming.
+The input will be two files (i.e., forward and reverse) in [FASTA](http://en.wikipedia.org/wiki/FASTA_format) or [FASTQ](http://en.wikipedia.org/wiki/FASTQ_format) format that are expected to have reads out of order due to quality trimming. It is fine if the input files are compressed (with either gzip or bzip2).
 
 Currently, data from the Casava pipeline version 1.4 are supported. For example,
 
@@ -44,7 +44,7 @@ As well Casava 1.8+ format,
 
     @EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG
 
-The overall format of the sequence name and comment may vary, but there must be an integer (1 or 2) at the end of the sequence name or as the first character in the comment (following a space after the sequence name). If your data is missing this pair information it will be necessary to fix them first (with the `add_pair_info.pl` script, see below). 
+The overall format of the sequence name and comment may vary, but there must be an integer (1 or 2) at the end of the sequence name or as the first character in the comment (following a space after the sequence name). If your data is missing this pair information it will be necessary to fix them first (with the `add_pair_info.pl` script, see below).
 
 **UTILITIES**
 

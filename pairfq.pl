@@ -13,7 +13,8 @@ pairfq.pl -f s_1_1_trim.fq -r s_1_2_trim.fq -fp s_1_1_trim_paired.fq -rp s_1_2_t
 Re-pair paired-end sequences that may have been separated by quality trimming.
 This script also writes the unpaired forward and reverse sequences to separate 
 files so that they may be used for assembly or mapping. The input may be FastA
-or FastQ format in either Illumina 1.3+ or Illumina 1.8 format.
+or FastQ format in either Illumina 1.3+ or Illumina 1.8 format. The input files
+may be compressed with gzip or bzip2.
 
 =head1 DEPENDENCIES
 
@@ -142,13 +143,7 @@ my @faux = undef;
 my ($fname, $fcomm, $fseq, $fqual, $forw_id, $rev_id, $fname_enc);
 my ($fct, $fpct, $rpct, $pct, $fsct, $rsct, $sct) = (0, 0, 0, 0, 0, 0, 0);
 
-my $f;
-if ($fread =~ /\.gz$/) {
-    open $f, '-|', 'zcat', $fread or die "\nERROR: Could not open file: $fread\n";
-}
-else {
-    open $f, '<', $fread or die "\nERROR: Could not open file: $fread\n";
-}
+my $fh = get_fh($file);
 open my $fp, '>', $fpread or die "\nERROR: Could not open file: $fpread\n";
 open my $rp, '>', $rpread or die "\nERROR: Could not open file: $rpread\n";
 open my $fs, '>', $fsread or die "\nERROR: Could not open file: $fsread\n";
@@ -157,7 +152,7 @@ binmode $fp, ":utf8";
 binmode $rp, ":utf8";
 binmode $fs, ":utf8";
 
-while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
+while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$fh, \@faux)) {
     $fct++;
     if ($fname =~ /(\/\d)$/) {
 	$fname =~ s/$1//;
@@ -227,7 +222,7 @@ while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$f, \@faux)) {
     $forw_id = undef;
     $rev_id = undef;
 }
-close $f;
+close $fh;
 close $fp;
 close $rp;
 close $fs;
@@ -276,6 +271,23 @@ exit;
 #
 # Subs
 #
+sub get_fh {
+    my ($file) = @_;
+
+    my $fh;
+    if ($file =~ /\.gz$/) {
+        open $fh, '-|', 'zcat', $file or die "\nERROR: Could not open file: $file\n";
+    }
+    elsif ($file =~ /\.bz2$/) {
+        open $fh, '-|', 'bzcat', $file or die "\nERROR: Could not open file: $file\n";
+    }
+    else {
+        open $fh, '<', $file or die "\nERROR: Could not open file: $file\n";
+    }
+
+    return $fh;
+}
+
 sub store_pair {
     my ($file) = @_;
 
@@ -295,18 +307,12 @@ sub store_pair {
     my @raux = undef;
     my ($rname, $rcomm, $rseq, $rqual, $rname_k, $rname_enc);
 
-    my $r;
-    if ($file =~ /\.gz$/) {
-	open $r, '-|', 'zcat', $file or die "\nERROR: Could not open file: $file\n";
-    }
-    else {
-	open $r, '<', $file or die "\nERROR: Could not open file: $file\n";
-    }
+    my $fh = get_fh($file);
 
     {
 	local @SIG{qw(INT TERM HUP)} = sub { if (defined $memory && -e $db_file) { untie %rseqpairs; unlink $db_file if -e $db_file; } };
 
-	while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$r, \@raux)) {
+	while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$fh, \@raux)) {
 	    $rct++;
 	    if ($rname =~ /(\/\d)$/) {
 		$rname =~ s/$1//;
@@ -325,7 +331,7 @@ sub store_pair {
 	    $rseqpairs{$rname} = mk_key($rseq, $rqual) if defined $rqual;
 	    $rseqpairs{$rname} = $rseq if !defined $rqual;
 	}
-	close $r;
+	close $fh;
     }
     return (\%rseqpairs, $db_file, $rct);
 }
