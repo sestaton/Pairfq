@@ -142,7 +142,13 @@ my @faux = undef;
 my ($fname, $fcomm, $fseq, $fqual, $forw_id, $rev_id, $fname_enc);
 my ($fct, $fpct, $rpct, $pct, $fsct, $rsct, $sct) = (0, 0, 0, 0, 0, 0, 0);
 
-open my $f, '<', $fread or die "\nERROR: Could not open file: $fread\n";
+my $f;
+if ($fread =~ /\.gz$/) {
+    open $f, '-|', 'zcat', $fread or die "\nERROR: Could not open file: $fread\n";
+}
+else {
+    open $f, '<', $fread or die "\nERROR: Could not open file: $fread\n";
+}
 open my $fp, '>', $fpread or die "\nERROR: Could not open file: $fpread\n";
 open my $rp, '>', $rpread or die "\nERROR: Could not open file: $rpread\n";
 open my $fs, '>', $fsread or die "\nERROR: Could not open file: $fsread\n";
@@ -289,7 +295,13 @@ sub store_pair {
     my @raux = undef;
     my ($rname, $rcomm, $rseq, $rqual, $rname_k, $rname_enc);
 
-    open my $r, '<', $file or die "\nERROR: Could not open file: $file\n";
+    my $r;
+    if ($file =~ /\.gz$/) {
+	open $r, '-|', 'zcat', $file or die "\nERROR: Could not open file: $file\n";
+    }
+    else {
+	open $r, '<', $file or die "\nERROR: Could not open file: $file\n";
+    }
 
     {
 	local @SIG{qw(INT TERM HUP)} = sub { if (defined $memory && -e $db_file) { untie %rseqpairs; unlink $db_file if -e $db_file; } };
