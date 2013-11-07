@@ -106,9 +106,11 @@ use File::Basename;
 use Getopt::Long;
 use DB_File;
 use DBM_Filter;
+use IO::Compress::Zlib qw(gzip $GzipError);
+use IO::Compress::Bzip2 qw(bzip2 $Bzip2Error);
 use Pod::Usage;
 
-my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $memory, $help, $man);
+my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $memory, $compress, $help, $man);
 
 GetOptions(
            'f|forward=s'        => \$fread,
@@ -118,6 +120,7 @@ GetOptions(
            'fs|forw_unpaired=s' => \$fsread,
            'rs|rev_unpaired=s'  => \$rsread,
            'im|in_memory'       => \$memory,
+           'c|compress=s'       => \$compress,
            'h|help'             => \$help,
            'm|man'              => \$man,
           ) || pod2usage( "Try '$0 --man' for more information." );
@@ -135,6 +138,13 @@ if (!$fread  || !$rread  ||
     say "\nERROR: Command line not parsed correctly. Check input.\n";
     usage();
     exit(1);
+}
+
+if ($compress) {
+    unless ($compress =~ /gzip/i || $compress =~ /bzip2/i) {
+	say "\nERROR: $compress is not recognized as an argument. Must be 'gzip' or 'bzip2'. Exiting";
+	exit(1);
+    }
 }
 
 my ($rseqpairs, $db_file, $rct) = store_pair($rread);
@@ -253,6 +263,7 @@ while (my ($rname_up, $rseq_up) = each %$rseqpairs) {
 }
 close $rs;
 
+compress($fpread, $rpread, $fsread, $rsread) if $compress;
 $pct = $fpct + $rpct;
 $sct = $fsct + $rsct;
 untie %$rseqpairs if defined $memory;
@@ -286,6 +297,32 @@ sub get_fh {
     }
 
     return $fh;
+}
+
+sub compress {
+    my ($fp, $rp, $fs, $rs) = @_;
+    if ($compress =~ /gzip/i) {
+	my $fpo = $fp.".gz";
+	my $rpo = $rp.".gz";
+	my $fso = $fs.".gz";
+	my $rso = $rs.".gz";
+	
+	gzip $fp => $fpo or die "gzip failed: $GzipError\n";
+	gzip $rp => $rpo or die "gzip failed: $GzipError\n";
+	gzip $fs => $fso or die "gzip failed: $GzipError\n";
+        gzip $rs => $rso or die "gzip failed: $GipError\n";
+    }
+    elsif ($compress =~ /bzip2/i) {
+	my $fpo = $fp.".bz2";
+	my $rpo = $rp.".bz2";
+	my $fso = $fs.".bz2";
+	my $rso = $rs.".bz2";
+
+	bzip2 $fp => $fpo or die "bzip2 failed: $Bzip2Error\n";
+	bzip2 $rp => $rpo or die "bzip2 failed: $Bzip2Error\n";
+	bzip2 $fs => $fso or die "bzip2 failed: $Bzip2Error\n";
+	bzip2 $rs => $rso or die "bzip2 failed: $Bzip2Error\n";
+    }
 }
 
 sub store_pair {
