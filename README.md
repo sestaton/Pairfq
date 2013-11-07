@@ -79,3 +79,6 @@ This project uses the [readfq](https://github.com/lh3/readfq) library written by
 The MIT License should included with the project. If not, it can be found at: http://opensource.org/licenses/mit-license.php
 
 Copyright (C) 2013 S. Evan Staton
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/sestaton/pairfq/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
