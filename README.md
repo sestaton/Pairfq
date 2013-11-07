@@ -3,6 +3,8 @@ Pairfq
 
 Sync paired-end FastA/Q files and keep orphaned reads
 
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/sestaton/pairfq/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
 **INSTALLATION**
 
 Perl version 5.12 (or greater) must be installed to use Pairfq, but there are no external modules required. You can specify the full path to the scripts, or move them to a working directory and use them in place.
@@ -80,5 +82,4 @@ The MIT License should included with the project. If not, it can be found at: ht
 
 Copyright (C) 2013 S. Evan Staton
 
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/sestaton/pairfq/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
