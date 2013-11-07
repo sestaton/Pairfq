@@ -121,13 +121,13 @@ else {
     exit(1);
 }
 
-open my $f, '<', $infile or die "\nERROR: Could not open file: $!\n";
+my $fh = get_fh($infile);
 open my $out, '>', $outfile or die "\nERROR: Could not open file: $!\n";
 
 my @aux = undef;
 my ($name, $comm, $seq, $qual);
 
-while (($name, $comm, $seq, $qual) = readfq(\*$f, \@aux)) {
+while (($name, $comm, $seq, $qual) = readfq(\*$fh, \@aux)) {
     if (defined $qual) {
 	say $out join "\n", "@".$name.$pair, $seq, '+', $qual;
     }
@@ -135,13 +135,30 @@ while (($name, $comm, $seq, $qual) = readfq(\*$f, \@aux)) {
 	say $out join "\n", ">".$name.$pair, $seq;
     }
 }
-close $f;
+close $fh;
 close $out;
 
 exit;
 #
 # subs
 #
+sub get_fh {
+    my ($file) = @_;
+
+    my $fh;
+    if ($file =~ /\.gz$/) {
+        open $fh, '-|', 'zcat', $file or die "\nERROR: Could not open file: $file\n";
+    }
+    elsif ($file =~ /\.bz2$/) {
+        open $fh, '-|', 'bzcat', $file or die "\nERROR: Could not open file: $file\n";
+    }
+    else {
+        open $fh, '<', $file or die "\nERROR: Could not open file: $file\n";
+    }
+
+    return $fh;
+}
+
 sub readfq {
     my ($fh, $aux) = @_;
     @$aux = [undef, 0] if (!@$aux);

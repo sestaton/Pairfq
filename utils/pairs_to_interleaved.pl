@@ -121,14 +121,14 @@ if (!$forward || !$reverse || !$outfile) {
 }
 
 my ($pairs, $db_file, $ct) = store_pair($forward);
-open my $r, '<', $reverse or die "\nERROR: Could not open file: $!\n";
+my $fh = get_fh($reverse);
 open my $out, '>', $outfile or die "\nERROR: Could not open file: $!\n";
 binmode $out, ":utf8";
 
 my @raux = undef;
 my ($rname, $rcomm, $rseq, $rqual, $forw_id, $rev_id, $rname_enc);
 
-while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$r, \@raux)) {
+while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$fh, \@raux)) {
     if ($rname =~ /(\/\d)$/) {
 	$rname =~ s/$1//;
     }
@@ -173,7 +173,7 @@ while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$r, \@raux)) {
 	}
     }
 }
-close $r;
+close $fh;
 close $out;
 
 untie %$pairs if defined $memory;
@@ -183,6 +183,23 @@ exit;
 #
 # subroutines
 #
+sub get_fh {
+    my ($file) = @_;
+
+    my $fh;
+    if ($file =~ /\.gz$/) {
+        open $fh, '-|', 'zcat', $file or die "\nERROR: Could not open file: $file\n";
+    }
+    elsif ($file =~ /\.bz2$/) {
+        open $fh, '-|', 'bzcat', $file or die "\nERROR: Could not open file: $file\n";
+    }
+    else {
+        open $fh, '<', $file or die "\nERROR: Could not open file: $file\n";
+    }
+
+    return $fh;
+}
+
 sub store_pair {
     my ($file) = @_;
 
