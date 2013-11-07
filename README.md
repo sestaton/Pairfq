@@ -28,9 +28,12 @@ Just type `perl pairfq.pl` and you will see a menu describing the usage.
         -rs|rev_unpaired  :       Name for the file of singleton reverse reads.
 
     Options:
-         -im|in_memory    :       Construct a database in memory for faster execution.
-         -h|help          :       Print a usage statement.
-         -m|man           :       Print the full documentation.
+        -im|in_memory     :       Construct a database in memory for faster execution.
+                                  NB: This may result in large RAM usage for a large number of sequences. 
+        -c|compress       :       Compress the output files. Options are 'gzip' or 'bzip2' (Default: No).
+        -h|help           :       Print a usage statement.
+        -m|man            :       Print the full documentation.
+
 
 Running the command `perl pairfq.pl -m` will print the full documentation.
 
