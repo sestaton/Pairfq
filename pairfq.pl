@@ -85,6 +85,11 @@ The output file to place the unpaired reverse reads.
 The computation should be done in memory instead of on the disk. This will be faster, but may use a large amount
 of RAM if there are many millions of sequences in each input file.
 
+=item -c, --compress
+
+The output files should be compressed. If given, this option must be given the arguments 'gzip' to compress with gzip,
+or 'bzip2' to compress with bzip2.
+
 =item -h, --help
 
 Print a usage statement. 
@@ -106,7 +111,7 @@ use File::Basename;
 use Getopt::Long;
 use DB_File;
 use DBM_Filter;
-use IO::Compress::Zlib qw(gzip $GzipError);
+use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Compress::Bzip2 qw(bzip2 $Bzip2Error);
 use Pod::Usage;
 
@@ -142,7 +147,7 @@ if (!$fread  || !$rread  ||
 
 if ($compress) {
     unless ($compress =~ /gzip/i || $compress =~ /bzip2/i) {
-	say "\nERROR: $compress is not recognized as an argument. Must be 'gzip' or 'bzip2'. Exiting";
+	say "\nERROR: $compress is not recognized as an argument to the --compress option. Must be 'gzip' or 'bzip2'. Exiting";
 	exit(1);
     }
 }
@@ -310,7 +315,8 @@ sub compress {
 	gzip $fp => $fpo or die "gzip failed: $GzipError\n";
 	gzip $rp => $rpo or die "gzip failed: $GzipError\n";
 	gzip $fs => $fso or die "gzip failed: $GzipError\n";
-        gzip $rs => $rso or die "gzip failed: $GipError\n";
+        gzip $rs => $rso or die "gzip failed: $GzipError\n";
+	unlink $fp, $rp, $fs, $rs;
     }
     elsif ($compress =~ /bzip2/i) {
 	my $fpo = $fp.".bz2";
@@ -322,6 +328,7 @@ sub compress {
 	bzip2 $rp => $rpo or die "bzip2 failed: $Bzip2Error\n";
 	bzip2 $fs => $fso or die "bzip2 failed: $Bzip2Error\n";
 	bzip2 $rs => $rso or die "bzip2 failed: $Bzip2Error\n";
+	unlink $fp, $rp, $fs, $rs;
     }
 }
 
@@ -440,6 +447,7 @@ Required:
 Options:
     -im|in_memory     :       Construct a database in memory for faster execution.
                               NB: This may result in large RAM usage for a large number of sequences. 
+    -c|compress       :       Compress the output files. Options are 'gzip' or 'bzip2' (Default: No).
     -h|help           :       Print a usage statement.
     -m|man            :       Print the full documentation.
 
