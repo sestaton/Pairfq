@@ -143,7 +143,7 @@ my @faux = undef;
 my ($fname, $fcomm, $fseq, $fqual, $forw_id, $rev_id, $fname_enc);
 my ($fct, $fpct, $rpct, $pct, $fsct, $rsct, $sct) = (0, 0, 0, 0, 0, 0, 0);
 
-my $fh = get_fh($file);
+my $fh = get_fh($fread);
 open my $fp, '>', $fpread or die "\nERROR: Could not open file: $fpread\n";
 open my $rp, '>', $rpread or die "\nERROR: Could not open file: $rpread\n";
 open my $fs, '>', $fsread or die "\nERROR: Could not open file: $fsread\n";
