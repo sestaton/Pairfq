@@ -107,14 +107,14 @@ if (!$infile || !$forward || !$reverse) {
     exit(1);
 }
 
-open my $in, '<', $infile or die "\nERROR: Could not open file: $!\n";
+my $fh = get_fh($infile);
 open my $f, '>', $forward or die "\nERROR: Could not open file: $!\n";
 open my $r, '>', $reverse or die "\nERROR: Could not open file: $!\n"; 
 
 my @aux = undef;
 my ($name, $comm, $seq, $qual);
 
-while (($name, $comm, $seq, $qual) = readfq(\*$in, \@aux)) {
+while (($name, $comm, $seq, $qual) = readfq(\*$fh, \@aux)) {
     if (defined $comm && $comm =~ /^1/ || $name =~ /1$/) {
 	say $f join "\n", ">".$name, $seq if !defined $qual && !defined $comm;
 	say $f join "\n", ">".$name.q{ }.$comm, $seq, if !defined $qual && defined $comm;
@@ -129,7 +129,7 @@ while (($name, $comm, $seq, $qual) = readfq(\*$in, \@aux)) {
     }
 }
 
-close $in;
+close $fh;
 close $f;
 close $r;
 
@@ -137,6 +137,23 @@ exit;
 #
 # subroutines
 #
+sub get_fh {
+    my ($file) = @_;
+
+    my $fh;
+    if ($file =~ /\.gz$/) {
+        open $fh, '-|', 'zcat', $file or die "\nERROR: Could not open file: $file\n";
+    }
+    elsif ($file =~ /\.bz2$/) {
+        open $fh, '-|', 'bzcat', $file or die "\nERROR: Could not open file: $file\n";
+    }
+    else {
+        open $fh, '<', $file or die "\nERROR: Could not open file: $file\n";
+    }
+
+    return $fh;
+}
+
 sub readfq {
     my ($fh, $aux) = @_;
     @$aux = [undef, 0] if (!@$aux);
