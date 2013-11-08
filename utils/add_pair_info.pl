@@ -252,9 +252,9 @@ Required:
     -p|pairnum       :       The number to append to the sequence name. Integer (Must be 1 or 2).
 
 Options:
-    -c|compress       :       Compress the output files. Options are 'gzip' or 'bzip2' (Default: No).
-    -h|help           :       Print a usage statement.
-    -m|man            :       Print the full documentation.
+    -c|compress      :       Compress the output files. Options are 'gzip' or 'bzip2' (Default: No).
+    -h|help          :       Print a usage statement.
+    -m|man           :       Print the full documentation.
 
 EOF
 }
