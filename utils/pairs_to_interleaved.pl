@@ -250,12 +250,12 @@ sub store_pair {
     my @aux = undef;
     my ($name, $comm, $seq, $qual);
 
-    open my $f, '<', $file or die "\nERROR: Could not open file: $file\n";
+    my $fh = get_fh($file);
 
     {
         local @SIG{qw(INT TERM HUP)} = sub { if (defined $memory && -e $db_file) { untie %seqpairs; unlink $db_file if -e $db_file; } };
 
-        while (($name, $comm, $seq, $qual) = readfq(\*$f, \@aux)) {
+        while (($name, $comm, $seq, $qual) = readfq(\*$fh, \@aux)) {
             $ct++;
             if ($name =~ /(\/\d)$/) {
                 $name =~ s/$1//;
@@ -274,7 +274,7 @@ sub store_pair {
             $seqpairs{$name} = mk_key($seq, $qual) if defined $qual;
             $seqpairs{$name} = $seq if !defined $qual;
         }
-        close $f;
+        close $fh;
     }
     return (\%seqpairs, $db_file, $ct);
 }
