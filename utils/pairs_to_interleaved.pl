@@ -68,6 +68,11 @@ The interleaved file to produce from the forward and reverse files.
 The computation should be done in memory instead of on the disk. This will be faster, but may use a large amount
 of RAM if there are many millions of sequences in each input file.
 
+=item -c, --compress
+
+The output files should be compressed. If given, this option must be given the arguments 'gzip' to compress with gzip,
+or 'bzip2' to compress with bzip2.
+
 =item -h, --help
 
 Print a usage statement. 
@@ -89,12 +94,15 @@ use File::Basename;
 use DB_File;
 use DBM_Filter;
 use Getopt::Long;
+use IO::Compress::Gzip qw(gzip $GzipError);
+use IO::Compress::Bzip2 qw(bzip2 $Bzip2Error);
 use Pod::Usage;
 
 my $forward;
 my $reverse;
 my $outfile;
 my $memory;
+my $compress;
 my $help;
 my $man;
 
@@ -103,6 +111,7 @@ GetOptions(
 	   'r|reverse=s'   => \$reverse,
 	   'o|outfile=s'   => \$outfile,
 	   'im|memory'     => \$memory,
+	   'c|compress=s'  => \$compress,
 	   'h|help'        => \$help,
 	   'm|man'         => \$man,
 	   ) || pod2usage( "Try '$0 --man' for more information." );;
@@ -118,6 +127,13 @@ if (!$forward || !$reverse || !$outfile) {
     say "\nERROR: Command line not parsed correctly. Check input.\n";
     usage();
     exit(1);
+}
+
+if ($compress) {
+    unless ($compress =~ /gzip/i || $compress =~ /bzip2/i) {
+        say "\nERROR: $compress is not recognized as an argument to the --compress option. Must be 'gzip' or 'bzip2'. Exiting";
+        exit(1);
+    }
 }
 
 my ($pairs, $db_file, $ct) = store_pair($forward);
@@ -179,6 +195,7 @@ close $out;
 untie %$pairs if defined $memory;
 unlink $db_file if -e $db_file;
 
+compress($outfile) if $compress;
 exit;
 #
 # subroutines
@@ -198,6 +215,20 @@ sub get_fh {
     }
 
     return $fh;
+}
+
+sub compress {
+    my ($outfile) = @_;
+    if ($compress =~ /gzip/i) {
+        my $outfilec = $outfile.".gz";
+        gzip $outfile => $outfilec or die "gzip failed: $GzipError\n";
+        unlink $outfile;
+    }
+    elsif ($compress =~ /bzip2/i) {
+        my $outfilec = $outfile.".bz2";
+        bzip2 $outfile => $outfilec or die "bzip2 failed: $Bzip2Error\n";
+        unlink $outfile;
+    }
 }
 
 sub store_pair {
@@ -312,6 +343,7 @@ Required:
 Options:
     -im|in_memory     :       Construct a database in memory for faster execution.
                               NB: This may result in large RAM usage for a large number of sequences. 
+    -c|compress       :       Compress the output files. Options are 'gzip' or 'bzip2' (Default: No).
     -h|help           :       Print a usage statement.
     -m|man            :       Print the full documentation.
 
