@@ -65,6 +65,11 @@ The number to append to the sequence name. Integer. Must be 1 or 2.
 
 =over 2
 
+=item -c, --compress
+
+The output files should be compressed. If given, this option must be given the arguments 'gzip' to compress with gzip,
+or 'bzip2' to compress with bzip2.
+
 =item -h, --help
 
 Print a usage statement. 
@@ -80,12 +85,15 @@ use strict;
 use warnings;
 use File::Basename;
 use Getopt::Long;
+use IO::Compress::Gzip qw(gzip $GzipError);
+use IO::Compress::Bzip2 qw(bzip2 $Bzip2Error);
 use Pod::Usage;
 
 my $infile;
 my $outfile;
 my $pairnum;
 my $pair;
+my $compress;
 my $help;
 my $man;
 
@@ -93,6 +101,7 @@ GetOptions(
 	   'i|infile=s'    => \$infile,
 	   'o|outfile=s'   => \$outfile,
 	   'p|pairnum=i'   => \$pairnum,
+	   'c|compress=s'  => \$compress,
 	   'h|help'        => \$help,
 	   'm|man'         => \$man,
 	   ) || pod2usage( "Try '$0 --man' for more information." );
@@ -108,6 +117,13 @@ if (!$infile || !$outfile || !$pairnum) {
     say "\nERROR: Command line not parsed correctly. Check input.\n";
     usage();
     exit(1);
+}
+
+if ($compress) {
+    unless ($compress =~ /gzip/i || $compress =~ /bzip2/i) {
+        say "\nERROR: $compress is not recognized as an argument to the --compress option. Must be 'gzip' or 'bzip2'. Exiting";
+        exit(1);
+    }
 }
 
 if ($pairnum == 1) {
@@ -138,6 +154,7 @@ while (($name, $comm, $seq, $qual) = readfq(\*$fh, \@aux)) {
 close $fh;
 close $out;
 
+compress($outfile) if $compress;
 exit;
 #
 # subs
@@ -157,6 +174,20 @@ sub get_fh {
     }
 
     return $fh;
+}
+
+sub compress {
+    my ($outfile) = @_;
+    if ($compress =~ /gzip/i) {
+        my $outfilec = $outfile.".gz";
+        gzip $outfile => $outfilec or die "gzip failed: $GzipError\n";
+        unlink $outfile;
+    }
+    elsif ($compress =~ /bzip2/i) {
+	my $outfilec = $outfile.".bz2";
+        bzip2 $outfile => $outfilec or die "bzip2 failed: $Bzip2Error\n";
+        unlink $outfile;
+    }
 }
 
 sub readfq {
@@ -221,6 +252,7 @@ Required:
     -p|pairnum       :       The number to append to the sequence name. Integer (Must be 1 or 2).
 
 Options:
+    -c|compress       :       Compress the output files. Options are 'gzip' or 'bzip2' (Default: No).
     -h|help           :       Print a usage statement.
     -m|man            :       Print the full documentation.
 

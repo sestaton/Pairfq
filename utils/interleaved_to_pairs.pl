@@ -63,6 +63,11 @@ The file to place the reverse reads.
 
 =head1 OPTIONS
 
+=item -c, --compress
+
+The output files should be compressed. If given, this option must be given the arguments 'gzip' to compress with gzip,
+or 'bzip2' to compress with bzip2.
+
 =item -h, --help
 
 Print a usage statement. 
@@ -78,20 +83,24 @@ use strict;
 use warnings;
 use File::Basename;
 use Getopt::Long;
+use IO::Compress::Gzip qw(gzip $GzipError);
+use IO::Compress::Bzip2 qw(bzip2 $Bzip2Error);
 use Pod::Usage;
 
 my $forward;
 my $reverse;
 my $infile;
+my $compress;
 my $help;
 my $man;
 
 GetOptions(
-	   'i|infile=s'  => \$infile,
-	   'f|forward=s' => \$forward,
-	   'r|reverse=s' => \$reverse,
-	   'h|help'      => \$help,
-	   'm|man'       => \$man,
+	   'i|infile=s'   => \$infile,
+	   'f|forward=s'  => \$forward,
+	   'r|reverse=s'  => \$reverse,
+	   'c|compress=s' => \$compress,
+	   'h|help'       => \$help,
+	   'm|man'        => \$man,
 	   ) || pod2usage( "Try '$0 --man' for more information." );
 
 #
@@ -105,6 +114,13 @@ if (!$infile || !$forward || !$reverse) {
     say "\nERROR: Command line not parsed correctly. Check input.\n";
     usage();
     exit(1);
+}
+
+if ($compress) {
+    unless ($compress =~ /gzip/i || $compress =~ /bzip2/i) {
+        say "\nERROR: $compress is not recognized as an argument to the --compress option. Must be 'gzip' or 'bzip2'. Exiting";
+        exit(1);
+    }
 }
 
 my $fh = get_fh($infile);
@@ -133,6 +149,7 @@ close $fh;
 close $f;
 close $r;
 
+compress($forward, $reverse) if $compress;
 exit;
 #
 # subroutines
@@ -152,6 +169,26 @@ sub get_fh {
     }
 
     return $fh;
+}
+
+sub compress {
+    my ($forward, $reverse) = @_;
+    if ($compress =~ /gzip/i) {
+        my $forwardc = $forward.".gz";
+        my $reversec = $reverse.".gz";
+        
+        gzip $forward => $forwardc or die "gzip failed: $GzipError\n";
+        gzip $reverse => $reversec or die "gzip failed: $GzipError\n";
+        unlink $forward, $reverse;
+    }
+    elsif ($compress =~ /bzip2/i) {
+        my $forwardc = $forward.".bz2";
+        my $reversec = $reverse.".bz2";
+
+        bzip2 $forward => $forwardc or die "bzip2 failed: $Bzip2Error\n";
+        bzip2 $reverse => $reversec or die "bzip2 failed: $Bzip2Error\n";
+        unlink $forward, $reverse;
+    }
 }
 
 sub readfq {
@@ -204,7 +241,7 @@ sub readfq {
 sub usage {
     my $script = basename($0);
     print STDERR<<EOF
-USAGE: $script [-i] [-f] [-r] [-h] [-m]
+USAGE: $script [-i] [-f] [-r] [-c] [-h] [-m]
 
 Required:
     -i|infile         :       File of interleaved forward and reverse reads.
@@ -212,6 +249,7 @@ Required:
     -r|reverse        :       File to place the reverse reads.
 
 Options:
+    -c|compress       :       Compress the output files. Options are 'gzip' or 'bzip2' (Default: No).
     -h|help           :       Print a usage statement.
     -m|man            :       Print the full documentation.
 
