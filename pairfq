@@ -20,7 +20,7 @@ fix paired-end files which have lost the pair information.
 
 =head1 DEPENDENCIES
 
-Only core Perl is required, no external dependencies. See below for information
+Only core Perl is required (version 5.12 or greater). See below for information
 on which Perls have been tested.
 
 =head1 LICENSE
