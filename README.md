@@ -11,7 +11,7 @@ Perl version 5.12 (or greater) must be installed to use Pairfq, but there are no
 
 **USAGE**
 
-Make the program executable and add it to your PATH. Then, Just type `pairfq` and you will see a menu describing the usage. 
+Make the program executable and add it to your PATH. Then, just type `pairfq` and you will see a menu describing the usage. 
 
     $ pairfq
 
