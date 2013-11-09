@@ -2,7 +2,7 @@
 
 =head1 NAME 
                                                                        
-pairfq.pl - Match paired-end sequences from separate FastA/Q files
+pairfq.pl - Sync paired-end sequences from separate FastA/Q files
 
 =head1 SYNOPSIS    
  
@@ -59,7 +59,7 @@ statonse at gmail dot com
 The task to perform. Must be one of: 'addinfo', 'makepairs', 'joinpairs', or 'splitpairs'.
 
   addinfo    | Add the pair info back to the FastA/Q header.
-  makepairs  | Pair the forward and reverse reads and write singletons for both forward and reverse to separate file.
+  makepairs  | Pair the forward and reverse reads and write singletons for both forward and reverse reads to separate files.
   joinpairs  | Interleave the paired forward and reverse files.
   splitpairs | Split the interleaved file into separate files for the forward and reverse reads.
 
