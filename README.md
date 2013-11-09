@@ -11,13 +11,13 @@ Perl version 5.12 (or greater) must be installed to use Pairfq, but there are no
 
 **USAGE**
 
-Just type `perl pairfq.pl` and you will see a menu describing the usage. 
+Make the program executable and add it to your PATH. Then, Just type `pairfq` and you will see a menu describing the usage. 
 
-    $ perl pairfq.pl
+    $ pairfq
 
     ERROR: Command line not parsed correctly. Check input.
 
-    USAGE: pairfq.pl [-t] [-h] [-m]
+    USAGE: pairfq [-t] [-h] [-m]
 
     Required:
         -t|task           :       The task to perform. May be one of: 'addinfo', 'makepairs', 'joinpairs', or 'splitpairs'.
@@ -30,11 +30,11 @@ Just type `perl pairfq.pl` and you will see a menu describing the usage.
 
 Specifying the task with no arguments will print the usage for that task. For example, 
 
-    $ perl pairfq.pl -t makepairs                                                                                                          **12:08:33**
+    $ pairfq -t makepairs                                                                                                          **12:08:33**
 
     ERROR: Command line not parsed correctly. Check input.
 
-    USAGE: pairfq.pl [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-im] [-h] [-im]
+    USAGE: pairfq [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-im] [-h] [-im]
 
     Required:
         -f|forward        :       File of foward reads (usually with "/1" or " 1" in the header).
@@ -51,7 +51,7 @@ Specifying the task with no arguments will print the usage for that task. For ex
         -h|help           :       Print a usage statement.
         -m|man            :       Print the full documentation.
 
-Running the command `perl pairfq.pl -m` will print the full documentation.
+Running the command `pairfq -m` will print the full documentation.
 
 **EXPECTED FORMATS**
 
