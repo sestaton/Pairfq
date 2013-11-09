@@ -71,41 +71,45 @@ The task to perform. Must be one of: 'addinfo', 'makepairs', 'joinpairs', or 'sp
 
 =item -f, --forward
 
-The file of forward sequences from an Illumina paired-end sequencing run.
+  The file of forward sequences from an Illumina paired-end sequencing run.
 
-=item -r, --reverse                                                                                                                                                       
-The file of reverse sequences from an Illumina paired-end sequencing run.
+=item -r, --reverse
+
+  The file of reverse sequences from an Illumina paired-end sequencing run.
 
 =item -fp, --forw_paired
 
-The output file to place the paired forward reads.
+  The output file to place the paired forward reads.
 
-=item -rp, --rev_paired                                                                                                                                                  
-The output file to place the paired reverse reads. 
+=item -rp, --rev_paired
 
-=item -fs, --forw_unpaired                                                                                                                                                  
-The output file to place the unpaired forward reads. 
+  The output file to place the paired reverse reads. 
 
-=item -rs, --rev_unpaired                                                                                                                                                  
-The output file to place the unpaired reverse reads. 
+=item -fs, --forw_unpaired
+
+  The output file to place the unpaired forward reads. 
+
+=item -rs, --rev_unpaired
+
+  The output file to place the unpaired reverse reads. 
 
 =item -im, --in_memory
 
-The computation should be done in memory instead of on the disk. This will be faster, but may use a large amount
-of RAM if there are many millions of sequences in each input file.
+  The computation should be done in memory instead of on the disk. This will be faster, but may use a large amount
+  of RAM if there are many millions of sequences in each input file.
 
 =item -c, --compress
 
-The output files should be compressed. If given, this option must be given the arguments 'gzip' to compress with gzip,
-or 'bzip2' to compress with bzip2.
+  The output files should be compressed. If given, this option must be given the arguments 'gzip' to compress with gzip,
+  or 'bzip2' to compress with bzip2.
 
 =item -h, --help
 
-Print a usage statement. 
+  Print a usage statement. 
 
 =item -m, --man
-
-Print the full documentation.
+  
+  Print the full documentation.
 
 =cut
 
