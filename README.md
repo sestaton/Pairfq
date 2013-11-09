@@ -7,11 +7,11 @@ Sync paired-end FastA/Q files and keep singleton reads
 
 **INSTALLATION**
 
-Perl version 5.12 (or greater) must be installed to use Pairfq, but there are no external modules required. Make the program executable and add it to your PATH.
+Perl version 5.12 (or greater) must be installed to use Pairfq, but there are no external modules required. Just make the program executable and add it to your PATH.
 
 **USAGE**
 
-Just type `pairfq` and you will see a menu describing the usage. 
+Type `pairfq` at the command line and you will see a menu describing the usage. 
 
     $ pairfq
 
@@ -65,7 +65,7 @@ As well Casava 1.8+ format,
 
     @EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG
 
-The overall format of the sequence name and comment may vary, but there must be an integer (1 or 2) at the end of the sequence name or as the first character in the comment (following a space after the sequence name). If your data is missing this pair information it will be necessary to fix them first (with the `add_pair_info.pl` script, see below).
+The overall format of the sequence name and comment may vary, but there must be an integer (1 or 2) at the end of the sequence name or as the first character in the comment (following a space after the sequence name). If your data is missing this pair information it will be necessary to fix them first (with the `addinfo` task, see below).
 
 **TASKS**
 
