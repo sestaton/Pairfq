@@ -1,7 +1,7 @@
 Pairfq
 ======
 
-Sync paired-end FastA/Q files and keep orphaned reads
+Sync paired-end FastA/Q files and keep singleton reads
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/sestaton/pairfq/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
@@ -14,6 +14,23 @@ Perl version 5.12 (or greater) must be installed to use Pairfq, but there are no
 Just type `perl pairfq.pl` and you will see a menu describing the usage. 
 
     $ perl pairfq.pl
+
+    ERROR: Command line not parsed correctly. Check input.
+
+    USAGE: pairfq.pl [-t] [-h] [-m]
+
+    Required:
+        -t|task           :       The task to perform. May be one of: 'addinfo', 'makepairs', 'joinpairs', or 'splitpairs'.
+                                  Type the name of the task with no arguments to see the specific usage of that command.
+
+    Options:
+        -h|help           :       Print a usage statement.
+        -m|man            :       Print the full documentation.
+
+
+Specifying the task with no arguments will print the usage for that task. For example, 
+
+    $ perl pairfq.pl -t makepairs                                                                                                          **12:08:33**
 
     ERROR: Command line not parsed correctly. Check input.
 
@@ -34,12 +51,11 @@ Just type `perl pairfq.pl` and you will see a menu describing the usage.
         -h|help           :       Print a usage statement.
         -m|man            :       Print the full documentation.
 
-
 Running the command `perl pairfq.pl -m` will print the full documentation.
 
 **EXPECTED FORMATS**
 
-The input will be two files (i.e., forward and reverse) in [FASTA](http://en.wikipedia.org/wiki/FASTA_format) or [FASTQ](http://en.wikipedia.org/wiki/FASTQ_format) format that are expected to have reads out of order due to quality trimming. It is fine if the input files are compressed (with either gzip or bzip2).
+The input will be in (i.e., forward and reverse) in [FASTA](http://en.wikipedia.org/wiki/FASTA_format) or [FASTQ](http://en.wikipedia.org/wiki/FASTQ_format) format that are expected to have reads out of order due to quality trimming. It is fine if the input files are compressed (with either gzip or bzip2).
 
 Currently, data from the Casava pipeline version 1.4 are supported. For example,
 
@@ -51,19 +67,23 @@ As well Casava 1.8+ format,
 
 The overall format of the sequence name and comment may vary, but there must be an integer (1 or 2) at the end of the sequence name or as the first character in the comment (following a space after the sequence name). If your data is missing this pair information it will be necessary to fix them first (with the `add_pair_info.pl` script, see below).
 
-**UTILITIES**
+**TASKS**
 
-In the Pairfq/utils subdirectory are several stand-alone scripts for working with paired-end FastA/Q files. Briefly, the scripts (and their functions) included are:
+Pairfq has several different tasks which can be executed. Below is a brief description of each.
 
-* **pairs_to_interleaved.pl**
+* **makepairs**
+
+  * Pair the forward and reverse reads and write the singletons to separate files.
+
+* **joinpairs**
 
   * Interleave the paired reads for assembly or mapping.
 
-* **interleaved_to_pairs.pl**
+* **splitpairs**
 
   * Separate the interleaved FastA/Q file into separate files for the forward and reverse reads.
 
-* **add_pair_info.pl**
+* **addinfo**
 
   * Add the pair information back to the data. After filtering or sampling Casava 1.8+ data, the pair information is often lost, making downstream analyses difficult. For example, `@EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG` usually becomes `@EAS139:136:FC706VJ:2:2104:15343:197393`. This script will add the pair information back (to become `@EAS139:136:FC706VJ:2:2104:15343:197393/1`). There is no way to know what was in the comment, so it will not be restored. 
 
