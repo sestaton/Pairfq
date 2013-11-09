@@ -14,7 +14,9 @@ Re-pair paired-end sequences that may have been separated by quality trimming.
 This script also writes the unpaired forward and reverse sequences to separate 
 files so that they may be used for assembly or mapping. The input may be FastA
 or FastQ format in either Illumina 1.3+ or Illumina 1.8 format. The input files
-may be compressed with gzip or bzip2.
+may be compressed with gzip or bzip2. Optionally, the script can interleave paired
+files, separate interleaved files into separate forward and reverse files, and 
+fix paired-end files which have lost the pair information. 
 
 =head1 DEPENDENCIES
 
