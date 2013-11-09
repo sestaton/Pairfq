@@ -226,7 +226,7 @@ sub add_pair_info {
     }
 
     my $fh = get_fh($infile);
-    open my $out, '>', $outfile or die "\nERROR: Could not open file: $!\n";
+    open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
 
     my @aux = undef;
     my ($name, $comm, $seq, $qual);
@@ -386,7 +386,7 @@ sub pairs_to_interleaved {
 
     my ($pairs, $db_file, $ct) = store_pair($forward);
     my $fh = get_fh($reverse);
-    open my $out, '>', $outfile or die "\nERROR: Could not open file: $!\n";
+    open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
     binmode $out, ":utf8";
 
     my @raux = undef;
@@ -449,8 +449,8 @@ sub pairs_to_interleaved {
 sub interleaved_to_pairs {
     my ($infile, $forward, $reverse, $compress) = @_;
     my $fh = get_fh($infile);
-    open my $f, '>', $forward or die "\nERROR: Could not open file: $!\n";
-    open my $r, '>', $reverse or die "\nERROR: Could not open file: $!\n"; 
+    open my $f, '>', $forward or die "\nERROR: Could not open file: $forward\n";
+    open my $r, '>', $reverse or die "\nERROR: Could not open file: $reverse\n"; 
 
     my @aux = undef;
     my ($name, $comm, $seq, $qual);
