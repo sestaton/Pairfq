@@ -2,11 +2,11 @@
 
 =head1 NAME 
                                                                        
-pairfq.pl - Sync paired-end sequences from separate FastA/Q files
+pairfq - Sync paired-end sequences from separate FastA/Q files
 
 =head1 SYNOPSIS    
  
-pairfq.pl -t makpairs -f s_1_1_trim.fq -r s_1_2_trim.fq -fp s_1_1_trim_paired.fq -rp s_1_2_trim_paired.fq -fs s_1_1_trim_unpaired.fq -rs s_1_2_trim_unpaired.fq -im
+pairfq -t makpairs -f s_1_1_trim.fq -r s_1_2_trim.fq -fp s_1_1_trim_paired.fq -rp s_1_2_trim_paired.fq -fs s_1_1_trim_unpaired.fq -rs s_1_2_trim_unpaired.fq -im
 
 =head1 DESCRIPTION
      
