@@ -87,8 +87,6 @@ Pairfq has several different tasks which can be executed. Below is a brief descr
 
   * Add the pair information back to the data. After filtering or sampling Casava 1.8+ data, the pair information is often lost, making downstream analyses difficult. For example, `@EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG` usually becomes `@EAS139:136:FC706VJ:2:2104:15343:197393`. This script will add the pair information back (to become `@EAS139:136:FC706VJ:2:2104:15343:197393/1`). There is no way to know what was in the comment, so it will not be restored. 
 
-As with `pairfq.pl`, invoking any of the scripts with no arguments will print the usage statement, while supplying the arguments `-m` or `--man` will print the full documentation.
-
 **ISSUES**
 
 Report any issues at: https://github.com/sestaton/Pairfq/issues
