@@ -55,7 +55,7 @@ Running the command `pairfq -m` will print the full documentation.
 
 **EXPECTED FORMATS**
 
-The input will be in (i.e., forward and reverse) in [FASTA](http://en.wikipedia.org/wiki/FASTA_format) or [FASTQ](http://en.wikipedia.org/wiki/FASTQ_format) format that are expected to have reads out of order due to quality trimming. It is fine if the input files are compressed (with either gzip or bzip2).
+The input should be in [FASTA](http://en.wikipedia.org/wiki/FASTA_format) or [FASTQ](http://en.wikipedia.org/wiki/FASTQ_format) format. It is fine if the input files are compressed (with either gzip or bzip2).
 
 Currently, data from the Casava pipeline version 1.4 are supported. For example,
 
