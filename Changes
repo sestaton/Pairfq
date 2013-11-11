@@ -8,6 +8,9 @@ executable. Completely redesigned pairfq to work as an application
 with numerous methods, instead of a single script for just pairing
 reads.
 
+Make individual methods positional arguments instead of options. Fix
+formatting of output and add time/version stamp.
+
 0.01	11/01/2013	Athens, GA
 
 Initial release.	
