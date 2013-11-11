@@ -130,7 +130,7 @@ use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Compress::Bzip2 qw(bzip2 $Bzip2Error);
 use Pod::Usage;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 my ($task, $infile, $outfile, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $pairnum, $memory, $compress, $help, $man);
 
 GetOptions(
