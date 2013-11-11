@@ -56,9 +56,7 @@ statonse at gmail dot com
 
 =over 2
 
-=item -t, --task
-
-The task to perform. Must be one of: 'addinfo', 'makepairs', 'joinpairs', or 'splitpairs'.
+=item The task to perform. Must be one of: 'addinfo', 'makepairs', 'joinpairs', or 'splitpairs'.
 
   addinfo    | Add the pair info back to the FastA/Q header.
   makepairs  | Pair the forward and reverse reads and write singletons for both forward and reverse reads to separate files.
@@ -123,18 +121,20 @@ use warnings FATAL => "utf8";
 use charnames qw(:full :short);
 use Encode qw(encode decode);
 use File::Basename;
-use Getopt::Long;
 use DB_File;
 use DBM_Filter;
 use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Compress::Bzip2 qw(bzip2 $Bzip2Error);
+use List::Util qw(max);
+use Getopt::Long;
 use Pod::Usage;
 
 our $VERSION = '0.02';
-my ($task, $infile, $outfile, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $pairnum, $memory, $compress, $help, $man);
+my $task = shift;
+
+my ($infile, $outfile, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $pairnum, $memory, $compress, $help, $man);
 
 GetOptions(
-	   't|task=s'           => \$task,
 	   'i|infile=s'         => \$infile,
 	   'o|outfile=s'        => \$outfile,
 	   'p|pairnum=i'        => \$pairnum, 
@@ -157,7 +157,7 @@ usage() and exit(0) if $help;
 
 pod2usage( -verbose => 2 ) if $man;
 
-if (!$task) {
+if (!defined $task) {
     say "\nERROR: Command line not parsed correctly. Check input.\n";
     usage();
     exit(1);
@@ -278,7 +278,7 @@ sub make_pairs_and_singles {
             "Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
         exit(1);
     }
-    
+	
 	if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
 	    my ($name, $comm);
 	    ($name, $comm) = mk_vec($fname);
@@ -371,15 +371,19 @@ sub make_pairs_and_singles {
     untie %$rseqpairs if defined $memory;
     unlink $db_file if -e $db_file;
 
-    say "Total forward reads in $fread:              $fct";
-    say "Total reverse reads in $rread:              $rct";
-    say "Total forward paired reads in $fpread:      $fpct";
-    say "Total reverse paired reads in $rpread:      $rpct";
-    say "Total forward unpaired reads in $fsread:    $fsct";
-    say "Total reverse unpaired reads in $rsread:    $rsct\n";
-    say "Total paired reads in $fpread and $rpread:  $pct";
-    say "Total upaired reads in $fsread and $rsread: $sct";
-
+    my $maxfn = max(length($fread), length($rread), length($fpread), length($rpread), length($fsread), length($rsread));
+    my $offset = $maxfn + 38;
+    my $date = qx(date); chomp $date;
+    my $prog = basename($0, ());
+    say "========= $prog version : $VERSION (completion time: $date)";
+    printf "%-${offset}s %s %10d\n", "Total forward reads ($fread)", ":",$fct;
+    printf "%-${offset}s %s %10d\n", "Total reverse reads ($rread)", ":", $rct;
+    printf "%-${offset}s %s %10d\n", "Total forward paired reads ($fpread)", ":", $fpct;
+    printf "%-${offset}s %s %10d\n", "Total reverse paired reads ($rpread)", ":", $rpct;
+    printf "%-${offset}s %s %10d\n", "Total forward unpaired reads ($fsread)", ":", $fsct;
+    printf "%-${offset}s %s %10d\n\n", "Total reverse unpaired reads ($rsread)", ":", $rsct;
+    printf "%-${offset}s %s %10d\n", "Total paired reads", ":",  $pct;
+    printf "%-${offset}s %s %10d\n", "Total upaired reads", ":", $sct;
 }
 
 sub pairs_to_interleaved {
@@ -636,8 +640,12 @@ sub usage {
 USAGE: $script [-t] [-h] [-m]
 
 Required:
-    -t|task           :       The task to perform. May be one of: 'addinfo', 'makepairs', 'joinpairs', or 'splitpairs'.
-                              Type the name of the task with no arguments to see the specific usage of that command.
+    addinfo           :      Add the pair info back to the FastA/Q header.
+    makepairs         :      Pair the forward and reverse reads and write singletons 
+                             for both forward and reverse reads to separate files.
+    joinpairs         :      Interleave the paired forward and reverse files.
+    splitpairs        :      Split the interleaved file into separate files for the 
+                             forward and reverse reads.
 
 Options:
     -h|help           :       Print a usage statement.
