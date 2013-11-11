@@ -1,0 +1,14 @@
+Revision history for Pairfq
+
+Version	 Date	     Location
+0.02     11/11/2013   Athens, GA	
+
+Removed all utility scripts and rolled methods into a single
+executable. Completely redesigned pairfq to work as an application
+with numerous methods, instead of a single script for just pairing
+reads.
+
+0.01	 11/01/2013  Athens, GA
+
+Initial release.	
+
