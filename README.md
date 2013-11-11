@@ -37,7 +37,7 @@ Specifying the task with no arguments will print the usage for that task. For ex
 
     ERROR: Command line not parsed correctly. Check input.
 
-    USAGE: pairfq [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-im] [-h] [-im]
+    USAGE: pairfq makepairs [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-im] [-h] [-im]
 
     Required:
         -f|forward        :       File of foward reads (usually with "/1" or " 1" in the header).
