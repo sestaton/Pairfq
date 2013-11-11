@@ -17,20 +17,23 @@ Type `pairfq` at the command line and you will see a menu describing the usage.
 
     ERROR: Command line not parsed correctly. Check input.
 
-    USAGE: pairfq [-t] [-h] [-m]
+    USAGE: pairfq [-h] [-m]
 
     Required:
-        -t|task           :       The task to perform. May be one of: 'addinfo', 'makepairs', 'joinpairs', or 'splitpairs'.
-                                  Type the name of the task with no arguments to see the specific usage of that command.
+        addinfo           :      Add the pair info back to the FastA/Q header.
+        makepairs         :      Pair the forward and reverse reads and write singletons 
+                                 for both forward and reverse reads to separate files.
+        joinpairs         :      Interleave the paired forward and reverse files.
+        splitpairs        :      Split the interleaved file into separate files for the 
+                                 forward and reverse reads.
 
     Options:
         -h|help           :       Print a usage statement.
         -m|man            :       Print the full documentation.
 
-
 Specifying the task with no arguments will print the usage for that task. For example, 
 
-    $ pairfq -t makepairs                                                                                                          **12:08:33**
+    $ pairfq makepairs                                                                                                          **12:08:33**
 
     ERROR: Command line not parsed correctly. Check input.
 
