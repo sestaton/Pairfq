@@ -657,7 +657,7 @@ EOF
 sub makepairs_usage {
     my $script = basename($0);
     print STDERR<<EOF
-USAGE: $script makepairs [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-im] [-h] [-im]
+USAGE: $script makepairs [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-im] [-h] [-m]
 
 Required:
     -f|forward        :       File of foward reads (usually with "/1" or " 1" in the header).
