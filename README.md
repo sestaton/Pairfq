@@ -7,7 +7,13 @@ Sync paired-end FastA/Q files and keep singleton reads
 
 **INSTALLATION**
 
-Perl version 5.12 (or greater) must be installed to use Pairfq, but there are no external modules required. Just make the program executable and add it to your PATH.
+Perl version 5.12 (or greater) must be installed to use Pairfq, but there are no external modules required. If you have the program `make` on your system, it is advised to run these commands:
+
+    perl Makefile.PL
+    make
+    make install
+
+Updating is then as easy as repeating the install process. If you don't have `make`, or you want to move `pairfq` to a custom location, just make the program (found in the "bin" direcotry) executable and add it to your PATH. The problem with this second approach is that it is harder to keep updated.
 
 **USAGE**
 
