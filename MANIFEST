@@ -1,0 +1,12 @@
+bin/pairfq
+Changes
+LICENSE
+Makefile.PL
+MANIFEST
+README.md
+t/00-load.t
+t/01-tasks.t
+t/02-addinfo.t
+t/03-makepairs.t
+t/04-joinpairs.t
+t/05-splitpairs.t
