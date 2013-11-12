@@ -9,7 +9,7 @@ Sync paired-end FastA/Q files and keep singleton reads
 
 Perl version 5.12 (or greater) must be installed to use Pairfq, but there are no external modules required. If you have [cpanminus](http://search.cpan.org/~miyagawa/App-cpanminus-1.6935/lib/App/cpanminus.pm), installation can be done in one shot:
 
-    cpanm git://github.com/sestaton/Pairfq.git
+    cpanm -n git://github.com/sestaton/Pairfq.git
 
 If you don't have cpanminus, it is advised to run these commands in the top directory (requires `make`):
 
