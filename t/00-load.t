@@ -3,7 +3,6 @@
 use 5.012;
 use strict;
 use warnings FATAL => 'all';
-use IPC::System::Simple qw(capture);
 use Test::More tests => 1;
 
 my $pairfq = "bin/pairfq";
