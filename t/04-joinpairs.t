@@ -7,7 +7,8 @@ use IPC::System::Simple qw(capture system);
 use File::Temp;
 use File::Basename;
 use autodie qw(open);
-use Test::More tests => 6;
+use List::MoreUtils qw(first_index);
+use Test::More tests => 10;
 
 my $fq_data = _build_fq_data();
 my $fa_data = _build_fa_data();
@@ -22,36 +23,57 @@ my $tmpfa_out = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
                                  SUFFIX   => ".fasta",
                                  UNLINK   => 0 );
 
-system([0..5],"bin/pairfq joinpairs -f $fq_data->[0] -r $fq_data->[1] -o pairfq_joinpairs.fq -im");
-system([0..5],"bin/pairfq joinpairs -f $fa_data->[0] -r $fa_data->[1] -o pairfq_joinpairs.fa -im");
+system([0..5],"bin/pairfq joinpairs -f $fq_data->[0] -r $fq_data->[1] -o $tmpfq_out -im");
+system([0..5],"bin/pairfq joinpairs -f $fa_data->[0] -r $fa_data->[1] -o $tmpfa_out -im");
 
-open my $fqo, '<', 'pairfq_joinpairs.fq';
-open my $fao, '<', 'pairfq_joinpairs.fa';
+open my $fqo, '<', $tmpfq_out;
+open my $fao, '<', $tmpfa_out;
 
 my ($fq_fct, $fq_rct, $fa_fct, $fa_rct) = (0, 0, 0, 0);
+my (%fqpairs, %fapairs);
 while (<$fqo>) {
-    $fq_fct++ if /\/1$/;
-    $fq_rct++ if /\/2$/;
+    if (/^\@(\S+)\/1$/) {
+	$fqpairs{$1}++;
+	$fq_fct++;
+    }
+    elsif (/^\@(\S+)\/2$/) {
+	$fqpairs{$1}++;
+	$fq_rct++;
+    }
 }
 close $fqo;
 
+my $fqpaired = (keys %fqpairs);
+my @fqpairnum = (values %fqpairs);
+my $allfqpaired = all_the_same(\@fqpairnum);
+ok($allfqpaired == 1, 'All fastq reads were paired');
+is($fqpaired, 6, 'Correct number of fastq pairs');
 is($fq_fct, 6, 'Correct number of forward fastq reads paired');
 is($fq_rct, 6, 'Correct number of reverse fastq reads paired');
 is($fq_fct + $fq_fct, 12, 'Correct number of total fastq reads paired');
 unlink $fq_data->[0], $fq_data->[1], $tmpfq_out;
-system("rm pairfq_joinpairs.fq");
 
 while (<$fao>) {
-    $fa_fct++ if /\/1$/;
-    $fa_rct++ if /\/2$/;
+    if (/^\>(\S+)\/1$/) {
+        $fapairs{$1}++;
+        $fa_fct++;
+    }
+    elsif (/^\>(\S+)\/2$/) {
+        $fapairs{$1}++;
+        $fa_rct++;
+    }
 }
 close $fao;
 
+my $fapaired = (keys %fapairs);
+my @fapairnum = (values %fapairs);
+my $allfapaired = all_the_same(\@fapairnum);
+ok($allfapaired == 1, 'All fasta reads were paired');
+is($fapaired, 6, 'Correct number of fasta pairs');
 is($fa_fct, 6, 'Correct number of forward fasta reads paired');
 is($fa_rct, 6, 'Correct number of reverse fasta reads paired');
 is($fa_fct + $fa_fct, 12, 'Correct number of total fasta reads paired');
 unlink $fa_data->[0], $fa_data->[1], $tmpfa_out;
-system("rm pairfq_joinpairs.fa");
 
 #
 # private methods
@@ -166,4 +188,15 @@ sub _build_fa_data {
     say $tmpfa2 'AAAGGTGACAAGAAACCAATCGAAGAATCAAAACCTAAGGATAAACAGACTGAATCCTCCAAGAAGTCAAAGAAGCGGAAGGCTTCTCAGAACTTCACCGT';
     
     return [$tmpfa1_name, $tmpfa2_name];
+}
+
+# This solution is provided by Sinan Unur
+# http://stackoverflow.com/a/2305879/1543853
+sub all_the_same {
+    my ($ref) = @_;
+    my $first = \ $ref->[0];
+    return -1 == first_index {
+        (defined $$first != defined)
+            or (defined and $_ ne $$first)
+	} @$ref;
 }
