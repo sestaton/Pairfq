@@ -255,7 +255,7 @@ sub add_pair_info {
 sub make_pairs_and_singles {
     my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $memory, $compress) = @_;
 
-    my ($rseqpairs, $db_file, $rct) = store_pair($rread);
+    my ($rseqpairs, $db_file, $rct) = store_pair($rread, $memory);
 
     my @faux = undef;
     my ($fname, $fcomm, $fseq, $fqual, $forw_id, $rev_id, $fname_enc);
@@ -395,7 +395,7 @@ sub make_pairs_and_singles {
 sub pairs_to_interleaved {
     my ($forward, $reverse, $outfile, $memory, $compress) = @_;
 
-    my ($pairs, $db_file, $ct) = store_pair($forward);
+    my ($pairs, $db_file, $ct) = store_pair($forward, $memory);
     my $fh = get_fh($reverse);
     open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
     binmode $out, ":utf8";
