@@ -103,6 +103,10 @@ statonse at gmail dot com
   The output files should be compressed. If given, this option must be given the arguments 'gzip' to compress with gzip,
   or 'bzip2' to compress with bzip2.
 
+=item -uc, --uppercase
+
+ For the 'addinfo' task, uppercase the sequence.
+
 =item -h, --help
 
   Print a usage statement. 
@@ -132,7 +136,7 @@ use Pod::Usage;
 our $VERSION = '0.02';
 my $task = shift;
 
-my ($infile, $outfile, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $pairnum, $memory, $compress, $help, $man);
+my ($infile, $outfile, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $pairnum, $memory, $compress, $uppercase, $help, $man);
 
 GetOptions(
 	   'i|infile=s'         => \$infile,
@@ -146,6 +150,7 @@ GetOptions(
            'rs|rev_unpaired=s'  => \$rsread,
            'im|in_memory'       => \$memory,
            'c|compress=s'       => \$compress,
+	   'uc|uppercase'       => \$uppercase,
            'h|help'             => \$help,
            'm|man'              => \$man,
           ) || pod2usage( "Try '$0 --man' for more information." );
@@ -176,7 +181,7 @@ if ($task eq 'addinfo') {
 	addinfo_usage();
 	exit(1);
     }
-    add_pair_info($pairnum, $infile, $outfile, $compress);
+    add_pair_info($pairnum, $infile, $outfile, $compress, $uppercase);
 }
 elsif ($task eq 'makepairs') {
     if (!$fread || !$rread || !$fpread || !$rpread || !$fsread || !$rsread) {
@@ -213,7 +218,7 @@ exit;
 # Subs
 #
 sub add_pair_info {
-    my ($pairnum, $infile, $outfile, $compress) = @_;
+    my ($pairnum, $infile, $outfile, $compress, $uppercase) = @_;
     my $pair;
     if ($pairnum == 1) {
 	$pair = "/1";
@@ -233,6 +238,7 @@ sub add_pair_info {
     my ($name, $comm, $seq, $qual);
 
     while (($name, $comm, $seq, $qual) = readfq(\*$fh, \@aux)) {
+	$seq = uc($seq) if $uppercase;
 	if (defined $qual) {
 	    say $out join "\n", "@".$name.$pair, $seq, '+', $qual;
 	}
