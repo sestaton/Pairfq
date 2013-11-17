@@ -125,6 +125,8 @@ use warnings FATAL => "utf8";
 use charnames qw(:full :short);
 use Encode qw(encode decode);
 use File::Basename;
+use File::Temp;
+use Cwd;
 use DB_File;
 use DBM_Filter;
 use IO::Compress::Gzip qw(gzip $GzipError);
@@ -548,7 +550,11 @@ sub store_pair {
     my %rseqpairs;
     $DB_BTREE->{cachesize} = 100000;
     $DB_BTREE->{flags} = R_DUP;
-    my $db_file = "pairfq.bdb";
+    my $cwd = getcwd();
+    my $db_file = File::Temp->new( TEMPLATE => "pairfq_XXXX",
+				   DIR      => $cwd,
+				   SUFFIX   => ".bdb",
+				   UNLINK   => 0 );
     unlink $db_file if -e $db_file;
 
     unless (defined $memory) { 
