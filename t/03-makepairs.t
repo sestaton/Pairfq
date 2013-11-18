@@ -7,84 +7,234 @@ use IPC::System::Simple qw(capture system);
 use File::Temp;
 use File::Basename;
 use autodie qw(open);
-use Test::More tests => 16;
+use Test::More tests => 32;
 
 my $fq_data = _build_fq_data();
 my $fa_data = _build_fa_data();
 
-my @pfq_fqout = capture([0..5],"bin/pairfq makepairs -f $fq_data->[0] -r $fq_data->[1] -fp 1_p.fq -rp 2_p.fq -fs 1_s.fq -rs 2_s.fq -im");
-my @pfq_faout = capture([0..5],"bin/pairfq makepairs -f $fa_data->[0] -r $fa_data->[1] -fp 1_p.fa -rp 2_p.fa -fs 1_s.fa -rs 2_s.fa -im");
-
-for my $fqo (@pfq_fqout) {
-    if ($fqo =~ /Total forward reads\s.*(\d+)/) { 
- 	is($1, 8, 'Correct number of forward fastq reads calculated');
-    }
-    elsif ($fqo =~ /Total reverse reads\s.*(\d+)/) {
-	is($1, 6, 'Correct number of reverse fastq reads calculated');
-    }
-    elsif ($fqo =~ /Total forward paired reads\s.*(\d+)/) {
-	is($1, 6, 'Correct number of paired forward fastq reads');
-    }
-    elsif ($fqo =~ /Total reverse paired reads\s.*(\d+)/) {
-	is($1, 6, 'Correct number of paired reverse fastq reads');
-    }
-    elsif ($fqo =~ /Total forward unpaired reads\s.*(\d+)/) {
-	is($1, 2, 'Correct number of unpaired forward fastq reads');
-    }
-    elsif ($fqo =~ /Total reverse unpaired reads\s.*(\d+)/) {
-	is($1, 0, 'Correct number of unpaired reverse fastq reads');
-    }
-    elsif ($fqo =~ /Total paired reads\s.*(\s\d+)/) {
-	my $tot = $1; $tot =~ s/^\s//;
-	is($tot, 12, 'Correct number of total paired fastq reads');
-    }
-    elsif ($fqo =~ /Total upaired reads\s.*(\d+)/) {
-	is($1, 2, 'Correct number of total upaired fastq reads');
-    }
-}
-
-unlink $fq_data->[0], $fq_data->[1];
-system("rm 1_p.fq 1_s.fq 2_p.fq 2_s.fq");
-
-for my $fao (@pfq_faout) {
-    if ($fao =~ /Total forward reads\s.*(\d+)/) { 
-        is($1, 8, 'Correct number of forward fasta reads calculated');
-    }
-    elsif ($fao =~ /Total reverse reads\s.*(\d+)/) {
-        is($1, 6, 'Correct number of reverse fasta reads calculated');
-    }
-    elsif ($fao =~ /Total forward paired reads\s.*(\d+)/) {
-        is($1, 6, 'Correct number of paired forward fasta reads');
-    }
-    elsif ($fao =~ /Total reverse paired reads\s.*(\d+)/) {
-        is($1, 6, 'Correct number of paired reverse fasta reads');
-    }
-    elsif ($fao =~ /Total forward unpaired reads\s.*(\d+)/) {
-        is($1, 2, 'Correct number of unpaired forward fasta reads');
-    }
-    elsif ($fao =~ /Total reverse unpaired reads\s.*(\d+)/) {
-        is($1, 0, 'Correct number of unpaired reverse fasta reads');
-    }
-    elsif ($fao =~ /Total paired reads\s.*(\s\d+)/) {
-        my $tot = $1; $tot =~ s/^\s//;
-        is($tot, 12, 'Correct number of total paired fasta reads');
-    }
-    elsif ($fao =~ /Total upaired reads\s.*(\d+)/) {
-        is($1, 2, 'Correct number of total upaired fasta reads');
-    }
-}
-
-unlink $fa_data->[0], $fa_data->[1];
-system("rm 1_p.fa 1_s.fa 2_p.fa 2_s.fa");
+makepairs_inmemory();
+makepairs_ondisk();
 
 #
 # private methods
 #
+sub makepairs_inmemory {
+    my $fpfq = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
+				DIR      => 't',
+				SUFFIX   => ".fastq",
+				UNLINK   => 0 );
+    
+    my $rpfq = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
+				DIR      => 't',
+				SUFFIX   => ".fastq",
+				UNLINK   => 0 );
+    
+    my $fsfq = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
+				DIR      => 't',
+				SUFFIX   => ".fastq",
+				UNLINK   => 0 );
+    
+    my $rsfq = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
+				DIR      => 't',
+				SUFFIX   => ".fastq",
+				UNLINK   => 0 );
+    
+    my @pfq_fqout = capture([0..5],"bin/pairfq makepairs -f $fq_data->[0] -r $fq_data->[1] -fp $fpfq -rp $rpfq -fs $fsfq -rs $rsfq -im");
+    
+    my $fpfa = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
+				DIR      => 't',
+				SUFFIX   => ".fasta",
+				UNLINK   => 0 );
+    
+    my $rpfa = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
+				DIR      => 't',
+				SUFFIX   => ".fasta",
+				UNLINK   => 0 );
+    
+    my $fsfa = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
+				DIR      => 't',
+				SUFFIX   => ".fasta",
+				UNLINK   => 0 );
+    
+    my $rsfa = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
+				DIR      => 't',
+				SUFFIX   => ".fasta",
+				UNLINK   => 0 );
+    
+    my @pfq_faout = capture([0..5],"bin/pairfq makepairs -f $fa_data->[0] -r $fa_data->[1] -fp $fpfa -rp $rpfa -fs $fsfa -rs $rsfa -im");
+    
+    for my $fqo (@pfq_fqout) {
+	if ($fqo =~ /Total forward reads\s.*(\d+)/) { 
+	    is($1, 8, 'Correct number of forward fastq reads calculated');
+	}
+	elsif ($fqo =~ /Total reverse reads\s.*(\d+)/) {
+	    is($1, 6, 'Correct number of reverse fastq reads calculated');
+	}
+	elsif ($fqo =~ /Total forward paired reads\s.*(\d+)/) {
+	    is($1, 6, 'Correct number of paired forward fastq reads');
+	}
+	elsif ($fqo =~ /Total reverse paired reads\s.*(\d+)/) {
+	    is($1, 6, 'Correct number of paired reverse fastq reads');
+	}
+	elsif ($fqo =~ /Total forward unpaired reads\s.*(\d+)/) {
+	    is($1, 2, 'Correct number of unpaired forward fastq reads');
+	}
+	elsif ($fqo =~ /Total reverse unpaired reads\s.*(\d+)/) {
+	    is($1, 0, 'Correct number of unpaired reverse fastq reads');
+	}
+	elsif ($fqo =~ /Total paired reads\s.*(\s\d+)/) {
+	    my $tot = $1; $tot =~ s/^\s//;
+	    is($tot, 12, 'Correct number of total paired fastq reads');
+	}
+	elsif ($fqo =~ /Total upaired reads\s.*(\d+)/) {
+	    is($1, 2, 'Correct number of total upaired fastq reads');
+	}
+    }
+    
+    unlink $fpfq, $rpfq, $fsfq, $rsfq;
+    
+    for my $fao (@pfq_faout) {
+	if ($fao =~ /Total forward reads\s.*(\d+)/) { 
+	    is($1, 8, 'Correct number of forward fasta reads calculated');
+	}
+	elsif ($fao =~ /Total reverse reads\s.*(\d+)/) {
+	    is($1, 6, 'Correct number of reverse fasta reads calculated');
+	}
+	elsif ($fao =~ /Total forward paired reads\s.*(\d+)/) {
+	    is($1, 6, 'Correct number of paired forward fasta reads');
+	}
+	elsif ($fao =~ /Total reverse paired reads\s.*(\d+)/) {
+	    is($1, 6, 'Correct number of paired reverse fasta reads');
+	}
+	elsif ($fao =~ /Total forward unpaired reads\s.*(\d+)/) {
+	    is($1, 2, 'Correct number of unpaired forward fasta reads');
+	}
+	elsif ($fao =~ /Total reverse unpaired reads\s.*(\d+)/) {
+	    is($1, 0, 'Correct number of unpaired reverse fasta reads');
+	}
+	elsif ($fao =~ /Total paired reads\s.*(\s\d+)/) {
+	    my $tot = $1; $tot =~ s/^\s//;
+	    is($tot, 12, 'Correct number of total paired fasta reads');
+	}
+	elsif ($fao =~ /Total upaired reads\s.*(\d+)/) {
+	    is($1, 2, 'Correct number of total upaired fasta reads');
+	}
+    }
+    
+    unlink $fpfa, $rpfa, $fsfa, $rsfa;   
+}
+
+sub makepairs_ondisk {
+    my $fpfq = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
+                                DIR      => 't',
+                                SUFFIX   => ".fastq",
+                                UNLINK   => 0 );
+    
+    my $rpfq = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
+                                DIR      => 't',
+                                SUFFIX   => ".fastq",
+                                UNLINK   => 0 );
+    
+    my $fsfq = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
+                                DIR      => 't',
+                                SUFFIX   => ".fastq",
+                                UNLINK   => 0 );
+    
+    my $rsfq = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
+                                DIR      => 't',
+                                SUFFIX   => ".fastq",
+                                UNLINK   => 0 );
+    
+    my @pfq_fqout = capture([0..5],"bin/pairfq makepairs -f $fq_data->[0] -r $fq_data->[1] -fp $fpfq -rp $rpfq -fs $fsfq -rs $rsfq");
+
+    my $fpfa = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
+                                DIR      => 't',
+                                SUFFIX   => ".fasta",
+				UNLINK   => 0 );
+    
+    my $rpfa = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
+                                DIR      => 't',
+                                SUFFIX   => ".fasta",
+                                UNLINK   => 0 );
+    
+    my $fsfa = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
+                                DIR      => 't',
+                                SUFFIX   => ".fasta",
+                                UNLINK   => 0 );
+    
+    my $rsfa = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
+                                DIR      => 't',
+                                SUFFIX   => ".fasta",
+                                UNLINK   => 0 );
+    
+    my @pfq_faout = capture([0..5],"bin/pairfq makepairs -f $fa_data->[0] -r $fa_data->[1] -fp $fpfa -rp $rpfa -fs $fsfa -rs $rsfa");
+
+    for my $fqo (@pfq_fqout) {
+        if ($fqo =~ /Total forward reads\s.*(\d+)/) { 
+            is($1, 8, 'Correct number of forward fastq reads calculated');
+        }
+        elsif ($fqo =~ /Total reverse reads\s.*(\d+)/) {
+            is($1, 6, 'Correct number of reverse fastq reads calculated');
+        }
+        elsif ($fqo =~ /Total forward paired reads\s.*(\d+)/) {
+            is($1, 6, 'Correct number of paired forward fastq reads');
+        }
+        elsif ($fqo =~ /Total reverse paired reads\s.*(\d+)/) {
+            is($1, 6, 'Correct number of paired reverse fastq reads');
+        }
+        elsif ($fqo =~ /Total forward unpaired reads\s.*(\d+)/) {
+            is($1, 2, 'Correct number of unpaired forward fastq reads');
+        }
+        elsif ($fqo =~ /Total reverse unpaired reads\s.*(\d+)/) {
+            is($1, 0, 'Correct number of unpaired reverse fastq reads');
+        }
+        elsif ($fqo =~ /Total paired reads\s.*(\s\d+)/) {
+            my $tot = $1; $tot =~ s/^\s//;
+            is($tot, 12, 'Correct number of total paired fastq reads');
+        }
+        elsif ($fqo =~ /Total upaired reads\s.*(\d+)/) {
+            is($1, 2, 'Correct number of total upaired fastq reads');
+        }
+    }
+    
+    unlink $fq_data->[0], $fq_data->[1], $fpfq, $rpfq, $fsfq, $rsfq;
+
+    for my $fao (@pfq_faout) {
+        if ($fao =~ /Total forward reads\s.*(\d+)/) { 
+            is($1, 8, 'Correct number of forward fasta reads calculated');
+        }
+        elsif ($fao =~ /Total reverse reads\s.*(\d+)/) {
+            is($1, 6, 'Correct number of reverse fasta reads calculated');
+        }
+        elsif ($fao =~ /Total forward paired reads\s.*(\d+)/) {
+            is($1, 6, 'Correct number of paired forward fasta reads');
+        }
+        elsif ($fao =~ /Total reverse paired reads\s.*(\d+)/) {
+            is($1, 6, 'Correct number of paired reverse fasta reads');
+        }
+        elsif ($fao =~ /Total forward unpaired reads\s.*(\d+)/) {
+            is($1, 2, 'Correct number of unpaired forward fasta reads');
+        }
+        elsif ($fao =~ /Total reverse unpaired reads\s.*(\d+)/) {
+            is($1, 0, 'Correct number of unpaired reverse fasta reads');
+        }
+        elsif ($fao =~ /Total paired reads\s.*(\s\d+)/) {
+            my $tot = $1; $tot =~ s/^\s//;
+            is($tot, 12, 'Correct number of total paired fasta reads');
+        }
+        elsif ($fao =~ /Total upaired reads\s.*(\d+)/) {
+            is($1, 2, 'Correct number of total upaired fasta reads');
+        }
+    }
+    
+    unlink $fa_data->[0], $fa_data->[1], $fpfa, $rpfa, $fsfa, $rsfa;
+}
+
 sub _build_fq_data {
     my $tmpfq1 = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
-				 DIR      => 't',
-				 SUFFIX   => ".fastq",
-				 UNLINK   => 0 );
+				  DIR      => 't',
+				  SUFFIX   => ".fastq",
+				  UNLINK   => 0 );
     
     my $tmpfq1_name = $tmpfq1->filename;
     
@@ -125,7 +275,7 @@ sub _build_fq_data {
 				  DIR      => 't',
 				  SUFFIX   => ".fastq",
 				  UNLINK   => 0 );
-
+    
     my $tmpfq2_name = $tmpfq2->filename;
 
     say $tmpfq2 '@HWI-ST765:123:D0TEDACXX:5:1101:2872:2088/2';
