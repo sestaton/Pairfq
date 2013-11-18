@@ -145,9 +145,9 @@ sub _build_fq_data {
 
 sub _build_fa_data {
     my $tmpfa = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
-				  DIR      => 't',
-				  SUFFIX   => ".fasta",
-				  UNLINK   => 0 );
+				 DIR      => 't',
+				 SUFFIX   => ".fasta",
+				 UNLINK   => 0 );
     
     my $tmpfa_name = $tmpfa->filename;
 

@@ -16,7 +16,7 @@ makepairs_inmemory();
 makepairs_ondisk();
 
 #
-# private methods
+# methods
 #
 sub makepairs_inmemory {
     my $fpfq = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
