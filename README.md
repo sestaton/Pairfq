@@ -29,7 +29,7 @@ Type `pairfq` at the command line and you will see a menu describing the usage.
 
     ERROR: Command line not parsed correctly. Check input.
 
-    USAGE: pairfq [-h] [-m]
+    USAGE: pairfq [-h] [-m] [--version]
 
     Required:
         addinfo           :      Add the pair info back to the FastA/Q header.
@@ -38,8 +38,9 @@ Type `pairfq` at the command line and you will see a menu describing the usage.
         joinpairs         :      Interleave the paired forward and reverse files.
         splitpairs        :      Split the interleaved file into separate files for the 
                                  forward and reverse reads.
-
+    
     Options:
+        --version         :       Print the program version and exit.
         -h|help           :       Print a usage statement.
         -m|man            :       Print the full documentation.
 
