@@ -1,6 +1,11 @@
 Revision history for Pairfq
 
 Version	Date	Location
+0.03	11/18/2013	Athens, GA
+
+Bug fixes for splitting pairs, storing files in memory,
+and naming DBM files. Update/add tests.
+
 0.02	11/11/2013	Athens, GA	
 
 Removed all utility scripts and rolled methods into a single
