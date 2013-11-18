@@ -107,6 +107,10 @@ statonse at gmail dot com
 
  For the 'addinfo' task, uppercase the sequence.
 
+=item --version
+
+ Get the program version and exit.
+
 =item -h, --help
 
   Print a usage statement. 
@@ -138,7 +142,7 @@ use Pod::Usage;
 our $VERSION = '0.03';
 my $task = shift;
 
-my ($infile, $outfile, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $pairnum, $memory, $compress, $uppercase, $help, $man);
+my ($infile, $outfile, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $pairnum, $memory, $compress, $uppercase, $version, $help, $man);
 
 GetOptions(
 	   'i|infile=s'         => \$infile,
@@ -153,6 +157,7 @@ GetOptions(
            'im|in_memory'       => \$memory,
            'c|compress=s'       => \$compress,
 	   'uc|uppercase'       => \$uppercase,
+	   'version'            => \$version,
            'h|help'             => \$help,
            'm|man'              => \$man,
           ) || pod2usage( "Try '$0 --man' for more information." );
@@ -163,6 +168,8 @@ GetOptions(
 usage() and exit(0) if $help;
 
 pod2usage( -verbose => 2 ) if $man;
+
+say $VERSION and exit(0) if $version;
 
 if (!defined $task) {
     say "\nERROR: Command line not parsed correctly. Check input.\n";
@@ -660,6 +667,7 @@ Required:
                              forward and reverse reads.
 
 Options:
+    --version         :       Print the program version and exit.
     -h|help           :       Print a usage statement.
     -m|man            :       Print the full documentation.
 
