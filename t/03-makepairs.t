@@ -12,13 +12,14 @@ use Test::More tests => 32;
 my $fq_data = _build_fq_data();
 my $fa_data = _build_fa_data();
 
-makepairs_inmemory();
-makepairs_ondisk();
+makepairs_inmemory($fq_data, $fa_data);
+makepairs_ondisk($fq_data, $fa_data);
 
 #
 # methods
 #
 sub makepairs_inmemory {
+    my ($fq_data, $fa_data) = @_;
     my $fpfq = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
 				DIR      => 't',
 				SUFFIX   => ".fastq",
@@ -125,6 +126,7 @@ sub makepairs_inmemory {
 }
 
 sub makepairs_ondisk {
+    my ($fq_data, $fa_data) = @_;
     my $fpfq = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
                                 DIR      => 't',
                                 SUFFIX   => ".fastq",
