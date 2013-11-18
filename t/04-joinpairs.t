@@ -13,13 +13,14 @@ use Test::More tests => 20;
 my $fq_data = _build_fq_data();
 my $fa_data = _build_fa_data();
 
-joinpairs_inmemory();
-joinpairs_ondisk();
+joinpairs_inmemory($fq_data, $fa_data);
+joinpairs_ondisk($fq_data, $fa_data);
 
 #
 # methods
 #
 sub joinpairs_inmemory {
+    my ($fq_data, $fa_data) = @_;
     my $tmpfq_out = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
 				     DIR      => 't',
 				     SUFFIX   => ".fastq",
@@ -84,6 +85,7 @@ sub joinpairs_inmemory {
 }
 
 sub joinpairs_ondisk {
+    my ($fq_data, $fa_data) = @_;
     my $tmpfq_out = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
                                      DIR      => 't',
                                      SUFFIX   => ".fastq",
