@@ -11,4 +11,4 @@ ok(-x $pairfq, 'Can execute pairfq');
 
 my $ver = capture([0..5], "bin/pairfq --version");
 chomp $ver;
-diag( "Testing Pairfq $ver, Perl $], $^X" );
+diag( "Testing Pairfq v$ver, Perl $], $^X" );
