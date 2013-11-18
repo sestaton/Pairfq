@@ -139,7 +139,7 @@ use List::Util qw(max);
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 my ($infile, $outfile, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $pairnum, $memory, $compress, $uppercase, $version, $help, $man);
 
