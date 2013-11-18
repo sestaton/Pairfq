@@ -135,7 +135,7 @@ use List::Util qw(max);
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 my $task = shift;
 
 my ($infile, $outfile, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $pairnum, $memory, $compress, $uppercase, $help, $man);
