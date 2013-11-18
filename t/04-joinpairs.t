@@ -17,7 +17,7 @@ joinpairs_inmemory();
 joinpairs_ondisk();
 
 #
-# private methods
+# methods
 #
 sub joinpairs_inmemory {
     my $tmpfq_out = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
@@ -149,9 +149,9 @@ sub joinpairs_ondisk {
 
 sub _build_fq_data {
     my $tmpfq1 = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
-				 DIR      => 't',
-				 SUFFIX   => ".fastq",
-				 UNLINK   => 0 );
+				  DIR      => 't',
+				  SUFFIX   => ".fastq",
+				  UNLINK   => 0 );
     
     my $tmpfq1_name = $tmpfq1->filename;
     
