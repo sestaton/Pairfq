@@ -656,7 +656,7 @@ sub mk_vec { split "\N{INVISIBLE SEPARATOR}", shift }
 sub usage {
     my $script = basename($0);
     print STDERR<<EOF
-USAGE: $script [-h] [-m]
+USAGE: $script [-h] [-m] [--version]
 
 Required:
     addinfo           :      Add the pair info back to the FastA/Q header.
