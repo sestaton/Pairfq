@@ -1,6 +1,12 @@
 Revision history for Pairfq
 
 Version	Date	Location
+0.04	11/18/2013	Athens, GA
+
+Bug fix for taking positional arguments (options were not
+being recognized correctly). Add option to get version, for 
+testing or general use.
+
 0.03	11/18/2013	Athens, GA
 
 Bug fixes for splitting pairs, storing files in memory,
