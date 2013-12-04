@@ -224,7 +224,7 @@ else {
 
 exit;
 #
-# Subs
+# Methods
 #
 sub add_pair_info {
     my ($pairnum, $infile, $outfile, $compress, $uppercase) = @_;
@@ -555,8 +555,8 @@ sub store_pair {
 
     my $rct = 0;
     my %rseqpairs;
-    $DB_BTREE->{cachesize} = 100000;
-    $DB_BTREE->{flags} = R_DUP;
+    #$DB_BTREE->{cachesize} = 100000;
+    #$DB_BTREE->{flags} = R_DUP;
     my $cwd = getcwd();
     my $db_file = File::Temp->new( TEMPLATE => "pairfq_XXXX",
 				   DIR      => $cwd,
@@ -565,7 +565,7 @@ sub store_pair {
     unlink $db_file if -e $db_file;
 
     unless (defined $memory) { 
-	my $db = tie %rseqpairs, 'DB_File', $db_file, O_RDWR|O_CREAT, 0666, $DB_BTREE
+	my $db = tie %rseqpairs, 'DB_File', $db_file, O_RDWR|O_CREAT, 0666, $DB_HASH
 	    or die "\nERROR: Could not open DBM file $db_file: $!\n";
 	$db->Filter_Value_Push("utf8");
     }
