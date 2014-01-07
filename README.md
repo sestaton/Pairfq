@@ -19,7 +19,7 @@ If you don't have cpanminus, it is advised to run these commands in the top dire
 
 Updating is then as easy as repeating those commands (after a git pull or clone). 
 
-As a third option, if you don't have `make`, or you want to move `pairfq` to a custom location, just make the program (found in the "bin" direcotry) executable and add it to your PATH. The problem with this third approach is that it is harder to keep updated.
+As a third option, if you don't have `make`, or you want to move `pairfq` to a custom location, just make the program (found in the "bin" directory) executable and add it to your PATH. The problem with this third approach is that it is harder to keep updated.
 
 **USAGE**
 
