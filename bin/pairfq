@@ -579,7 +579,7 @@ sub store_pair {
     my $fh = get_fh($file);
 
     {
-	local @SIG{qw(INT TERM HUP)} = sub { if (defined $memory && -e $db_file) { untie %rseqpairs; unlink $db_file if -e $db_file; } };
+	local @SIG{qw(INT TERM HUP)} = sub { untie %rseqpairs unless defined $memory; unlink $db_file if -e $db_file; };
 
 	while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$fh, \@raux)) {
 	    $rct++;
