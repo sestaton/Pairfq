@@ -105,7 +105,7 @@ Pairfq has several different tasks which can be executed. Below is a brief descr
 
 **TYPICAL USAGE CASES**
 
- 1. You have quality/adapter trimmed two paired-end sequence files and now they are out of sync. In this case, it is necessary to re-pair them, and then interleave the pairs for assembly.
+1. You have quality/adapter trimmed two paired-end sequence files and now they are out of sync. In this case, it is necessary to re-pair them, and then interleave the pairs for assembly.
 
     $ pairfq makepairs -f s_1_1_trimmed.fq -r s_1_2_trimmed.fq -fp s_1_1_trimmed_p.fq -rp s_1_2_trimmed_p.fq -fs s_1_1_trimmed_s.fq -rs s_1_2_trimmed_s.fq -im
 
@@ -117,13 +117,13 @@ The last argument, `-im`, is optional and specifies that all computation will be
 
 In the above command, we take our paired forward and reverse reads and interleave them, again doing all computation in memory for speed (which is optional). Now we can use our interleaved file for assembly or mapping, along with the unpaired reads for added coverage. 
 
- 2. Some toolkits discard the FASTQ comment which results in losing the pair information (e.g., `seqtk sample`). Therefore, it is necessary to add this information back before pairing or assembly. 
+2. Some toolkits discard the FASTQ comment which results in losing the pair information (e.g., `seqtk sample`). Therefore, it is necessary to add this information back before pairing or assembly. 
 
     $ pairfq addinfo -i s_1_1_sample_500k.fq -o s_1_1_sample_500k_pair.fq -p 1
 
 This is a rather simple command, we specify the forward file that has been modified with `-i` and the corrected file with `-o`. We want to add the forward pair information with `-p 1` and if this were the reverse pair we would simply say `-p 2`.
 
- 3. Sometimes it is necessay to split your interleaved file of forward and reverse reads into separate files.
+3. Sometimes it is necessay to split your interleaved file of forward and reverse reads into separate files.
 
     $ pairfq splitpairs -i s_1_interl.fq -f s_1_1_p.fq -r s_1_2_p.fq
 
