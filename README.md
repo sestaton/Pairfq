@@ -107,9 +107,9 @@ Pairfq has several different tasks which can be executed. Below is a brief descr
 
 * **makepairs**
 
-  *  You have quality/adapter trimmed two paired-end sequence files and now they are out of sync. In this case, it is necessary to re-pair them, and then interleave the pairs for assembly.
+You have quality/adapter trimmed two paired-end sequence files and now they are out of sync. In this case, it is necessary to re-pair them, and then interleave the pairs for assembly.
 
-     $ pairfq makepairs -f s_1_1_trimmed.fq -r s_1_2_trimmed.fq -fp s_1_1_trimmed_p.fq -rp s_1_2_trimmed_p.fq -fs s_1_1_trimmed_s.fq -rs s_1_2_trimmed_s.fq -im
+    $ pairfq makepairs -f s_1_1_trimmed.fq -r s_1_2_trimmed.fq -fp s_1_1_trimmed_p.fq -rp s_1_2_trimmed_p.fq -fs s_1_1_trimmed_s.fq -rs s_1_2_trimmed_s.fq -im
 
 In the above command, we specify the `makepairs` positional argument which is for pairing reads. The short arguements are `-f` for the file of forward reads, `-r` for the reverse reads, `-fp` for the file of paired forward reads, `-rp` for the file reverse paired reads, `-fs` for the file of forward singleton/unpaired reads, and `-rs` for the singleton/unpaired reverse reads. 
 
@@ -117,9 +117,11 @@ The last argument, `-im`, is optional and specifies that all computation will be
 
 * **joinpairs**
 
-     $ pairfq joinpairs -f s_1_1_trimmed_p.fq -r s_1_2_trimmed_p.fq -o s_1_interl.fq -im
+With this command we can interleave the files for assembly or mapping.
 
-In the above command, we take our paired forward and reverse reads and interleave them, again doing all computation in memory for speed (which is optional). Now we can use our interleaved file for assembly or mapping, along with the unpaired reads for added coverage. 
+    $ pairfq joinpairs -f s_1_1_trimmed_p.fq -r s_1_2_trimmed_p.fq -o s_1_interl.fq -im
+
+In the above command, we are doing all computation in memory for speed (optionally). Now we can use our interleaved pairs, along with the unpaired reads for added coverage. 
 
 * **addinfo**
 
