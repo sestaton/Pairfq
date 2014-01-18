@@ -1,7 +1,7 @@
 Pairfq
 ======
 
-Sync paired-end FastA/Q files and keep singleton reads
+Sync paired-end FASTA/Q files and keep singleton reads
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/sestaton/pairfq/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
@@ -97,7 +97,7 @@ Pairfq has several different tasks which can be executed. Below is a brief descr
 
 * **splitpairs**
 
-  * Separate the interleaved FastA/Q file into separate files for the forward and reverse reads.
+  * Separate the interleaved FASTA/Q file into separate files for the forward and reverse reads.
 
 * **addinfo**
 
@@ -143,7 +143,7 @@ The conventions used here are the same as with all the commands, `-f` specifies 
 
 Report any issues at: https://github.com/sestaton/Pairfq/issues
 
-Be aware that Pairfq will not work for every data set given the wide range of FastA/Q formats. Feel free to fork the project and modify the code to your needs, or submit code changes if you find any bugs. 
+Be aware that Pairfq will not work for every data set given the wide range of FASTA/Q formats. Feel free to fork the project and modify the code to your needs, or submit code changes if you find any bugs. 
 
 **ATTRIBUTION**
 
