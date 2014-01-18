@@ -103,6 +103,32 @@ Pairfq has several different tasks which can be executed. Below is a brief descr
 
   * Add the pair information back to the data. After filtering or sampling Casava 1.8+ data, the pair information is often lost, making downstream analyses difficult. For example, `@EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG` usually becomes `@EAS139:136:FC706VJ:2:2104:15343:197393`. This script will add the pair information back (to become `@EAS139:136:FC706VJ:2:2104:15343:197393/1`). There is no way to know what was in the comment, so it will not be restored. 
 
+**TYPICAL USAGE CASES**
+
+ 1. You have quality/adapter trimmed two paired-end sequence files and now they are out of sync. In this case, it is necessary to re-pair them, and then interleave the pairs for assembly.
+
+    $ pairfq makepairs -f s_1_1_trimmed.fq -r s_1_2_trimmed.fq -fp s_1_1_trimmed_p.fq -rp s_1_2_trimmed_p.fq -fs s_1_1_trimmed_s.fq -rs s_1_2_trimmed_s.fq -im
+
+In the above command, we specify the `makepairs` positional argument which is for pairing reads. The short arguements are `-f` for the file of forward reads, `-r` for the reverse reads, `-fp` for the file of paired forward reads, `-rp` for the file reverse paired reads, `-fs` for the file of forward singleton/unpaired reads, and `-rs` for the singleton/unpaired reverse reads. 
+
+The last argument, `-im`, is optional and specifies that all computation will be done in memory. This is a good thing if you have a moderate number of reads and ample computer memory because it will speed up the process significantly. However, if you are trying to pair two files of around 500 million reads on a machine with, for example, 8 GB of RAM this is a VERY BAD thing. In the case where you have this many reads, omit this last option. The computation will be much slower but no memory will be used.
+
+    $ pairfq joinpairs -f s_1_1_trimmed_p.fq -r s_1_2_trimmed_p.fq -o s_1_interl.fq -im
+
+In the above command, we take our paired forward and reverse reads and interleave them, again doing all computation in memory for speed (which is optional). Now we can use our interleaved file for assembly or mapping, along with the unpaired reads for added coverage. 
+
+ 2. Some toolkits discard the FASTQ comment which results in losing the pair information (e.g., `seqtk sample`). Therefore, it is necessary to add this information back before pairing or assembly. 
+
+    $ pairfq addinfo -i s_1_1_sample_500k.fq -o s_1_1_sample_500k_pair.fq -p 1
+
+This is a rather simple command, we specify the forward file that has been modified with `-i` and the corrected file with `-o`. We want to add the forward pair information with `-p 1` and if this were the reverse pair we would simply say `-p 2`.
+
+ 3. Sometimes it is necessay to split your interleaved file of forward and reverse reads into separate files.
+
+    $ pairfq splitpairs -i s_1_interl.fq -f s_1_1_p.fq -r s_1_2_p.fq
+
+The conventions used here are the same as with all the commands, `-f` specifies the file of forward reads to create and `-r` the reverse reads.  
+
 **ISSUES**
 
 Report any issues at: https://github.com/sestaton/Pairfq/issues
