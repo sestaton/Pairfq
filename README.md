@@ -111,7 +111,7 @@ You have quality/adapter trimmed two paired-end sequence files and now they are 
 
     $ pairfq makepairs -f s_1_1_trimmed.fq -r s_1_2_trimmed.fq -fp s_1_1_trimmed_p.fq -rp s_1_2_trimmed_p.fq -fs s_1_1_trimmed_s.fq -rs s_1_2_trimmed_s.fq -im
 
-In the above command, we specify the `makepairs` positional argument which is for pairing reads. The short arguements are `-f` for the file of forward reads, `-r` for the reverse reads, `-fp` for the file of paired forward reads, `-rp` for the file reverse paired reads, `-fs` for the file of forward singleton/unpaired reads, and `-rs` for the singleton/unpaired reverse reads. 
+In the above command, we specify the `makepairs` positional argument for pairing reads. The short arguements are `-f` for the file of forward reads, `-r` for the reverse reads, `-fp` for the file of paired forward reads, `-rp` for the file of reverse paired reads, `-fs` for the file of forward singleton/unpaired reads, and `-rs` for the singleton/unpaired reverse reads. 
 
 The last argument, `-im`, is optional and specifies that all computation will be done in memory. This is a good thing if you have a moderate number of reads and ample computer memory because it will speed up the process significantly. However, if you are trying to pair two files of around 500 million reads on a machine with, for example, 8 GB of RAM this is a VERY BAD thing. In the case where you have this many reads, omit this last option. The computation will be much slower but no memory will be used.
 
