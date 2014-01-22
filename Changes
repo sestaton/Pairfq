@@ -1,6 +1,21 @@
 Revision history for Pairfq
 
 Version	Date	Location
+0.05	1/22/2014	Athens, GA
+
+Enhancements. 1) Make in-memory processing default instead of
+optional. This should be the expected behavior and is most used, 
+so is a better default. 
+
+2) Make --index option instead of this being the default. 
+This makes the code much more expressive now by checking if the 
+index option is defined, instead of seeing if the memory option 
+is not defined.
+
+3) Add explicit exit or return from subroutines so it is clear
+to anyone wanting to contribute what the flow of execution is 
+for each method.
+
 0.04	11/18/2013	Athens, GA
 
 Bug fix for taking positional arguments (options were not
