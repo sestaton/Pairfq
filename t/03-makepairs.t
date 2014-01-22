@@ -40,7 +40,7 @@ sub makepairs_inmemory {
 				SUFFIX   => ".fastq",
 				UNLINK   => 0 );
     
-    my @pfq_fqout = capture([0..5],"bin/pairfq makepairs -f $fq_data->[0] -r $fq_data->[1] -fp $fpfq -rp $rpfq -fs $fsfq -rs $rsfq -im");
+    my @pfq_fqout = capture([0..5],"bin/pairfq makepairs -f $fq_data->[0] -r $fq_data->[1] -fp $fpfq -rp $rpfq -fs $fsfq -rs $rsfq");
     
     my $fpfa = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
 				DIR      => 't',
@@ -62,7 +62,7 @@ sub makepairs_inmemory {
 				SUFFIX   => ".fasta",
 				UNLINK   => 0 );
     
-    my @pfq_faout = capture([0..5],"bin/pairfq makepairs -f $fa_data->[0] -r $fa_data->[1] -fp $fpfa -rp $rpfa -fs $fsfa -rs $rsfa -im");
+    my @pfq_faout = capture([0..5],"bin/pairfq makepairs -f $fa_data->[0] -r $fa_data->[1] -fp $fpfa -rp $rpfa -fs $fsfa -rs $rsfa");
     
     for my $fqo (@pfq_fqout) {
 	if ($fqo =~ /Total forward reads\s.*(\d+)/) { 
@@ -147,7 +147,7 @@ sub makepairs_ondisk {
                                 SUFFIX   => ".fastq",
                                 UNLINK   => 0 );
     
-    my @pfq_fqout = capture([0..5],"bin/pairfq makepairs -f $fq_data->[0] -r $fq_data->[1] -fp $fpfq -rp $rpfq -fs $fsfq -rs $rsfq");
+    my @pfq_fqout = capture([0..5],"bin/pairfq makepairs -f $fq_data->[0] -r $fq_data->[1] -fp $fpfq -rp $rpfq -fs $fsfq -rs $rsfq -idx");
 
     my $fpfa = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
                                 DIR      => 't',
@@ -169,7 +169,7 @@ sub makepairs_ondisk {
                                 SUFFIX   => ".fasta",
                                 UNLINK   => 0 );
     
-    my @pfq_faout = capture([0..5],"bin/pairfq makepairs -f $fa_data->[0] -r $fa_data->[1] -fp $fpfa -rp $rpfa -fs $fsfa -rs $rsfa");
+    my @pfq_faout = capture([0..5],"bin/pairfq makepairs -f $fa_data->[0] -r $fa_data->[1] -fp $fpfa -rp $rpfa -fs $fsfa -rs $rsfa -idx");
 
     for my $fqo (@pfq_fqout) {
         if ($fqo =~ /Total forward reads\s.*(\d+)/) { 

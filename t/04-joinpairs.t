@@ -31,8 +31,8 @@ sub joinpairs_inmemory {
 				     SUFFIX   => ".fasta",
 				     UNLINK   => 0 );
     
-    system([0..5],"bin/pairfq joinpairs -f $fq_data->[0] -r $fq_data->[1] -o $tmpfq_out -im");
-    system([0..5],"bin/pairfq joinpairs -f $fa_data->[0] -r $fa_data->[1] -o $tmpfa_out -im");
+    system([0..5],"bin/pairfq joinpairs -f $fq_data->[0] -r $fq_data->[1] -o $tmpfq_out");
+    system([0..5],"bin/pairfq joinpairs -f $fa_data->[0] -r $fa_data->[1] -o $tmpfa_out");
 
     open my $fqo, '<', $tmpfq_out;
     open my $fao, '<', $tmpfa_out;
@@ -98,8 +98,8 @@ sub joinpairs_ondisk {
                                      SUFFIX   => ".fasta",
                                      UNLINK   => 0 );
     
-    system([0..5],"bin/pairfq joinpairs -f $fq_data->[0] -r $fq_data->[1] -o $tmpfq_out");
-    system([0..5],"bin/pairfq joinpairs -f $fa_data->[0] -r $fa_data->[1] -o $tmpfa_out");
+    system([0..5],"bin/pairfq joinpairs -f $fq_data->[0] -r $fq_data->[1] -o $tmpfq_out -idx");
+    system([0..5],"bin/pairfq joinpairs -f $fa_data->[0] -r $fa_data->[1] -o $tmpfa_out -idx");
 
     open my $fqo, '<', $tmpfq_out;
     open my $fao, '<', $tmpfa_out;
