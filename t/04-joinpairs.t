@@ -55,9 +55,10 @@ sub joinpairs_inmemory {
     my @fqpairnum = (values %fqpairs);
     my $allfqpaired = all_the_same(\@fqpairnum);
     ok($allfqpaired == 1, 'All fastq reads were paired');
-    is($fqpaired, 6, 'Correct number of fastq pairs');
-    is($fq_fct, 6, 'Correct number of forward fastq reads paired');
-    is($fq_rct, 6, 'Correct number of reverse fastq reads paired');
+
+    is($fqpaired,          6, 'Correct number of fastq pairs');
+    is($fq_fct,            6, 'Correct number of forward fastq reads paired');
+    is($fq_rct,            6, 'Correct number of reverse fastq reads paired');
     is($fq_fct + $fq_fct, 12, 'Correct number of total fastq reads paired');
     unlink $tmpfq_out;
     
@@ -77,9 +78,10 @@ sub joinpairs_inmemory {
     my @fapairnum = (values %fapairs);
     my $allfapaired = all_the_same(\@fapairnum);
     ok($allfapaired == 1, 'All fasta reads were paired');
-    is($fapaired, 6, 'Correct number of fasta pairs');
-    is($fa_fct, 6, 'Correct number of forward fasta reads paired');
-    is($fa_rct, 6, 'Correct number of reverse fasta reads paired');
+
+    is($fapaired,          6, 'Correct number of fasta pairs');
+    is($fa_fct,            6, 'Correct number of forward fasta reads paired');
+    is($fa_rct,            6, 'Correct number of reverse fasta reads paired');
     is($fa_fct + $fa_fct, 12, 'Correct number of total fasta reads paired');
     unlink $tmpfa_out;
 }
@@ -120,9 +122,10 @@ sub joinpairs_ondisk {
     my @fqpairnum = (values %fqpairs);
     my $allfqpaired = all_the_same(\@fqpairnum);
     ok($allfqpaired == 1, 'All fastq reads were paired');
-    is($fqpaired, 6, 'Correct number of fastq pairs');
-    is($fq_fct, 6, 'Correct number of forward fastq reads paired');
-    is($fq_rct, 6, 'Correct number of reverse fastq reads paired');
+
+    is($fqpaired,          6, 'Correct number of fastq pairs');
+    is($fq_fct,            6, 'Correct number of forward fastq reads paired');
+    is($fq_rct,            6, 'Correct number of reverse fastq reads paired');
     is($fq_fct + $fq_fct, 12, 'Correct number of total fastq reads paired');
     unlink $fq_data->[0], $fq_data->[1], $tmpfq_out;
 
@@ -142,9 +145,10 @@ sub joinpairs_ondisk {
     my @fapairnum = (values %fapairs);
     my $allfapaired = all_the_same(\@fapairnum);
     ok($allfapaired == 1, 'All fasta reads were paired');
-    is($fapaired, 6, 'Correct number of fasta pairs');
-    is($fa_fct, 6, 'Correct number of forward fasta reads paired');
-    is($fa_rct, 6, 'Correct number of reverse fasta reads paired');
+
+    is($fapaired,          6, 'Correct number of fasta pairs');
+    is($fa_fct,            6, 'Correct number of forward fasta reads paired');
+    is($fa_rct,            6, 'Correct number of reverse fasta reads paired');
     is($fa_fct + $fa_fct, 12, 'Correct number of total fasta reads paired');
     unlink $fa_data->[0], $fa_data->[1], $tmpfa_out;
 }

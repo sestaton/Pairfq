@@ -58,8 +58,8 @@ while (<$fq2>) {
 }
 close $fq2;
 
-is($fq_fct, 6, 'Correct number of forward fastq reads split');
-is($fq_rct, 6, 'Correct number of reverse fastq reads split');
+is($fq_fct,            6, 'Correct number of forward fastq reads split');
+is($fq_rct,            6, 'Correct number of reverse fastq reads split');
 is($fq_fct + $fq_fct, 12, 'Correct number of total fastq reads split');
 unlink $fq_data, $tmpfq1, $tmpfq2;
 
@@ -75,8 +75,8 @@ while (<$fa2>) {
 }
 close $fa2;
 
-is($fa_fct, 6, 'Correct number of forward fasta reads split');
-is($fa_rct, 6, 'Correct number of reverse fasta reads split');
+is($fa_fct,            6, 'Correct number of forward fasta reads split');
+is($fa_rct,            6, 'Correct number of reverse fasta reads split');
 is($fa_fct + $fa_fct, 12, 'Correct number of total fasta reads split');
 unlink $fa_data, $tmpfa1, $tmpfa2;
 
