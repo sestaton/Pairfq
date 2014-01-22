@@ -14,7 +14,7 @@ pairfq addinfo -i s_1_2_trim.fq -o s_1_2_trim_info.fq -p 2
 
 ## Sync paired-end reads and write singleton reads to separate files
 
-pairfq makepairs -f s_1_1_trim_info.fq -r s_1_2_trim_info.fq -fp s_1_1_trim_paired.fq -rp s_1_2_trim_paired.fq -fs s_1_1_trim_unpaired.fq -rs s_1_2_trim_unpaired.fq -im
+pairfq makepairs -f s_1_1_trim_info.fq -r s_1_2_trim_info.fq -fp s_1_1_trim_paired.fq -rp s_1_2_trim_paired.fq -fs s_1_1_trim_unpaired.fq -rs s_1_2_trim_unpaired.fq
 
 ## Interleave the paired-end reads
 
@@ -109,10 +109,10 @@ statonse at gmail dot com
 
   The output file to place the unpaired reverse reads. 
 
-=item -im, --in_memory
+=item -idx, --index
 
-  The computation should be done in memory instead of on the disk. This will be faster, but may use a large amount
-  of RAM if there are many millions of sequences in each input file.
+  The computation should be not be in memory but on disk. This will be much slower, but it will not use hardly any
+  RAM, even if there are many millions of sequences in each input file.
 
 =item -c, --compress
 
@@ -157,25 +157,27 @@ use Pod::Usage;
 
 our $VERSION = '0.04';
 
-my ($infile, $outfile, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $pairnum, $memory, $compress, $uppercase, $version, $help, $man);
+my ($infile, $outfile, $fread, $rread, $fpread, 
+    $rpread, $fsread, $rsread, $pairnum, $index, 
+    $compress, $uppercase, $version, $help, $man);
 
 GetOptions(
 	   'i|infile=s'         => \$infile,
 	   'o|outfile=s'        => \$outfile,
 	   'p|pairnum=i'        => \$pairnum, 
-           'f|forward=s'        => \$fread,
-           'r|reverse=s'        => \$rread,
-           'fp|forw_paired=s'   => \$fpread,
-           'rp|rev_paired=s'    => \$rpread,
-           'fs|forw_unpaired=s' => \$fsread,
-           'rs|rev_unpaired=s'  => \$rsread,
-           'im|in_memory'       => \$memory,
-           'c|compress=s'       => \$compress,
+	   'f|forward=s'        => \$fread,
+	   'r|reverse=s'        => \$rread,
+	   'fp|forw_paired=s'   => \$fpread,
+	   'rp|rev_paired=s'    => \$rpread,
+	   'fs|forw_unpaired=s' => \$fsread,
+	   'rs|rev_unpaired=s'  => \$rsread,
+	   'idx|index'          => \$index,
+	   'c|compress=s'       => \$compress,
 	   'uc|uppercase'       => \$uppercase,
 	   'version'            => \$version,
-           'h|help'             => \$help,
-           'm|man'              => \$man,
-          ) or pod2usage( "Try '$0 --man' for more information." );
+	   'h|help'             => \$help,
+	   'm|man'              => \$man,
+	  ) or pod2usage( "Try '$0 --man' for more information." );
 
 #
 # Check @ARGV
@@ -214,7 +216,7 @@ elsif ($task eq 'makepairs') {
 	makepairs_usage();
 	exit(1);
     }
-    make_pairs_and_singles($fread, $rread, $fpread, $rpread, $fsread, $rsread, $memory, $compress);
+    make_pairs_and_singles($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress);
 }
 elsif ($task eq 'joinpairs') {
     if (!$fread || !$rread || !$outfile) {
@@ -222,7 +224,7 @@ elsif ($task eq 'joinpairs') {
 	joinpairs_usage();
 	exit(1);
     }
-    pairs_to_interleaved($fread, $rread, $outfile, $memory, $compress);
+    pairs_to_interleaved($fread, $rread, $outfile, $index, $compress);
 }
 elsif ($task eq 'splitpairs') {
     if (!$infile || !$fread || !$rread) {
@@ -275,10 +277,11 @@ sub add_pair_info {
     close $out;
 
     compress($compress, $outfile) if $compress;
+    exit;
 }
 
 sub make_pairs_and_singles {
-    my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $memory, $compress) = @_;
+    my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress) = @_;
 
     my ($rseqpairs, $db_file, $rct) = store_pair($rread, $memory);
 
@@ -399,7 +402,7 @@ sub make_pairs_and_singles {
     compress($compress, $fpread, $rpread, $fsread, $rsread) if $compress;
     $pct = $fpct + $rpct;
     $sct = $fsct + $rsct;
-    untie %$rseqpairs if defined $memory;
+    untie %$rseqpairs if defined $index;
     unlink $db_file if -e $db_file;
 
     my $maxfn = max(length($fread), length($rread), length($fpread), length($rpread), length($fsread), length($rsread));
@@ -415,12 +418,13 @@ sub make_pairs_and_singles {
     printf "%-${offset}s %s %10d\n\n", "Total reverse unpaired reads ($rsread)", ":", $rsct;
     printf "%-${offset}s %s %10d\n", "Total paired reads", ":",  $pct;
     printf "%-${offset}s %s %10d\n", "Total upaired reads", ":", $sct;
+    exit;
 }
 
 sub pairs_to_interleaved {
-    my ($forward, $reverse, $outfile, $memory, $compress) = @_;
+    my ($forward, $reverse, $outfile, $index, $compress) = @_;
 
-    my ($pairs, $db_file, $ct) = store_pair($forward, $memory);
+    my ($pairs, $db_file, $ct) = store_pair($forward, $index);
     my $fh = get_fh($reverse);
     open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
     binmode $out, ":encoding(UTF-8)";
@@ -476,10 +480,11 @@ sub pairs_to_interleaved {
     close $fh;
     close $out;
 
-    untie %$pairs if defined $memory;
+    untie %$pairs if defined $index;
     unlink $db_file if -e $db_file;
 
     compress($compress, $outfile) if $compress;
+    exit;
 }
 
 sub interleaved_to_pairs {
@@ -511,6 +516,7 @@ sub interleaved_to_pairs {
     close $r;
 
     compress($compress, $forward, $reverse) if $compress;
+    exit;
 }
 
 sub get_fh {
@@ -567,10 +573,11 @@ sub compress {
 	unlink $fs if defined $fs;
 	unlink $rs if defined $rs;
     }
+    return;
 }
 
 sub store_pair {
-    my ($file, $memory) = @_;
+    my ($file, $index) = @_;
 
     my $rct = 0;
     my %rseqpairs;
@@ -583,7 +590,7 @@ sub store_pair {
 				   UNLINK   => 0 );
     unlink $db_file if -e $db_file;
 
-    unless (defined $memory) { 
+    if (defined $index) { 
 	my $db = tie %rseqpairs, 'DB_File', $db_file, O_RDWR|O_CREAT, 0666, $DB_BTREE
 	    or die "\nERROR: Could not open DBM file $db_file: $!\n";
 	$db->Filter_Value_Push("utf8");
@@ -595,7 +602,7 @@ sub store_pair {
     my $fh = get_fh($file);
 
     {
-	local @SIG{qw(INT TERM HUP)} = sub { untie %rseqpairs unless defined $memory; unlink $db_file if -e $db_file; };
+	local @SIG{qw(INT TERM HUP)} = sub { untie %rseqpairs if defined $index; unlink $db_file if -e $db_file; };
 
 	while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$fh, \@raux)) {
 	    $rct++;
@@ -668,9 +675,9 @@ sub readfq {
     return ($name, $seq);
 }
 
-sub mk_key { join "\N{INVISIBLE SEPARATOR}", @_ }
+sub mk_key { return join "\N{INVISIBLE SEPARATOR}", @_ }
 
-sub mk_vec { split "\N{INVISIBLE SEPARATOR}", shift }
+sub mk_vec { return split "\N{INVISIBLE SEPARATOR}", shift }
 
 sub usage {
     my $script = basename($0);
@@ -707,8 +714,8 @@ Required:
     -rs|rev_unpaired  :       Name for the file of singleton reverse reads.
 
 Options:
-    -im|in_memory     :       Construct a database in memory for faster execution.
-                              NB: This may result in large RAM usage for a large number of sequences. 
+    -idx|index        :       Construct an index for limiting memory usage.
+                              NB: This may result in long run times for a large number of sequences. 
     -c|compress       :       Compress the output files. Options are 'gzip' or 'bzip2' (Default: No).
     -h|help           :       Print a usage statement.
     -m|man            :       Print the full documentation.
@@ -764,8 +771,8 @@ Required:
     -o|outfile        :       File of interleaved reads.
 
 Options:
-    -im|in_memory     :       Construct a database in memory for faster execution.
-                              NB: This may result in large RAM usage for a large number of sequences. 
+    -idx|index        :       Construct an index for limiting memory usage.
+                              NB: This may result in long run times for a large number of sequences.
     -c|compress       :       Compress the output files. Options are 'gzip' or 'bzip2' (Default: No).
     -h|help           :       Print a usage statement.
     -m|man            :       Print the full documentation.
