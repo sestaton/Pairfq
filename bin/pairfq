@@ -291,9 +291,9 @@ sub make_pairs_and_singles {
     open my $rp, '>', $rpread or die "\nERROR: Could not open file: $rpread\n";
     open my $fs, '>', $fsread or die "\nERROR: Could not open file: $fsread\n";
 
-    binmode $fp, ":utf8";
-    binmode $rp, ":utf8";
-    binmode $fs, ":utf8";
+    binmode $fp, ":encoding(UTF-8)";
+    binmode $rp, ":encoding(UTF-8)";
+    binmode $fs, ":encoding(UTF-8)";
 
     while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$fh, \@faux)) {
 	$fct++;
@@ -371,7 +371,7 @@ sub make_pairs_and_singles {
     close $fs;
 
     open my $rs, '>', $rsread or die "\nERROR: Could not open file: $rsread\n";
-    binmode $rs, ":utf8";
+    binmode $rs, ":encoding(UTF-8)";
 
     while (my ($rname_up, $rseq_up) = each %$rseqpairs) {
 	$rsct++;
@@ -423,7 +423,7 @@ sub pairs_to_interleaved {
     my ($pairs, $db_file, $ct) = store_pair($forward, $memory);
     my $fh = get_fh($reverse);
     open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
-    binmode $out, ":utf8";
+    binmode $out, ":encoding(UTF-8)";
 
     my @raux = undef;
     my ($rname, $rcomm, $rseq, $rqual, $forw_id, $rev_id, $rname_enc);
