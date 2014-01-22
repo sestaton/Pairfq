@@ -155,7 +155,7 @@ use List::Util qw(max);
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 my ($infile, $outfile, $fread, $rread, $fpread, 
     $rpread, $fsread, $rsread, $pairnum, $index, 
