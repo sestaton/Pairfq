@@ -77,7 +77,7 @@ Currently, data from the Casava pipeline version 1.4 are supported. For example,
 
     @HWUSI-EAS100R:6:73:941:1973#0/1
 
-As well Casava 1.8+ format,
+As well as Casava 1.8+ format,
 
     @EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG
 
