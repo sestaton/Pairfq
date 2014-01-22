@@ -283,7 +283,7 @@ sub add_pair_info {
 sub make_pairs_and_singles {
     my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress) = @_;
 
-    my ($rseqpairs, $db_file, $rct) = store_pair($rread, $memory);
+    my ($rseqpairs, $db_file, $rct) = store_pair($rread, $index);
 
     my @faux = undef;
     my ($fname, $fcomm, $fseq, $fqual, $forw_id, $rev_id, $fname_enc);
@@ -698,7 +698,6 @@ Options:
     -m|man            :       Print the full documentation.
 
 EOF
-return;
 }
 
 sub makepairs_usage {
@@ -722,7 +721,6 @@ Options:
     -m|man            :       Print the full documentation.
 
 EOF
-return;
 }
 
 sub addinfo_usage {
@@ -742,7 +740,6 @@ Options:
     -m|man           :       Print the full documentation.
 
 EOF
-return;
 }
 
 sub splitpairs_usage {
@@ -761,7 +758,6 @@ Options:
     -m|man            :       Print the full documentation.
 
 EOF
-return;
 }
 
 sub joinpairs_usage {
@@ -782,5 +778,4 @@ Options:
     -m|man            :       Print the full documentation.
 
 EOF
-return;
 }
