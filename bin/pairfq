@@ -233,7 +233,6 @@ elsif ($task eq 'splitpairs') {
 	exit(1);
     }
     interleaved_to_pairs($infile, $fread, $rread, $compress);
-
 }
 else {
     say "\nERROR: '$task' is not recognized. See the manual by typing 'perl pairfq -m', or see https://github.com/sestaton/Pairfq.\n";
@@ -284,6 +283,8 @@ sub make_pairs_and_singles {
     my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress) = @_;
 
     my ($rseqpairs, $db_file, $rct) = store_pair($rread, $index);
+
+    local @SIG{qw(INT TERM HUP)} = sub { untie %rseqpairs if defined $index; unlink $db_file if -e $db_file; };
 
     my @faux = undef;
     my ($fname, $fcomm, $fseq, $fqual, $forw_id, $rev_id, $fname_enc);
@@ -425,6 +426,9 @@ sub pairs_to_interleaved {
     my ($forward, $reverse, $outfile, $index, $compress) = @_;
 
     my ($pairs, $db_file, $ct) = store_pair($forward, $index);
+
+    local @SIG{qw(INT TERM HUP)} = sub { untie %rseqpairs if defined $index; unlink $db_file if -e $db_file; };
+
     my $fh = get_fh($reverse);
     open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
     binmode $out, ":encoding(UTF-8)";
