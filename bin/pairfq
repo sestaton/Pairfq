@@ -698,6 +698,7 @@ Options:
     -m|man            :       Print the full documentation.
 
 EOF
+return;
 }
 
 sub makepairs_usage {
@@ -721,6 +722,7 @@ Options:
     -m|man            :       Print the full documentation.
 
 EOF
+return;
 }
 
 sub addinfo_usage {
@@ -740,6 +742,7 @@ Options:
     -m|man           :       Print the full documentation.
 
 EOF
+return;
 }
 
 sub splitpairs_usage {
@@ -758,6 +761,7 @@ Options:
     -m|man            :       Print the full documentation.
 
 EOF
+return;
 }
 
 sub joinpairs_usage {
@@ -778,4 +782,5 @@ Options:
     -m|man            :       Print the full documentation.
 
 EOF
+return;
 }
