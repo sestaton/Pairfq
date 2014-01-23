@@ -117,7 +117,7 @@ The last argument, `--index`, is optional and specifies that an index will be co
 
     Command                             Time (utime)    RAM
     pairfq makepairs ...                20min2s         10.08G
-    pairfq makepairs ... --index        ~5hr            1.4G
+    pairfq makepairs ... --index        4hr20min        4.62G
 
 These figures should be taken with caution, as they will vary depending on the machine and obviously, the amount of data being processed.
  
