@@ -61,8 +61,8 @@ Specifying the task with no arguments will print the usage for that task. For ex
         -rs|rev_unpaired  :       Name for the file of singleton reverse reads.
 
     Options:
-        -im|in_memory     :       Construct a database in memory for faster execution.
-                                  NB: This may result in large RAM usage for a large number of sequences. 
+        -idx|index        :       Construct an index for limiting memory usage.
+                                  NB: This may result in long run times for a large number of sequences. 
         -c|compress       :       Compress the output files. Options are 'gzip' or 'bzip2' (Default: No).
         -h|help           :       Print a usage statement.
         -m|man            :       Print the full documentation.
@@ -109,12 +109,18 @@ Pairfq has several different tasks which can be executed. Below is a brief descr
 
 You have quality/adapter trimmed two paired-end sequence files and now they are out of sync. In this case, it is necessary to re-pair them, and then interleave the pairs for assembly.
 
-    $ pairfq makepairs -f s_1_1_trimmed.fq -r s_1_2_trimmed.fq -fp s_1_1_trimmed_p.fq -rp s_1_2_trimmed_p.fq -fs s_1_1_trimmed_s.fq -rs s_1_2_trimmed_s.fq -im
+    $ pairfq makepairs -f s_1_1_trimmed.fq -r s_1_2_trimmed.fq -fp s_1_1_trimmed_p.fq -rp s_1_2_trimmed_p.fq -fs s_1_1_trimmed_s.fq -rs s_1_2_trimmed_s.fq --index
 
 In the above command, we specify the `makepairs` positional argument for pairing reads. The short arguements are `-f` for the file of forward reads, `-r` for the reverse reads, `-fp` for the file of paired forward reads, `-rp` for the file of reverse paired reads, `-fs` for the file of forward singleton/unpaired reads, and `-rs` for the singleton/unpaired reverse reads. 
 
-The last argument, `-im`, is optional and specifies that all computation will be done in memory. This is a good thing if you have a moderate number of reads and ample computer memory because it will speed up the process significantly. However, if you are trying to pair two files of around 500 million reads on a machine with, for example, 8 GB of RAM this is a VERY BAD thing. In the case where you have this many reads, omit this last option. The computation will be much slower but no memory will be used.
+The last argument, `--index`, is optional and specifies that an index will be constructed and all computation will be done on disk. This is a good thing if you are trying to pair two files of around 500 million reads on a machine with, for example, 8 GB of RAM. The computation will be much slower but no memory will be used. If you have a moderate amount of memory and not so many reads, omit this last option, as the processing will go much faster. Below are some benchmarks (with and without the `--index`) for makepairs using a file of 10,722,606 forward reads and 10,852,237 reverse reads.
 
+    Command				Time (utime) 	RAM
+    pairfq makepairs ...                20min2s		10.08G
+    pairfq makepairs ... --index        ~5hr             1.4G
+
+These figures should be taken with caution, as they will vary depending on the machine and obviously, the amount of data being processed.
+ 
 * **joinpairs**
 
 With this command we can interleave the files for assembly or mapping.
