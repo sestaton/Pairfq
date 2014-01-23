@@ -284,7 +284,7 @@ sub make_pairs_and_singles {
 
     my ($rseqpairs, $db_file, $rct) = store_pair($rread, $index);
 
-    local @SIG{qw(INT TERM HUP)} = sub { untie %rseqpairs if defined $index; unlink $db_file if -e $db_file; };
+    local @SIG{qw(INT TERM HUP)} = sub { untie %$rseqpairs if defined $index; unlink $db_file if -e $db_file; };
 
     my @faux = undef;
     my ($fname, $fcomm, $fseq, $fqual, $forw_id, $rev_id, $fname_enc);
@@ -427,7 +427,7 @@ sub pairs_to_interleaved {
 
     my ($pairs, $db_file, $ct) = store_pair($forward, $index);
 
-    local @SIG{qw(INT TERM HUP)} = sub { untie %rseqpairs if defined $index; unlink $db_file if -e $db_file; };
+    local @SIG{qw(INT TERM HUP)} = sub { untie %$pairs if defined $index; unlink $db_file if -e $db_file; };
 
     my $fh = get_fh($reverse);
     open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
