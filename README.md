@@ -125,9 +125,9 @@ These figures should be taken with caution, as they will vary depending on the m
 
 With this command we can interleave the files for assembly or mapping.
 
-    $ pairfq joinpairs -f s_1_1_trimmed_p.fq -r s_1_2_trimmed_p.fq -o s_1_interl.fq -im
+    $ pairfq joinpairs -f s_1_1_trimmed_p.fq -r s_1_2_trimmed_p.fq -o s_1_interl.fq
 
-In the above command, we are doing all computation in memory for speed (optionally). Now we can use our interleaved pairs, along with the unpaired reads for added coverage. 
+In the above command, we are doing all computation without an index for speed. Now we can use our interleaved pairs, along with the unpaired reads for added coverage. 
 
 * **addinfo**
 
