@@ -46,7 +46,7 @@ Type `pairfq` at the command line and you will see a menu describing the usage.
 
 Specifying the task with no arguments will print the usage for that task. For example, 
 
-    $ pairfq makepairs                                                                                                          **12:08:33**
+    $ pairfq makepairs
 
     ERROR: Command line not parsed correctly. Check input.
 
@@ -113,11 +113,11 @@ You have quality/adapter trimmed two paired-end sequence files and now they are 
 
 In the above command, we specify the `makepairs` positional argument for pairing reads. The short arguements are `-f` for the file of forward reads, `-r` for the reverse reads, `-fp` for the file of paired forward reads, `-rp` for the file of reverse paired reads, `-fs` for the file of forward singleton/unpaired reads, and `-rs` for the singleton/unpaired reverse reads. 
 
-The last argument, `--index`, is optional and specifies that an index will be constructed and all computation will be done on disk. This is a good thing if you are trying to pair two files of around 500 million reads on a machine with, for example, 8 GB of RAM. The computation will be much slower but no memory will be used. If you have a moderate amount of memory and not so many reads, omit this last option, as the processing will go much faster. Below are some benchmarks (with and without the `--index`) for makepairs using a file of 10,722,606 forward reads and 10,852,237 reverse reads.
+The last argument, `--index`, is optional and specifies that an index will be constructed and all computation will be done on disk. This is a good thing if you are trying to pair two files of around 50 million reads on a machine with, for example, 8 GB of RAM. The computation will be much slower but much less memory will be used. If you have a moderate amount of memory and not so many reads, omit this last option, as the processing will go much faster. Below are some benchmarks (with and without the `--index`) for makepairs using a file of 10,722,606 forward reads and 10,852,237 reverse reads.
 
-    Command				Time (utime) 	RAM
+    Command					Time (utime) 	RAM
     pairfq makepairs ...                20min2s		10.08G
-    pairfq makepairs ... --index        ~5hr             1.4G
+    pairfq makepairs ... --index        ~5hr		1.4G
 
 These figures should be taken with caution, as they will vary depending on the machine and obviously, the amount of data being processed.
  
