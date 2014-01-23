@@ -135,6 +135,8 @@ statonse at gmail dot com
   
   Print the full documentation.
 
+=back
+
 =cut
 
 use 5.012;
