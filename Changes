@@ -3,7 +3,7 @@ Revision history for Pairfq
 Version	Date	Location
 0.05	1/22/2014	Athens, GA
 
-Enhancements. 1) Make in-memory processing default instead of
+Enhancements: 1) Make in-memory processing default instead of
 optional. This should be the expected behavior and is most used, 
 so is a better default. 
 
