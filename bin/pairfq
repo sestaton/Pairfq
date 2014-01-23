@@ -190,21 +190,21 @@ say $VERSION and exit(0) if $version;
 
 my $task = shift;
 if (!defined $task) {
-    say "\nERROR: Command line not parsed correctly. Check input.\n";
+    say "\n[ERROR]: Command line not parsed correctly. Check input.\n";
     usage();
     exit(1);
 }
 
 if ($compress) {
     unless ($compress eq 'gzip' || $compress eq 'bzip2') {
-	say "\nERROR: '$compress' is not recognized as an argument to the --compress option. Must be 'gzip' or 'bzip2'. Exiting.\n";
+	say "\n[ERROR]: '$compress' is not recognized as an argument to the --compress option. Must be 'gzip' or 'bzip2'. Exiting.\n";
 	exit(1);
     }
 }
 
 if ($task eq 'addinfo') {
     if (!$pairnum || !$infile || !$outfile) {
-	say "\nERROR: Command line not parsed correctly. Check input.\n";
+	say "\n[ERROR]: Command line not parsed correctly. Check input.\n";
 	addinfo_usage();
 	exit(1);
     }
@@ -212,7 +212,7 @@ if ($task eq 'addinfo') {
 }
 elsif ($task eq 'makepairs') {
     if (!$fread || !$rread || !$fpread || !$rpread || !$fsread || !$rsread) {
-	say "\nERROR: Command line not parsed correctly. Check input.\n";
+	say "\n[ERROR]: Command line not parsed correctly. Check input.\n";
 	makepairs_usage();
 	exit(1);
     }
@@ -220,7 +220,7 @@ elsif ($task eq 'makepairs') {
 }
 elsif ($task eq 'joinpairs') {
     if (!$fread || !$rread || !$outfile) {
-	say "\nERROR: Command line not parsed correctly. Check input.\n";
+	say "\n[ERROR]: Command line not parsed correctly. Check input.\n";
 	joinpairs_usage();
 	exit(1);
     }
@@ -228,14 +228,14 @@ elsif ($task eq 'joinpairs') {
 }
 elsif ($task eq 'splitpairs') {
     if (!$infile || !$fread || !$rread) {
-	say "\nERROR: Command line not parsed correctly. Check input.\n";
+	say "\n[ERROR]: Command line not parsed correctly. Check input.\n";
 	splitpairs_usage();
 	exit(1);
     }
     interleaved_to_pairs($infile, $fread, $rread, $compress);
 }
 else {
-    say "\nERROR: '$task' is not recognized. See the manual by typing 'perl pairfq -m', or see https://github.com/sestaton/Pairfq.\n";
+    say "\n[ERROR]: '$task' is not recognized. See the manual by typing 'perl pairfq -m', or see https://github.com/sestaton/Pairfq.\n";
     exit(1);
 }
 
@@ -253,12 +253,12 @@ sub add_pair_info {
 	$pair = "/2";
     }
     else {
-	say "\nERROR: $pairnum is not correct. Must be 1 or 2. Exiting.";
+	say "\n[ERROR]: $pairnum is not correct. Must be 1 or 2. Exiting.";
 	exit(1);
     }
 
     my $fh = get_fh($infile);
-    open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
+    open my $out, '>', $outfile or die "\n[ERROR]: Could not open file: $outfile\n";
 
     my @aux = undef;
     my ($name, $comm, $seq, $qual);
@@ -291,9 +291,9 @@ sub make_pairs_and_singles {
     my ($fct, $fpct, $rpct, $pct, $fsct, $rsct, $sct) = (0, 0, 0, 0, 0, 0, 0);
 
     my $fh = get_fh($fread);
-    open my $fp, '>', $fpread or die "\nERROR: Could not open file: $fpread\n";
-    open my $rp, '>', $rpread or die "\nERROR: Could not open file: $rpread\n";
-    open my $fs, '>', $fsread or die "\nERROR: Could not open file: $fsread\n";
+    open my $fp, '>', $fpread or die "\n[ERROR]: Could not open file: $fpread\n";
+    open my $rp, '>', $rpread or die "\n[ERROR]: Could not open file: $rpread\n";
+    open my $fs, '>', $fsread or die "\n[ERROR]: Could not open file: $fsread\n";
 
     binmode $fp, ":encoding(UTF-8)";
     binmode $rp, ":encoding(UTF-8)";
@@ -309,7 +309,7 @@ sub make_pairs_and_singles {
 	    $fname = mk_key($fname, $fcomm);
 	}
 	else {
-	    say "\nERROR: Could not determine FastA/Q format. ".
+	    say "\n[ERROR]: Could not determine FastA/Q format. ".
 		"Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
 	    exit(1);
 	}
@@ -374,7 +374,7 @@ sub make_pairs_and_singles {
     close $rp;
     close $fs;
 
-    open my $rs, '>', $rsread or die "\nERROR: Could not open file: $rsread\n";
+    open my $rs, '>', $rsread or die "\n[ERROR]: Could not open file: $rsread\n";
     binmode $rs, ":encoding(UTF-8)";
 
     while (my ($rname_up, $rseq_up) = each %$rseqpairs) {
@@ -430,7 +430,7 @@ sub pairs_to_interleaved {
     local @SIG{qw(INT TERM HUP)} = sub { untie %$pairs if defined $index; unlink $db_file if -e $db_file; };
 
     my $fh = get_fh($reverse);
-    open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
+    open my $out, '>', $outfile or die "\n[ERROR]: Could not open file: $outfile\n";
     binmode $out, ":encoding(UTF-8)";
 
     my @raux = undef;
@@ -445,7 +445,7 @@ sub pairs_to_interleaved {
 	    $rname = mk_key($rname, $rcomm);
 	}
 	else {
-	    say "\nERROR: Could not determine FastA/Q format. ".
+	    say "\n[ERROR]: Could not determine FastA/Q format. ".
 		"Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
 	    exit(1);
 	}
@@ -494,8 +494,8 @@ sub pairs_to_interleaved {
 sub interleaved_to_pairs {
     my ($infile, $forward, $reverse, $compress) = @_;
     my $fh = get_fh($infile);
-    open my $f, '>', $forward or die "\nERROR: Could not open file: $forward\n";
-    open my $r, '>', $reverse or die "\nERROR: Could not open file: $reverse\n"; 
+    open my $f, '>', $forward or die "\n[ERROR]: Could not open file: $forward\n";
+    open my $r, '>', $reverse or die "\n[ERROR]: Could not open file: $reverse\n"; 
 
     my @aux = undef;
     my ($name, $comm, $seq, $qual);
@@ -528,16 +528,16 @@ sub get_fh {
 
     my $fh;
     if ($file =~ /\.gz$/) {
-        open $fh, '-|', 'zcat', $file or die "\nERROR: Could not open file: $file\n";
+        open $fh, '-|', 'zcat', $file or die "\n[ERROR]: Could not open file: $file\n";
     }
     elsif ($file =~ /\.bz2$/) {
-        open $fh, '-|', 'bzcat', $file or die "\nERROR: Could not open file: $file\n";
+        open $fh, '-|', 'bzcat', $file or die "\n[ERROR]: Could not open file: $file\n";
     }
     elsif ($file =~ /-|STDIN/) {
-	open $fh, '< -' or die "\nERROR: Could not open STDIN\n";
+	open $fh, '< -' or die "\n[ERROR]: Could not open STDIN\n";
     }
     else {
-        open $fh, '<', $file or die "\nERROR: Could not open file: $file\n";
+        open $fh, '<', $file or die "\n[ERROR]: Could not open file: $file\n";
     }
 
     return $fh;
@@ -596,7 +596,7 @@ sub store_pair {
 
     if (defined $index) { 
 	my $db = tie %rseqpairs, 'DB_File', $db_file, O_RDWR|O_CREAT, 0666, $DB_BTREE
-	    or die "\nERROR: Could not open DBM file $db_file: $!\n";
+	    or die "\n[ERROR]: Could not open DBM file $db_file: $!\n";
 	$db->Filter_Value_Push("utf8");
     }
 
@@ -618,7 +618,7 @@ sub store_pair {
 		$rname = mk_key($rname, $rcomm);
 	    }
 	    else {
-		say "\nERROR: Could not determine FastA/Q format. ".
+		say "\n[ERROR]: Could not determine FastA/Q format. ".
 		    "Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
 		exit(1);
 	    }
