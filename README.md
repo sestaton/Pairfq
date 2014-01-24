@@ -3,8 +3,6 @@ Pairfq
 
 Sync paired-end FASTA/Q files and keep singleton reads
 
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/sestaton/pairfq/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
 **INSTALLATION**
 
 Perl version 5.12 (or greater) must be installed to use Pairfq, but there are no external modules required. If you have [cpanminus](http://search.cpan.org/~miyagawa/App-cpanminus-1.6935/lib/App/cpanminus.pm), installation can be done in one shot:
@@ -116,7 +114,7 @@ In the above command, we specify the `makepairs` positional argument for pairing
 The last argument, `--index`, is optional and specifies that an index will be constructed and all computation will be done on disk. This is a good thing if you are trying to pair two files of around 50 million reads on a machine with, for example, 8 GB of RAM. The computation will be much slower but much less memory will be used. If you have a moderate amount of memory and not so many reads, omit this last option, as the processing will go much faster. Below are some rough benchmarks (with and without the `--index`) for `pairfq makepairs` using a file of 10.7 million forward reads and 10.8 million reverse reads.
 
     Command                             Time (utime)    RAM
-    pairfq makepairs ...                20min2s         10.08G
+    pairfq makepairs ...                17min04s        4.98G
     pairfq makepairs ... --index        4hr20min        4.62G
 
 These figures should be taken with caution, as they will vary depending on the machine and obviously, the amount of data being processed.
@@ -161,4 +159,4 @@ The MIT License should included with the project. If not, it can be found at: ht
 
 Copyright (C) 2013 S. Evan Staton
 
-
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/sestaton/pairfq/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
