@@ -42,7 +42,7 @@ Type `pairfq` at the command line and you will see a menu describing the usage.
         -h|help           :       Print a usage statement.
         -m|man            :       Print the full documentation.
 
-Specifying the task with no arguments will print the usage for that task. For example, 
+Specifying the method with no arguments will print the usage for that method. For example, 
 
     $ pairfq makepairs
 
@@ -79,11 +79,11 @@ As well as Casava 1.8+ format,
 
     @EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG
 
-The overall format of the sequence name and comment may vary, but there must be an integer (1 or 2) at the end of the sequence name or as the first character in the comment (following a space after the sequence name). If your data is missing this pair information it will be necessary to fix them first (with the `addinfo` task, see below).
+The overall format of the sequence name and comment may vary, but there must be an integer (1 or 2) at the end of the sequence name or as the first character in the comment (following a space after the sequence name). If your data is missing this pair information it will be necessary to fix them first (with the `addinfo` method, see below).
 
 **TASKS**
 
-Pairfq has several different tasks which can be executed. Below is a brief description of each.
+Pairfq has several different methods which can be executed. Below is a brief description of each.
 
 * **makepairs**
 
@@ -113,11 +113,16 @@ In the above command, we specify the `makepairs` positional argument for pairing
 
 The last argument, `--index`, is optional and specifies that an index will be constructed and all computation will be done on disk. This is a good thing if you are trying to pair two files of around 50 million reads on a machine with, for example, 8 GB of RAM. The computation will be much slower but much less memory will be used. If you have a moderate amount of memory and not so many reads, omit this last option, as the processing will go much faster. Below are some rough benchmarks (with and without the `--index`) for `pairfq makepairs` using a file of 10.7 million forward reads and 10.8 million reverse reads.
 
-    Command                             Time (utime)    RAM
-    pairfq makepairs ...                17min04s        4.98G
-    pairfq makepairs ... --index        4hr20min        4.62G
+    Command                                         Time (utime)    RAM (RSS)
+    pairfq makepairs ...                            17min04s        4.98G
+    pairfq makepairs ... --index w/BerkeleyDB       4hr20min        4.62G
+    pairfq makepairs ... --index 
 
-These figures should be taken with caution, as they will vary depending on the machine and obviously, the amount of data being processed.
+Note that there are two different benchmarks with the `--index` command. The first one uses the BerkeleyDB package, which is much faster. You can install it with:
+
+    $ cpanm BerkeleyDB
+
+Installing BerkeleyDB isn't required, but it is clear that the indexing method will be much slower if this package is not available. These figures should be taken with caution, as they will vary depending on the machine and obviously, the amount of data being processed.
  
 * **joinpairs**
 
