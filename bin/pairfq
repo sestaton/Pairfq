@@ -1,150 +1,5 @@
 #!/usr/bin/env perl
 
-=head1 NAME 
-                                                                       
-pairfq - Sync paired-end sequences from separate FASTA/Q files
-
-=head1 SYNOPSIS    
-
-## Add pair information back to the reads
-
-pairfq addinfo -i s_1_1_trim.fq -o s_1_1_trim_info.fq -p 1
-
-pairfq addinfo -i s_1_2_trim.fq -o s_1_2_trim_info.fq -p 2
-
-## Sync paired-end reads and write singleton reads to separate files
-
-pairfq makepairs \
--f s_1_1_trim_info.fq \
--r s_1_2_trim_info.fq \
--fp s_1_1_trim_paired.fq \
--rp s_1_2_trim_paired.fq \
--fs s_1_1_trim_unpaired.fq \
--rs s_1_2_trim_unpaired.fq
-
-## Interleave the paired-end reads
-
-pairfq joinpairs -f s_1_1_trim_paired.fq -r s_1_2_trim_paired.fq -o s_1_interl.fq -im
-
-## Split the interleaved reads into separate forward and reverse files
-
-pairfq splitpairs -i s_1_interl.fq -f s_1_1_trim_p.fq -r s_1_2_trim_p.fq
-
-=head1 DESCRIPTION
-     
-Re-pair paired-end sequences that may have been separated by quality trimming.
-This script also writes the unpaired forward and reverse sequences to separate 
-files so that they may be used for assembly or mapping. The input may be FastA
-or FastQ format in either Illumina 1.3+ or Illumina 1.8 format. The input files
-may be compressed with gzip or bzip2. Optionally, the script can interleave paired
-files, separate interleaved files into separate forward and reverse files, and 
-fix paired-end files which have lost the pair information. 
-
-=head1 DEPENDENCIES
-
-Only core Perl is required (version 5.12 or greater). See below for information
-on which Perls have been tested.
-
-=head1 LICENSE
- 
-The MIT License should included with the project. If not, it can be found at: http://opensource.org/licenses/mit-license.php
-
-Copyright (C) 2013 S. Evan Staton
- 
-=head1 TESTED WITH:
-
-=over
-
-=item *
-Perl 5.14.1 (Red Hat Enterprise Linux Server release 5.7 (Tikanga))
-
-=item *
-Perl 5.14.2 (Red Hat Enterprise Linux Desktop release 6.2 (Santiago); Fedora 17)
-
-=item *
-Perl 5.18.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga))
-
-=back
-
-=head1 AUTHOR 
-
-S. Evan Staton                                                
-
-=head1 CONTACT
- 
-statonse at gmail dot com
-
-=head1 REQUIRED ARGUMENTS
-
-=over 2
-
-=item The task to perform. Must be one of: 'addinfo', 'makepairs', 'joinpairs', or 'splitpairs'.
-
-  addinfo    | Add the pair info back to the FastA/Q header.
-  makepairs  | Pair the forward and reverse reads and write singletons for both forward and reverse reads to separate files.
-  joinpairs  | Interleave the paired forward and reverse files.
-  splitpairs | Split the interleaved file into separate files for the forward and reverse reads.
-
-=back
-
-=head1 OPTIONS
-
-=over 2
-
-=item -f, --forward
-
-  The file of forward sequences from an Illumina paired-end sequencing run.
-
-=item -r, --reverse
-
-  The file of reverse sequences from an Illumina paired-end sequencing run.
-
-=item -fp, --forw_paired
-
-  The output file to place the paired forward reads.
-
-=item -rp, --rev_paired
-
-  The output file to place the paired reverse reads. 
-
-=item -fs, --forw_unpaired
-
-  The output file to place the unpaired forward reads. 
-
-=item -rs, --rev_unpaired
-
-  The output file to place the unpaired reverse reads. 
-
-=item -idx, --index
-
-  The computation should be not be in memory but on disk. This will be much slower, but it will not use hardly any
-  RAM, even if there are many millions of sequences in each input file.
-
-=item -c, --compress
-
-  The output files should be compressed. If given, this option must be given the arguments 'gzip' to compress with gzip,
-  or 'bzip2' to compress with bzip2.
-
-=item -uc, --uppercase
-
- For the 'addinfo' task, uppercase the sequence.
-
-=item --version
-
- Get the program version and exit.
-
-=item -h, --help
-
-  Print a usage statement. 
-
-=item -m, --man
-  
-  Print the full documentation.
-
-=back
-
-=cut
-
 use 5.012;
 use utf8;
 use strict;
@@ -169,12 +24,12 @@ my $infile;     # input file for 'addinfo' and 'splitpairs' methods
 my $outfile;    # output file for 'addinfo' and 'splitpairs' methods
 my $fread;      # file of forward reads for 'splitpairs', 'makepairs' and 'joinpairs' methods
 my $rread;      # file of forward reads for 'splitpairs', 'makepairs' and 'joinpairs' methods
-my $fpread;     # for 'makepairs' method
-my $rpread;     # for 'makeparis' method
-my $fsread;     # for 'makepairs' method
-my $rsread;     # for 'makepairs' method 
+my $fpread;     # file of paired forward reads for 'makepairs' method
+my $rpread;     # file of paired reverse reads for 'makeparis' method
+my $fsread;     # file of unpaired forward reads for 'makepairs' method
+my $rsread;     # file of unpaired reverse reads for 'makepairs' method 
 my $pairnum;    # for the 'addinfo' method
-my $index;      # for the 'makepairs' and 'joinpairs'
+my $index;      # option for the 'makepairs' and 'joinpairs' methods
 my $compress;   # for any/all the methods
 my $uppercase;  # for 'addinfo' method
 
@@ -209,8 +64,8 @@ pod2usage( -verbose => 2 ) if $man;
 
 say $VERSION and exit(0) if $version;
 
-my $task = shift;
-if (!defined $task) {
+my $method = shift;
+if (!defined $method) {
     say "\nERROR: Command line not parsed correctly. Check input.\n";
     usage();
     exit(1);
@@ -226,7 +81,7 @@ if ($compress) {
     }
 }
 
-if ($task eq 'addinfo') {
+if ($method eq 'addinfo') {
     if (!$pairnum || !$infile || !$outfile) {
 	say "\nERROR: Command line not parsed correctly. Check input.\n";
 	addinfo_usage();
@@ -234,7 +89,7 @@ if ($task eq 'addinfo') {
     }
     add_pair_info($pairnum, $infile, $outfile, $compress, $uppercase);
 }
-elsif ($task eq 'makepairs') {
+elsif ($method eq 'makepairs') {
     if (!$fread || !$rread || !$fpread || !$rpread || !$fsread || !$rsread) {
 	say "\nERROR: Command line not parsed correctly. Check input.\n";
 	makepairs_usage();
@@ -242,7 +97,7 @@ elsif ($task eq 'makepairs') {
     }
     make_pairs_and_singles($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $has_bdb, $compress);
 }
-elsif ($task eq 'joinpairs') {
+elsif ($method eq 'joinpairs') {
     if (!$fread || !$rread || !$outfile) {
 	say "\nERROR: Command line not parsed correctly. Check input.\n";
 	joinpairs_usage();
@@ -250,7 +105,7 @@ elsif ($task eq 'joinpairs') {
     }
     pairs_to_interleaved($fread, $rread, $outfile, $index, $has_bdb, $compress);
 }
-elsif ($task eq 'splitpairs') {
+elsif ($method eq 'splitpairs') {
     if (!$infile || !$fread || !$rread) {
 	say "\nERROR: Command line not parsed correctly. Check input.\n";
 	splitpairs_usage();
@@ -259,7 +114,7 @@ elsif ($task eq 'splitpairs') {
     interleaved_to_pairs($infile, $fread, $rread, $compress);
 }
 else {
-    say "\nERROR: '$task' is not recognized. See the manual by typing 'perl pairfq -m',".
+    say "\nERROR: '$method' is not recognized. See the manual by typing 'perl pairfq -m',".
 	" or see https://github.com/sestaton/Pairfq.\n";
     exit(1);
 }
@@ -737,7 +592,7 @@ sub usage {
 USAGE: $script [-h] [-m] [--version]
 
 Required:
-    addinfo           :      Add the pair info back to the FastA/Q header.
+    addinfo           :      Add the pair info back to the FASTA/Q header.
     makepairs         :      Pair the forward and reverse reads and write singletons 
                              for both forward and reverse reads to separate files.
     joinpairs         :      Interleave the paired forward and reverse files.
@@ -831,3 +686,144 @@ Options:
 
 EOF
 }
+
+__END__
+
+=head1 NAME 
+                                                                       
+pairfq - Sync paired-end sequences from separate FASTA/Q files
+
+=head1 SYNOPSIS    
+
+## Add pair information back to the reads
+
+pairfq addinfo -i s_1_1_trim.fq -o s_1_1_trim_info.fq -p 1
+
+pairfq addinfo -i s_1_2_trim.fq -o s_1_2_trim_info.fq -p 2
+
+## Sync paired-end reads and write singleton reads to separate files
+
+pairfq makepairs -f s_1_1_trim_info.fq -r s_1_2_trim_info.fq -fp s_1_1_trim_paired.fq -rp s_1_2_trim_paired.fq -fs s_1_1_trim_unpaired.fq -rs s_1_2_trim_unpaired.fq
+
+## Interleave the paired-end reads
+
+pairfq joinpairs -f s_1_1_trim_paired.fq -r s_1_2_trim_paired.fq -o s_1_interl.fq -im
+
+## Split the interleaved reads into separate forward and reverse files
+
+pairfq splitpairs -i s_1_interl.fq -f s_1_1_trim_p.fq -r s_1_2_trim_p.fq
+
+=head1 DESCRIPTION
+     
+Re-pair paired-end sequences that may have been separated by quality trimming.
+This script also writes the unpaired forward and reverse sequences to separate 
+files so that they may be used for assembly or mapping. The input may be FastA
+or FastQ format in either Illumina 1.3+ or Illumina 1.8 format. The input files
+may be compressed with gzip or bzip2. Optionally, the script can interleave paired
+files, separate interleaved files into separate forward and reverse files, and 
+fix paired-end files which have lost the pair information. 
+
+=head1 DEPENDENCIES
+
+Only core Perl is required (version 5.12 or greater). See below for information
+on which Perls have been tested.
+
+=head1 LICENSE
+ 
+The MIT License should included with the project. If not, it can be found at: http://opensource.org/licenses/mit-license.php
+
+Copyright (C) 2013 S. Evan Staton
+ 
+=head1 TESTED WITH:
+
+=over
+
+=item *
+Perl 5.14.1 (Red Hat Enterprise Linux Server release 5.7 (Tikanga))
+
+=item *
+Perl 5.14.2 (Red Hat Enterprise Linux Desktop release 6.2 (Santiago); Fedora 17)
+
+=item *
+Perl 5.18.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga)); BerkeleyDB 0.54
+
+=back
+
+=head1 AUTHOR 
+
+S. Evan Staton                                                
+
+=head1 CONTACT
+ 
+statonse at gmail dot com
+
+=head1 REQUIRED ARGUMENTS
+
+=over 2
+
+=item The method to perform. Must be one of: 'addinfo', 'makepairs', 'joinpairs', or 'splitpairs'.
+
+  addinfo    | Add the pair info back to the FastA/Q header.
+  makepairs  | Pair the forward and reverse reads and write singletons for both forward and reverse reads to separate files.
+  joinpairs  | Interleave the paired forward and reverse files.
+  splitpairs | Split the interleaved file into separate files for the forward and reverse reads.
+
+=back
+
+=head1 OPTIONS
+
+=over 2
+
+=item -f, --forward
+
+  The file of forward sequences from an Illumina paired-end sequencing run.
+
+=item -r, --reverse
+
+  The file of reverse sequences from an Illumina paired-end sequencing run.
+
+=item -fp, --forw_paired
+
+  The output file to place the paired forward reads.
+
+=item -rp, --rev_paired
+
+  The output file to place the paired reverse reads. 
+
+=item -fs, --forw_unpaired
+
+  The output file to place the unpaired forward reads. 
+
+=item -rs, --rev_unpaired
+
+  The output file to place the unpaired reverse reads. 
+
+=item -idx, --index
+
+  The computation should be not be in memory but on disk. This will be much slower, but it will not use hardly any
+  RAM, even if there are many millions of sequences in each input file.
+
+=item -c, --compress
+
+  The output files should be compressed. If given, this option must be given the arguments 'gzip' to compress with gzip,
+  or 'bzip2' to compress with bzip2.
+
+=item -uc, --uppercase
+
+ For the 'addinfo' method, uppercase the sequence.
+
+=item --version
+
+ Get the program version and exit.
+
+=item -h, --help
+
+  Print a usage statement. 
+
+=item -m, --man
+  
+  Print the full documentation.
+
+=back
+
+=cut
