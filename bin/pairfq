@@ -14,7 +14,13 @@ pairfq addinfo -i s_1_2_trim.fq -o s_1_2_trim_info.fq -p 2
 
 ## Sync paired-end reads and write singleton reads to separate files
 
-pairfq makepairs -f s_1_1_trim_info.fq -r s_1_2_trim_info.fq -fp s_1_1_trim_paired.fq -rp s_1_2_trim_paired.fq -fs s_1_1_trim_unpaired.fq -rs s_1_2_trim_unpaired.fq
+pairfq makepairs \
+-f s_1_1_trim_info.fq \
+-r s_1_2_trim_info.fq \
+-fp s_1_1_trim_paired.fq \
+-rp s_1_2_trim_paired.fq \
+-fs s_1_1_trim_unpaired.fq \
+-rs s_1_2_trim_unpaired.fq
 
 ## Interleave the paired-end reads
 
@@ -146,9 +152,9 @@ use warnings;
 use warnings FATAL => "utf8";
 use charnames qw(:full :short);
 use Encode qw(encode decode);
+use Cwd;
 use File::Basename;
 use File::Temp;
-use Cwd;
 use DB_File;
 use DBM_Filter;
 use IO::Compress::Gzip qw(gzip $GzipError);
@@ -159,9 +165,22 @@ use Pod::Usage;
 
 our $VERSION = '0.05';
 
-my ($infile, $outfile, $fread, $rread, $fpread, 
-    $rpread, $fsread, $rsread, $pairnum, $index, 
-    $compress, $uppercase, $version, $help, $man);
+my $infile;     # input file for 'addinfo' and 'splitpairs' methods
+my $outfile;    # output file for 'addinfo' and 'splitpairs' methods
+my $fread;      # file of forward reads for 'splitpairs', 'makepairs' and 'joinpairs' methods
+my $rread;      # file of forward reads for 'splitpairs', 'makepairs' and 'joinpairs' methods
+my $fpread;     # for 'makepairs' method
+my $rpread;     # for 'makeparis' method
+my $fsread;     # for 'makepairs' method
+my $rsread;     # for 'makepairs' method 
+my $pairnum;    # for the 'addinfo' method
+my $index;      # for the 'makepairs' and 'joinpairs'
+my $compress;   # for any/all the methods
+my $uppercase;  # for 'addinfo' method
+
+my $version; 
+my $help;
+my $man;
 
 GetOptions(
 	   'i|infile=s'         => \$infile,
@@ -197,9 +216,12 @@ if (!defined $task) {
     exit(1);
 }
 
+my $has_bdb = check_bdb($index);
+
 if ($compress) {
     unless ($compress eq 'gzip' || $compress eq 'bzip2') {
-	say "\nERROR: '$compress' is not recognized as an argument to the --compress option. Must be 'gzip' or 'bzip2'. Exiting.\n";
+	say "\nERROR: '$compress' is not recognized as an argument to the --compress option.".
+	    " Must be 'gzip' or 'bzip2'. Exiting.\n";
 	exit(1);
     }
 }
@@ -218,7 +240,7 @@ elsif ($task eq 'makepairs') {
 	makepairs_usage();
 	exit(1);
     }
-    make_pairs_and_singles($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress);
+    make_pairs_and_singles($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $has_bdb, $compress);
 }
 elsif ($task eq 'joinpairs') {
     if (!$fread || !$rread || !$outfile) {
@@ -226,7 +248,7 @@ elsif ($task eq 'joinpairs') {
 	joinpairs_usage();
 	exit(1);
     }
-    pairs_to_interleaved($fread, $rread, $outfile, $index, $compress);
+    pairs_to_interleaved($fread, $rread, $outfile, $index, $has_bdb, $compress);
 }
 elsif ($task eq 'splitpairs') {
     if (!$infile || !$fread || !$rread) {
@@ -237,7 +259,8 @@ elsif ($task eq 'splitpairs') {
     interleaved_to_pairs($infile, $fread, $rread, $compress);
 }
 else {
-    say "\nERROR: '$task' is not recognized. See the manual by typing 'perl pairfq -m', or see https://github.com/sestaton/Pairfq.\n";
+    say "\nERROR: '$task' is not recognized. See the manual by typing 'perl pairfq -m',".
+	" or see https://github.com/sestaton/Pairfq.\n";
     exit(1);
 }
 
@@ -282,9 +305,9 @@ sub add_pair_info {
 }
 
 sub make_pairs_and_singles {
-    my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress) = @_;
+    my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $has_bdb, $compress) = @_;
 
-    my ($rseqpairs, $db_file, $rct) = store_pair($rread, $index);
+    my ($rseqpairs, $db_file, $rct) = store_pair($rread, $index, $has_bdb);
 
     local @SIG{qw(INT TERM HUP)} = sub { untie %$rseqpairs if defined $index; unlink $db_file if -e $db_file; };
 
@@ -368,8 +391,9 @@ sub make_pairs_and_singles {
 		}
 	    }
 	}
-	$forw_id = undef;
-	$rev_id = undef;
+	undef $forw_id;
+	undef $rev_id;
+	undef $fname_enc;
     }
     close $fh;
     close $fp;
@@ -408,6 +432,7 @@ sub make_pairs_and_singles {
     untie %$rseqpairs if defined $index;
     unlink $db_file if -e $db_file;
 
+    ##TODO: make printing stats an option
     my $maxfn = max(length($fread), length($rread), length($fpread), length($rpread), length($fsread), length($rsread));
     my $offset = $maxfn + 38;
     my $date = qx(date); chomp $date;
@@ -425,9 +450,9 @@ sub make_pairs_and_singles {
 }
 
 sub pairs_to_interleaved {
-    my ($forward, $reverse, $outfile, $index, $compress) = @_;
+    my ($forward, $reverse, $outfile, $index, $has_bdb, $compress) = @_;
 
-    my ($pairs, $db_file, $ct) = store_pair($forward, $index);
+    my ($pairs, $db_file, $ct) = store_pair($forward, $index, $has_bdb);
 
     local @SIG{qw(INT TERM HUP)} = sub { untie %$pairs if defined $index; unlink $db_file if -e $db_file; };
 
@@ -583,12 +608,10 @@ sub compress {
 }
 
 sub store_pair {
-    my ($file, $index) = @_;
+    my ($file, $index, $has_bdb) = @_;
 
     my $rct = 0;
     my %rseqpairs;
-    $DB_BTREE->{cachesize} = 100000;
-    $DB_BTREE->{flags} = R_DUP;
     my $cwd = getcwd();
     my $db_file = File::Temp->new( TEMPLATE => "pairfq_XXXX",
 				   DIR      => $cwd,
@@ -596,10 +619,18 @@ sub store_pair {
 				   UNLINK   => 0 );
     unlink $db_file if -e $db_file;
 
-    if (defined $index) { 
-	my $db = tie %rseqpairs, 'DB_File', $db_file, O_RDWR|O_CREAT, 0666, $DB_BTREE
-	    or die "\nERROR: Could not open DBM file $db_file: $!\n";
-	$db->Filter_Value_Push("utf8");
+    if (defined $index) {
+	if ($has_bdb) {
+	    tie %rseqpairs, "BerkeleyDB::Btree", -Filename => $db_file, -Flags => DB_CREATE
+		or die "Cannot open file $db_file: $! $BerkeleyDB::Error\n" ;
+	}
+	else {
+	     $DB_BTREE->{cachesize} = 100000;
+	     #$DB_BTREE->{flags} = R_DUP;
+	     my $db = tie %rseqpairs, 'DB_File', $db_file, O_RDWR|O_CREAT, 0666, $DB_BTREE
+		 or die "\nERROR: Could not open DBM file $db_file: $!\n";
+	     $db->Filter_Value_Push("utf8");
+	}
     }
 
     my @raux = undef;
@@ -679,6 +710,21 @@ sub readfq {
     }
     $aux->[1] = 1;
     return ($name, $seq);
+}
+
+sub check_bdb {
+    my $index = shift;
+    my $has_bdb = 0;
+    
+    if (defined $index) {
+	# NB: This is not the best way to do this in general.
+        # I would prefer to use something like Try::Tiny,
+        # but this should work with base Perl.
+	eval { require BerkeleyDB; };
+	$has_bdb = 1 unless $@;
+    }
+
+    return $has_bdb;
 }
 
 sub mk_key { return join "\N{INVISIBLE SEPARATOR}", @_ }
