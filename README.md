@@ -5,19 +5,9 @@ Sync paired-end FASTA/Q files and keep singleton reads
 
 **INSTALLATION**
 
-Perl version 5.12 (or greater) must be installed to use Pairfq, but there are no external modules required. If you have [cpanminus](http://search.cpan.org/~miyagawa/App-cpanminus-1.6935/lib/App/cpanminus.pm), installation can be done in one shot:
+Perl version 5.12 (or greater) must be installed to use Pairfq, and there are a couple of external modules required (which may be installed already depending on your version of Perl). If you have [cpanminus](http://search.cpan.org/~miyagawa/App-cpanminus-1.6935/lib/App/cpanminus.pm), installation can be done with a single command:
 
-    cpanm -n git://github.com/sestaton/Pairfq.git
-
-If you don't have cpanminus, it is advised to run these commands in the top directory (requires `make`):
-
-    perl Makefile.PL
-    make
-    make install
-
-Updating is then as easy as repeating those commands (after a git pull or clone). 
-
-As a third option, if you don't have `make`, or you want to move `pairfq` to a custom location, just make the program (found in the "bin" directory) executable and add it to your PATH. The problem with this third approach is that it is harder to keep updated.
+    cpanm git://github.com/sestaton/Pairfq.git
 
 **USAGE**
 
@@ -115,14 +105,9 @@ The last argument, `--index`, is optional and specifies that an index will be co
 
     Command                                         Time (utime)    RAM (RSS)
     pairfq makepairs ...                            22min02s        4.98G
-    pairfq makepairs ... --index w/BerkeleyDB       3hr19min        2.28G
-    pairfq makepairs ... --index 
+    pairfq makepairs ... --index                    3hr19min        2.28G
 
-Note that there are two different benchmarks with the `--index` command. The first one uses the BerkeleyDB package, which is much faster. You can install it with:
-
-    $ cpanm BerkeleyDB
-
-Installing BerkeleyDB isn't required, but it is clear that the indexing method will be much slower if this package is not available. These figures should be taken with caution, as they will vary depending on the machine and obviously, the amount of data being processed.
+These figures should be taken with caution, as they will vary depending on the machine and obviously, the amount of data being processed.
  
 * **joinpairs**
 
