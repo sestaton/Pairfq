@@ -471,7 +471,7 @@ sub store_pair {
     
     if (defined $index) {
 	my $db = tie %rseqpairs, 'BerkeleyDB::Btree', -Filename => $db_file, -Flags => DB_CREATE
-	    or die "\nERROR: Could not open DBM file: $db_file: $!\n";
+	    or die "\nERROR: Could not open DBM file: $db_file: $! $BerkeleyDB::Error\n";
 	
 	$db->filter_store_key( sub { $_ = encode("utf8", $_); } );
 	$db->filter_fetch_key( sub { $_ = decode("utf8", $_); } );
@@ -702,7 +702,8 @@ fix paired-end files which have lost the pair information.
 
 =head1 DEPENDENCIES
 
-Only core Perl is required (version 5.12 or greater). See below for information
+Perl is required (version 5.12 or greater), along with two modules used for testing
+(IPC::System::Simple and List::MoreUtils). See below for information
 on which Perls have been tested.
 
 =head1 LICENSE
@@ -720,6 +721,9 @@ Perl 5.14.1 (Red Hat Enterprise Linux Server release 5.7 (Tikanga))
 
 =item *
 Perl 5.14.2 (Red Hat Enterprise Linux Desktop release 6.2 (Santiago); Fedora 17)
+
+=item *
+Perl 5.16.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga)); BerkeleyDB 0.54
 
 =item *
 Perl 5.18.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga)); BerkeleyDB 0.54
