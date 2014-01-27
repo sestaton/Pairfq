@@ -10,28 +10,14 @@ use Encode qw(encode decode);
 use Cwd;
 use File::Basename;
 use File::Temp;
-use DBM_Filter;
+use BerkeleyDB;
 use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Compress::Bzip2 qw(bzip2 $Bzip2Error);
 use List::Util qw(max);
 use Getopt::Long;
 use Pod::Usage;
 
-BEGIN { 
-    eval { 
-	require BerkeleyDB; 
-	BerkeleyDB->import(); 
-	1; 
-    } or do { 
-	my $error = $@; 
-	if ($error) { 
-	    require DB_File; 
-	    DB_File->import(); 
-	}
-    };
-}
-
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 my $infile;     # input file for 'addinfo' and 'splitpairs' methods
 my $outfile;    # output file for 'addinfo' and 'splitpairs' methods
@@ -483,10 +469,8 @@ sub store_pair {
 				   UNLINK   => 0 );
     unlink $db_file if -e $db_file;
     
-    my $has_bdb = 1;
-    eval { require BerkeleyDB; 1;} or do { $has_bdb = 0 if $@; };
-
     if (defined $index) {
+<<<<<<< HEAD
 	if ($has_bdb) {
 	    my $db = tie %rseqpairs, 'BerkeleyDB::Btree', -Filename => $db_file, -Flags => DB_CREATE
 		or die "\nERROR: Could not open DBM file: $db_file: $!\n";
@@ -504,8 +488,18 @@ sub store_pair {
 	     $db->Filter_Push( Store => sub { $_ = encode("utf8", $_); },
 	                       Fetch => sub { $_ = decode("utf8", $_); } ); 
 	}
+=======
+	my $db = tie %rseqpairs, 'BerkeleyDB::Btree', -Filename => $db_file, -Flags => DB_CREATE
+	    or die "\nERROR: Could not open DBM file: $db_file: $! $BerkeleyDB::Error\n";
+	
+	$db->filter_store_key( sub { $_ = encode("utf8", $_); } );
+	$db->filter_fetch_key( sub { $_ = decode("utf8", $_); } );
+	
+	$db->filter_store_value( sub { $_ = encode("utf8", $_); } );
+	$db->filter_fetch_value( sub { $_ = decode("utf8", $_); } );
+>>>>>>> topic/remove_dbfile
     }
-
+    
     my @raux = undef;
     my ($rname, $rcomm, $rseq, $rqual, $rname_k, $rname_enc);
 
@@ -728,7 +722,8 @@ fix paired-end files which have lost the pair information.
 
 =head1 DEPENDENCIES
 
-Only core Perl is required (version 5.12 or greater). See below for information
+Perl is required (version 5.12 or greater), along with two modules used for testing
+(IPC::System::Simple and List::MoreUtils). See below for information
 on which Perls have been tested.
 
 =head1 LICENSE
@@ -746,6 +741,9 @@ Perl 5.14.1 (Red Hat Enterprise Linux Server release 5.7 (Tikanga))
 
 =item *
 Perl 5.14.2 (Red Hat Enterprise Linux Desktop release 6.2 (Santiago); Fedora 17)
+
+=item *
+Perl 5.16.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga)); BerkeleyDB 0.54
 
 =item *
 Perl 5.18.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga)); BerkeleyDB 0.54
