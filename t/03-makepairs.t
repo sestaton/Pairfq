@@ -9,6 +9,7 @@ use File::Basename;
 use autodie qw(open);
 use Test::More tests => 32;
 
+#TODO: Add tests that sequences and IDs are correct between tests
 my $fq_data = _build_fq_data();
 my $fa_data = _build_fa_data();
 
