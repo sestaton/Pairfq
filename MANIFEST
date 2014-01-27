@@ -4,6 +4,7 @@ LICENSE
 Makefile.PL
 MANIFEST
 README.md
+cpanfile
 t/00-load.t
 t/01-tasks.t
 t/02-addinfo.t
