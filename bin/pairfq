@@ -10,7 +10,6 @@ use Encode qw(encode decode);
 use Cwd;
 use File::Basename;
 use File::Temp;
-use DB_File;
 use DBM_Filter;
 use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Compress::Bzip2 qw(bzip2 $Bzip2Error);
@@ -18,7 +17,21 @@ use List::Util qw(max);
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.05';
+BEGIN { 
+    eval { 
+	require BerkeleyDB; 
+	BerkeleyDB->import(); 
+	1; 
+    } or do { 
+	my $error = $@; 
+	if ($error) { 
+	    require DB_File; 
+	    DB_File->import(); 
+	}
+    };
+}
+
+our $VERSION = '0.06';
 
 my $infile;     # input file for 'addinfo' and 'splitpairs' methods
 my $outfile;    # output file for 'addinfo' and 'splitpairs' methods
@@ -71,8 +84,6 @@ if (!defined $method) {
     exit(1);
 }
 
-my $has_bdb = check_bdb($index);
-
 if ($compress) {
     unless ($compress eq 'gzip' || $compress eq 'bzip2') {
 	say "\nERROR: '$compress' is not recognized as an argument to the --compress option.".
@@ -95,7 +106,7 @@ elsif ($method eq 'makepairs') {
 	makepairs_usage();
 	exit(1);
     }
-    make_pairs_and_singles($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $has_bdb, $compress);
+    make_pairs_and_singles($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress);
 }
 elsif ($method eq 'joinpairs') {
     if (!$fread || !$rread || !$outfile) {
@@ -103,7 +114,7 @@ elsif ($method eq 'joinpairs') {
 	joinpairs_usage();
 	exit(1);
     }
-    pairs_to_interleaved($fread, $rread, $outfile, $index, $has_bdb, $compress);
+    pairs_to_interleaved($fread, $rread, $outfile, $index, $compress);
 }
 elsif ($method eq 'splitpairs') {
     if (!$infile || !$fread || !$rread) {
@@ -125,6 +136,7 @@ exit;
 #
 sub add_pair_info {
     my ($pairnum, $infile, $outfile, $compress, $uppercase) = @_;
+
     my $pair;
     if ($pairnum == 1) {
 	$pair = "/1";
@@ -160,9 +172,9 @@ sub add_pair_info {
 }
 
 sub make_pairs_and_singles {
-    my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $has_bdb, $compress) = @_;
+    my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress) = @_;
 
-    my ($rseqpairs, $db_file, $rct) = store_pair($rread, $index, $has_bdb);
+    my ($rseqpairs, $db_file, $rct) = store_pair($rread, $index);
 
     local @SIG{qw(INT TERM HUP)} = sub { untie %$rseqpairs if defined $index; unlink $db_file if -e $db_file; };
 
@@ -189,7 +201,7 @@ sub make_pairs_and_singles {
 	    $fname = mk_key($fname, $fcomm);
 	}
 	else {
-	    say "\nERROR: Could not determine FastA/Q format. ".
+	    say "\nERROR: Could not determine FASTA/Q format. ".
 		"Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
 	    exit(1);
 	}
@@ -201,11 +213,10 @@ sub make_pairs_and_singles {
 	    $rev_id  = $name.q{ 2}.$comm;
 	}
 
-	$fname_enc = encode('UTF-8', $fname);
-	if (exists $rseqpairs->{$fname_enc}) {
+	if (exists $rseqpairs->{$fname}) {
 	    $fpct++; $rpct++;
 	    if (defined $fqual) {
-		my ($rread, $rqual) = mk_vec($rseqpairs->{$fname_enc});
+		my ($rread, $rqual) = mk_vec($rseqpairs->{$fname});
 		if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
 		    say $fp join "\n","@".$forw_id, $fseq, "+", $fqual;
 		    say $rp join "\n","@".$rev_id, $rread, "+", $rqual;
@@ -218,14 +229,14 @@ sub make_pairs_and_singles {
 	    else {
 		if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
 		    say $fp join "\n",">".$forw_id, $fseq;
-		    say $rp join "\n",">".$rev_id, $rseqpairs->{$fname_enc};
+		    say $rp join "\n",">".$rev_id, $rseqpairs->{$fname};
 		} 
 		else {
 		    say $fp join "\n",">".$fname.q{/1}, $fseq;
-		    say $rp join "\n",">".$fname.q{/2}, $rseqpairs->{$fname_enc};
+		    say $rp join "\n",">".$fname.q{/2}, $rseqpairs->{$fname};
 		}
 	    }
-	    delete $rseqpairs->{$fname_enc};
+	    delete $rseqpairs->{$fname};
 	} 
 	else {
 	    $fsct++;
@@ -248,7 +259,6 @@ sub make_pairs_and_singles {
 	}
 	undef $forw_id;
 	undef $rev_id;
-	undef $fname_enc;
     }
     close $fh;
     close $fp;
@@ -258,25 +268,24 @@ sub make_pairs_and_singles {
     open my $rs, '>', $rsread or die "\nERROR: Could not open file: $rsread\n";
     binmode $rs, ":encoding(UTF-8)";
 
-    while (my ($rname_up, $rseq_up) = each %$rseqpairs) {
+    while (my ($rname_up_unenc, $rseq_up_unenc) = each %$rseqpairs) {
 	$rsct++;
-	my $rname_unenc = decode('UTF-8', $rname_up);
-	my ($name_up_unenc, $comm_up_unenc) = mk_vec($rname_unenc);
-	my ($seq_up_unenc, $qual_up_unenc) = mk_vec($rseq_up);
+	my ($rname_up, $rcomm_up) = mk_vec($rname_up_unenc);
+	my ($rseq_up, $rqual_up) = mk_vec($rseq_up_unenc);
 
-	my $rev_id_up .= $name_up_unenc.q{ 2}.$comm_up_unenc if defined $comm_up_unenc;
+	my $rev_id_up .= $rname_up.q{ 2}.$rcomm_up if defined $rcomm_up;
     
-	if (defined $comm_up_unenc && defined $qual_up_unenc) {
-	    say $rs join "\n","@".$rev_id_up, $seq_up_unenc, "+", $qual_up_unenc;
+	if (defined $rcomm_up && defined $rqual_up) {
+	    say $rs join "\n","@".$rev_id_up, $rseq_up, "+", $rqual_up;
 	} 
-	elsif (defined $comm_up_unenc && !defined $qual_up_unenc) {
-	    say $rs join "\n",">".$rev_id_up, $rseq_up;
+	elsif (defined $rcomm_up && !defined $rqual_up) {
+	    say $rs join "\n",">".$rev_id_up, $rseq_up_unenc;
 	} 
-	elsif (!defined $comm_up_unenc && defined $qual_up_unenc) {
-	    say $rs join "\n", "@".$name_up_unenc.q{/2}, $seq_up_unenc, "+", $qual_up_unenc;
+	elsif (!defined $rcomm_up && defined $rqual_up) {
+	    say $rs join "\n", "@".$rname_up.q{/2}, $rseq_up, "+", $rqual_up;
 	}
 	else {
-	    say $rs join "\n",">".$name_up_unenc.q{/2}, $rseq_up;
+	    say $rs join "\n",">".$rname_up.q{/2}, $rseq_up_unenc;
 	}
     }
     close $rs;
@@ -305,9 +314,9 @@ sub make_pairs_and_singles {
 }
 
 sub pairs_to_interleaved {
-    my ($forward, $reverse, $outfile, $index, $has_bdb, $compress) = @_;
+    my ($forward, $reverse, $outfile, $index, $compress) = @_;
 
-    my ($pairs, $db_file, $ct) = store_pair($forward, $index, $has_bdb);
+    my ($pairs, $db_file, $ct) = store_pair($forward, $index);
 
     local @SIG{qw(INT TERM HUP)} = sub { untie %$pairs if defined $index; unlink $db_file if -e $db_file; };
 
@@ -338,10 +347,9 @@ sub pairs_to_interleaved {
 	    $rev_id  = $name.q{ 2}.$comm;
 	}
 
-	$rname_enc = encode('UTF-8', $rname);
-	if (exists $pairs->{$rname_enc}) {
+	if (exists $pairs->{$rname}) {
 	    if (defined $rqual) {
-		my ($seqf, $qualf) = mk_vec($pairs->{$rname_enc});
+		my ($seqf, $qualf) = mk_vec($pairs->{$rname});
 		if ($rname =~ /\N{INVISIBLE SEPARATOR}/) {
 		    say $out join "\n", "@".$forw_id, $seqf, "+", $qualf;
 		    say $out join "\n", "@".$rev_id, $rseq, "+", $rqual;
@@ -353,11 +361,11 @@ sub pairs_to_interleaved {
 	    }
 	    else {
 		if ($rname =~ /\N{INVISIBLE SEPARATOR}/) {
-		    say $out join "\n", ">".$forw_id, $pairs->{$rname_enc};
+		    say $out join "\n", ">".$forw_id, $pairs->{$rname};
 		    say $out join "\n", ">".$rev_id, $rseq;
 		}
 		else {
-		    say $out join "\n", ">".$rname.q{/1}, $pairs->{$rname_enc};
+		    say $out join "\n", ">".$rname.q{/1}, $pairs->{$rname};
 		    say $out join "\n", ">".$rname.q{/2}, $rseq;                                               
 		}
 	    }
@@ -375,6 +383,7 @@ sub pairs_to_interleaved {
 
 sub interleaved_to_pairs {
     my ($infile, $forward, $reverse, $compress) = @_;
+
     my $fh = get_fh($infile);
     open my $f, '>', $forward or die "\nERROR: Could not open file: $forward\n";
     open my $r, '>', $reverse or die "\nERROR: Could not open file: $reverse\n"; 
@@ -396,7 +405,6 @@ sub interleaved_to_pairs {
 	    say $r join "\n", "@".$name.q{ }.$comm, $seq, "+", $qual if defined $qual && defined $comm;
 	}
     }
-
     close $fh;
     close $f;
     close $r;
@@ -427,6 +435,7 @@ sub get_fh {
 
 sub compress {
     my ($compress, $fp, $rp, $fs, $rs) = @_;
+
     if ($compress eq 'gzip') {
 	my $fpo = $fp.".gz";
 	my $rpo = $rp.".gz" if defined $rp;
@@ -463,7 +472,7 @@ sub compress {
 }
 
 sub store_pair {
-    my ($file, $index, $has_bdb) = @_;
+    my ($file, $index) = @_;
 
     my $rct = 0;
     my %rseqpairs;
@@ -473,18 +482,32 @@ sub store_pair {
 				   SUFFIX   => ".bdb",
 				   UNLINK   => 0 );
     unlink $db_file if -e $db_file;
+    
+    my $has_bdb = 1;
+    eval { require BerkeleyDB; 1;} or do { $has_bdb = 0 if $@; };
 
     if (defined $index) {
 	if ($has_bdb) {
-	    tie %rseqpairs, "BerkeleyDB::Btree", -Filename => $db_file, -Flags => DB_CREATE
-		or die "Cannot open file $db_file: $! $BerkeleyDB::Error\n" ;
+	    # we need to turn off strict subs 
+	    #my $flags = 'DB_CREATE';
+	    #no strict qw(subs);
+	    #no warnings qw(once);
+
+	    my $db = tie %rseqpairs, 'BerkeleyDB::Btree', -Filename => $db_file, -Flags => 'DB_CREATE'
+		or die "\nERROR: Could not open DBM file: $db_file: $!\n";
+
+	    $db->filter_store_key( sub { $_ = encode("utf8", $_); } );
+	    $db->filter_fetch_key( sub { $_ = decode("utf8", $_); } );
+
+	    $db->filter_store_value( sub { $_ = encode("utf8", $_); } );
+	    $db->filter_fetch_value( sub { $_ = decode("utf8", $_); } );
 	}
 	else {
-	     $DB_BTREE->{cachesize} = 100000;
-	     #$DB_BTREE->{flags} = R_DUP;
-	     my $db = tie %rseqpairs, 'DB_File', $db_file, O_RDWR|O_CREAT, 0666, $DB_BTREE
-		 or die "\nERROR: Could not open DBM file $db_file: $!\n";
-	     $db->Filter_Value_Push("utf8");
+	    my $db = tie %rseqpairs, 'DB_File', $db_file
+		or die "\nERROR: Could not open DBM file: $db_file: $!\n";
+
+	     $db->Filter_Push( Store => sub { $_ = encode("utf8", $_); },
+	                       Fetch => sub { $_ = decode("utf8", $_); } ); 
 	}
     }
 
@@ -506,7 +529,7 @@ sub store_pair {
 		$rname = mk_key($rname, $rcomm);
 	    }
 	    else {
-		say "\nERROR: Could not determine FastA/Q format. ".
+		say "\nERROR: Could not determine FASTA/Q format. ".
 		    "Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
 		exit(1);
 	    }
@@ -565,21 +588,6 @@ sub readfq {
     }
     $aux->[1] = 1;
     return ($name, $seq);
-}
-
-sub check_bdb {
-    my $index = shift;
-    my $has_bdb = 0;
-    
-    if (defined $index) {
-	# NB: This is not the best way to do this in general.
-        # I would prefer to use something like Try::Tiny,
-        # but this should work with base Perl.
-	eval { require BerkeleyDB; };
-	$has_bdb = 1 unless $@;
-    }
-
-    return $has_bdb;
 }
 
 sub mk_key { return join "\N{INVISIBLE SEPARATOR}", @_ }
@@ -763,7 +771,7 @@ statonse at gmail dot com
 
 =item The method to perform. Must be one of: 'addinfo', 'makepairs', 'joinpairs', or 'splitpairs'.
 
-  addinfo    | Add the pair info back to the FastA/Q header.
+  addinfo    | Add the pair info back to the FASTA/Q header.
   makepairs  | Pair the forward and reverse reads and write singletons for both forward and reverse reads to separate files.
   joinpairs  | Interleave the paired forward and reverse files.
   splitpairs | Split the interleaved file into separate files for the forward and reverse reads.
