@@ -71,7 +71,7 @@ As well as Casava 1.8+ format,
 
 The overall format of the sequence name and comment may vary, but there must be an integer (1 or 2) at the end of the sequence name or as the first character in the comment (following a space after the sequence name). If your data is missing this pair information it will be necessary to fix them first (with the `addinfo` method, see below).
 
-**TASKS**
+**METHODS**
 
 Pairfq has several different methods which can be executed. Below is a brief description of each.
 
@@ -101,7 +101,7 @@ You have quality/adapter trimmed two paired-end sequence files and now they are 
 
 In the above command, we specify the `makepairs` positional argument for pairing reads. The short arguements are `-f` for the file of forward reads, `-r` for the reverse reads, `-fp` for the file of paired forward reads, `-rp` for the file of reverse paired reads, `-fs` for the file of forward singleton/unpaired reads, and `-rs` for the singleton/unpaired reverse reads. 
 
-The last argument, `--index`, is optional and specifies that an index will be constructed (instead of all computation being done in memory). This is a good thing if you are trying to pair two files of around 50 million reads on a machine with, for example, 8 GB of RAM. The computation will be much slower but much less memory will be used. If you have a moderate amount of memory and not so many reads, omit this last option, as the processing will go much faster.
+The last argument, `--index`, is optional and specifies that an index will be constructed (instead of all computation being done in memory). The computation will be much slower but less memory will be used. If you have a moderate amount of memory and not so many reads, omit this last option, as the processing will go much faster.
 
 Below are some rough benchmarks (with and without the `--index`) for `pairfq makepairs` using a FASTQ file of 10.7 million forward reads and a FASTQ file of 10.8 million reverse reads.
 
