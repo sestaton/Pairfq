@@ -99,7 +99,7 @@ You have quality/adapter trimmed two paired-end sequence files and now they are 
 
     $ pairfq makepairs -f s_1_1_trimmed.fq -r s_1_2_trimmed.fq -fp s_1_1_trimmed_p.fq -rp s_1_2_trimmed_p.fq -fs s_1_1_trimmed_s.fq -rs s_1_2_trimmed_s.fq --index
 
-In the above command, we specify the `makepairs` positional argument for pairing reads. The short arguements are `-f` for the file of forward reads, `-r` for the reverse reads, `-fp` for the file of paired forward reads, `-rp` for the file of reverse paired reads, `-fs` for the file of forward singleton/unpaired reads, and `-rs` for the singleton/unpaired reverse reads. 
+In the above command, we specify the `makepairs` positional argument for pairing reads. The short arguments are `-f` for the file of forward reads, `-r` for the reverse reads, `-fp` for the file of paired forward reads, `-rp` for the file of reverse paired reads, `-fs` for the file of forward singleton/unpaired reads, and `-rs` for the singleton/unpaired reverse reads. 
 
 The last argument, `--index`, is optional and specifies that an index will be constructed (instead of all computation being done in memory). The computation will be much slower but less memory will be used. If you have a moderate amount of memory and not so many reads, omit this last option, as the processing will go much faster.
 
