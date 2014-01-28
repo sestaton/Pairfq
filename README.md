@@ -20,7 +20,7 @@ Type `pairfq` at the command line and you will see a menu describing the usage.
     USAGE: pairfq [-h] [-m] [--version]
 
     Required:
-        addinfo           :      Add the pair info back to the FastA/Q header.
+        addinfo           :      Add the pair info back to the FASTA/Q header.
         makepairs         :      Pair the forward and reverse reads and write singletons 
                                  for both forward and reverse reads to separate files.
         joinpairs         :      Interleave the paired forward and reverse files.
