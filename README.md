@@ -101,10 +101,12 @@ You have quality/adapter trimmed two paired-end sequence files and now they are 
 
 In the above command, we specify the `makepairs` positional argument for pairing reads. The short arguements are `-f` for the file of forward reads, `-r` for the reverse reads, `-fp` for the file of paired forward reads, `-rp` for the file of reverse paired reads, `-fs` for the file of forward singleton/unpaired reads, and `-rs` for the singleton/unpaired reverse reads. 
 
-The last argument, `--index`, is optional and specifies that an index will be constructed (instead of all computation being done in memory). This is a good thing if you are trying to pair two files of around 50 million reads on a machine with, for example, 8 GB of RAM. The computation will be much slower but much less memory will be used. If you have a moderate amount of memory and not so many reads, omit this last option, as the processing will go much faster. Below are some rough benchmarks (with and without the `--index`) for `pairfq makepairs` using a file of 10.7 million forward reads and 10.8 million reverse reads.
+The last argument, `--index`, is optional and specifies that an index will be constructed (instead of all computation being done in memory). This is a good thing if you are trying to pair two files of around 50 million reads on a machine with, for example, 8 GB of RAM. The computation will be much slower but much less memory will be used. If you have a moderate amount of memory and not so many reads, omit this last option, as the processing will go much faster.
+
+Below are some rough benchmarks (with and without the `--index`) for `pairfq makepairs` using a FASTQ file of 10.7 million forward reads and a FASTQ file of 10.8 million reverse reads.
 
     Command                                         Time (utime)    RAM (RSS)
-    pairfq makepairs ...                            22min02s        4.98G
+    pairfq makepairs ...                            19min39s        5.00G
     pairfq makepairs ... --index                    3hr19min        2.28G
 
 These figures should be taken with caution, as they will vary depending on the machine and obviously, the amount of data being processed.
