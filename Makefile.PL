@@ -21,6 +21,8 @@ WriteMakefile(
         'Test::More' => 0,
     },
     PREREQ_PM => {
+	'BerkeleyDB'          => 0.54,       
+        'IPC::System::Simple' => 1.21,
     },
     INST_SCRIPT => 'bin',
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
