@@ -109,7 +109,7 @@ Below are some rough benchmarks (with and without the `--index`) for `pairfq mak
     pairfq makepairs ...                            19min39s        5.00G
     pairfq makepairs ... --index                    3hr19min        2.28G
 
-These figures should be taken with caution, as they will vary depending on the machine and obviously, the amount of data being processed.
+These figures should be taken with caution, as they will vary depending on the machine and obviously, the amount of data being processed. It should be noted that given FASTA data, the above commands would use much less memory (and be faster).
  
 * **joinpairs**
 
