@@ -95,9 +95,17 @@ Pairfq has several different methods which can be executed. Below is a brief des
 
 See the [Pairfq wiki](https://github.com/sestaton/Pairfq/wiki) for examples with each method.
 
+**SUPPORT AND DOCUMENTATION**
+
+After installing, you can find documentation for the pairfq with the `perldoc` command.
+
+    perldoc pairfq
+
+The `pairfq` program will also print a diagnostic help message when executed with no arguments.
+
 **ISSUES**
 
-Report any issues at: https://github.com/sestaton/Pairfq/issues
+Report any issues at the Pairfq issue tracker: https://github.com/sestaton/Pairfq/issues
 
 Be aware that Pairfq will not work for every data set given the wide range of FASTA/Q formats. Feel free to fork the project and modify the code to your needs, or submit code changes if you find any bugs. 
 
