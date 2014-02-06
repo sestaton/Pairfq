@@ -9,6 +9,12 @@ Perl version 5.12 (or greater) must be installed to use Pairfq, and there are a 
 
     cpanm git://github.com/sestaton/Pairfq.git
 
+Alternatively, download the latest [release](https://github.com/sestaton/Pairfq/releases) and run the following commands in the top directory:
+
+    perl Makefile.PL
+    make
+    make test
+    make install
 
 **TYPICAL USAGE CASES**
 
