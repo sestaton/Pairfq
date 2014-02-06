@@ -22,7 +22,7 @@ See the [Pairfq wiki](https://github.com/sestaton/Pairfq/wiki) for examples with
 
 **SUPPORT AND DOCUMENTATION**
 
-After installing, you can find documentation for the pairfq with the `perldoc` command.
+After installing, you can find documentation for the Pairfq with the `perldoc` command.
 
     perldoc pairfq
 
