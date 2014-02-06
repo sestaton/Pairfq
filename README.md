@@ -26,7 +26,7 @@ After installing, you can find documentation for the pairfq with the `perldoc` c
 
     perldoc pairfq
 
-The `pairfq` program will also print a diagnostic help message when executed with no arguments.
+The documentation can also be accessed by specifying the manual option (i.e., `pairfq -m` or `pairfq --man`). The `pairfq` program will also print a diagnostic help message when executed with no arguments.
 
 **ISSUES**
 
