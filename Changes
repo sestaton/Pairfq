@@ -7,6 +7,9 @@ Bugfix for encoding read names with a comment line. Data
 was not being decoded and this was causing no pairs to 
 be found.
 
+Update README to point to wiki instead of having lengthy 
+descriptions of each method in a single file.
+
 0.07	1/27/2014	Athens, GA
 
 Remove use of DB_File. Reasons: 1) I discovered it has
