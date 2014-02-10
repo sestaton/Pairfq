@@ -1,6 +1,12 @@
 Revision history for Pairfq
 
 Version	Date	Location
+0.08	2/10/2014	Athens, GA
+
+Bugfix for encoding read names with a comment line. Data
+was not being decoded and this was causing no pairs to 
+be found.
+
 0.07	1/27/2014	Athens, GA
 
 Remove use of DB_File. Reasons: 1) I discovered it has
