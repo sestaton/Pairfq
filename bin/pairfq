@@ -24,7 +24,7 @@ my $outfile;    # output file for 'addinfo' and 'splitpairs' methods
 my $fread;      # file of forward reads for 'splitpairs', 'makepairs' and 'joinpairs' methods
 my $rread;      # file of forward reads for 'splitpairs', 'makepairs' and 'joinpairs' methods
 my $fpread;     # file of paired forward reads for 'makepairs' method
-my $rpread;     # file of paired reverse reads for 'makeparis' method
+my $rpread;     # file of paired reverse reads for 'makepairs' method
 my $fsread;     # file of unpaired forward reads for 'makepairs' method
 my $rsread;     # file of unpaired reverse reads for 'makepairs' method 
 my $pairnum;    # for the 'addinfo' method
