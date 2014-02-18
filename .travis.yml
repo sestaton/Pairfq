@@ -1,22 +1,16 @@
 language: perl
 perl:
-  - "5.18"
-  - "5.16"
-  - "5.14"
+#  - "5.18"
+#  - "5.16"
+#  - "5.14"
   - "5.12"
 
-env: PERL_CPANM_OPT="--quiet --installdeps --notest --force"
+#env: PERL_CPANM_OPT="--quiet --installdeps --notest --force"
 
-install:
-    - "cpanm BerkeleyDB"
-    - "cpanm IPC::System::Simple"
-
-notifications:
-  email: 
-    recipients:
-      - statonse@gmail.com
-    on_success: change
-    on_failure: change
+#install:
+#    - "cpanm BerkeleyDB"
+#    - "cpanm IPC::System::Simple"
+before_install: cpanm --quiet --notest --force IPC::System::Simple BerkelyDB
 
 branches:
   only:
