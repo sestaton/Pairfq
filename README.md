@@ -1,4 +1,4 @@
-Pairfq
+Pairfq [![Build Status](https://travis-ci.org/sestaton/Pairfq.png?branch=master)](https://travis-ci.org/sestaton/Pairfq)
 ======
 
 Sync paired-end FASTA/Q files and keep singleton reads
@@ -26,7 +26,7 @@ After installation, you can find documentation for Pairfq with the `perldoc` com
 
     perldoc pairfq
 
-The documentation can also be accessed by specifying the manual option (i.e., `pairfq -m` or `pairfq --man`). The `pairfq` program will also print a diagnostic help message when executed with no arguments.
+The documentation can also be accessed by specifying the manual option with `pairfq -m` or `pairfq --man`. The `pairfq` program will also print a diagnostic help message when executed with no arguments.
 
 **ISSUES**
 
