@@ -10,7 +10,7 @@ perl:
 #install:
 #    - "cpanm BerkeleyDB"
 #    - "cpanm IPC::System::Simple"
-before_install: sudo apt-get install libdb4.6-dev
+before_install: sudo apt-get install libdb-dev libdb++-dev
 
 branches:
   only:
