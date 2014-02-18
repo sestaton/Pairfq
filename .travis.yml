@@ -7,9 +7,9 @@ perl:
 
 #env: PERL_CPANM_OPT="--quiet --installdeps --notest"
 
-install:
-    - "cpanm BerkeleyDB"
-    - "cpanm IPC::System::Simple"
+#install:
+#    - "cpanm BerkeleyDB"
+#    - "cpanm IPC::System::Simple"
 
 notifications:
   email: 
