@@ -11,9 +11,6 @@ install:
     - "cpanm BerkeleyDB"
     - "cpanm IPC::System::Simple"
 
-script:
-    perl Makefile.PL && make test
-
 notifications:
   email: 
     recipients:
