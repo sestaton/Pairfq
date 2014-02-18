@@ -10,7 +10,7 @@ perl:
 #install:
 #    - "cpanm BerkeleyDB"
 #    - "cpanm IPC::System::Simple"
-before_install: cpanm --quiet --notest --force IPC::System::Simple BerkelyDB
+before_install: cpanm --quiet --notest --force IPC::System::Simple BerkeleyDB
 
 branches:
   only:
