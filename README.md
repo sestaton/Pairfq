@@ -1,4 +1,4 @@
-Pairfq [![Build Status](https://travis-ci.org/sestaton/Pairfq.png?branch=master)](https://travis-ci.org/sestaton/Pairfq)
+Pairfq
 ======
 
 Sync paired-end FASTA/Q files and keep singleton reads
