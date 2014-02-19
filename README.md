@@ -3,6 +3,8 @@ Pairfq [![Build Status](https://travis-ci.org/sestaton/Pairfq.png?branch=master)
 
 Sync paired-end FASTA/Q files and keep singleton reads
 
+[![Build Status](https://travis-ci.org/sestaton/Pairfq.png?branch=master)](https://travis-ci.org/sestaton/Pairfq)
+
 **INSTALLATION**
 
 Perl version 5.12 (or greater) must be installed to use Pairfq, and there are a couple of external modules required (which may be installed already depending on your version of Perl). If you have [cpanminus](http://search.cpan.org/~miyagawa/App-cpanminus-1.6935/lib/App/cpanminus.pm), installation can be done with a single command:
