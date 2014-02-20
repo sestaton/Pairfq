@@ -1,4 +1,3 @@
-use 5.012;
 use strict;
 use warnings FATAL => 'all';
 use ExtUtils::MakeMaker;
@@ -13,7 +12,7 @@ WriteMakefile(
     VERSION_FROM     => 'bin/pairfq',
     LICENSE          => 'MIT',
     PL_FILES         => {},
-    MIN_PERL_VERSION => 5.012,
+    MIN_PERL_VERSION => 5.010,
     CONFIGURE_REQUIRES => {
         'ExtUtils::MakeMaker' => 0,
     },
