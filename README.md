@@ -11,7 +11,7 @@ There is an external package used by Pairfq (called BerkeleyDB) and it can be in
 
 **INSTALLATION**
 
-Perl version 5.12 (or greater) must be installed to use Pairfq, and there are a couple of external modules required (which may be installed already depending on your version of Perl). If you have [cpanminus](http://search.cpan.org/~miyagawa/App-cpanminus-1.6935/lib/App/cpanminus.pm), installation can be done with a single command:
+Perl version 5.10 (or greater) must be installed to use Pairfq, and there are a couple of external modules required. If you have [cpanminus](http://search.cpan.org/~miyagawa/App-cpanminus-1.6935/lib/App/cpanminus.pm), installation can be done with a single command:
 
     cpanm git://github.com/sestaton/Pairfq.git
 
