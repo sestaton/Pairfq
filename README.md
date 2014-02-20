@@ -7,7 +7,7 @@ Sync paired-end FASTA/Q files and keep singleton reads
 
 **DEPENDENCIES**
 
-There is an external package used by Pairfq (called BerkeleyDB) and it can be installed through your package manager, though it may be installed already. See the [Installing dependencies](https://github.com/sestaton/Pairfq/wiki/Installing-dependencies) page for suggestions on how to install for common operating systems.
+There is an external package used by Pairfq (called Berkeley DB) and it can be installed through your package manager, though it may be installed already. See the [Installing dependencies](https://github.com/sestaton/Pairfq/wiki/Installing-dependencies) page for suggestions on how to install for common operating systems.
 
 **INSTALLATION**
 
