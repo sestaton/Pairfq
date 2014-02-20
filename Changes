@@ -1,6 +1,20 @@
 Revision history for Pairfq
 
 Version	Date	Location
+0.09	2/20/2014	Athens, GA
+
+Rework mk_key and mk_vec functions for storing data
+so they do not use UTF-8 characters. This results in
+a 40% decrease in execution time, and a 14% decrease
+in memory usage for the default in memory execution.
+
+The indexing method now uses 185X less memory. This appears
+to be due to a leak in the DB filter. The indexing method
+is also 25% faster now.
+
+Due to removing the utf8 pragma, the version requirement has
+now been lowered from 5.12 to 5.10.
+
 0.08	2/10/2014	Athens, GA
 
 Bugfix for encoding read names with a comment line. Data
