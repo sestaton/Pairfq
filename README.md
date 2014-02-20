@@ -5,6 +5,10 @@ Sync paired-end FASTA/Q files and keep singleton reads
 
 [![Build Status](https://travis-ci.org/sestaton/Pairfq.png?branch=master)](https://travis-ci.org/sestaton/Pairfq)
 
+**DEPENDENCIES**
+
+There is an external package used by Pairfq (called BerkeleyDB) and it can be installed through your package manager, though it may be installed already. See the [Installing dependencies](https://github.com/sestaton/Pairfq/wiki/Installing-dependencies) page for suggestions on how to install for common operating systems.
+
 **INSTALLATION**
 
 Perl version 5.12 (or greater) must be installed to use Pairfq, and there are a couple of external modules required (which may be installed already depending on your version of Perl). If you have [cpanminus](http://search.cpan.org/~miyagawa/App-cpanminus-1.6935/lib/App/cpanminus.pm), installation can be done with a single command:
