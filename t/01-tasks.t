@@ -1,16 +1,16 @@
 #!/usr/bin/env perl
 
-use 5.012;
+use 5.010;
 use strict;
 use warnings FATAL => 'all';
 use IPC::System::Simple qw(capture);
 use Test::More tests => 8;
 
-my @addinfo = capture([0..5],"bin/pairfq addinfo 2>&1");
-my @makepairs = capture([0..5],"bin/pairfq makepairs 2>&1");
+my @addinfo    = capture([0..5],"bin/pairfq addinfo 2>&1");
+my @makepairs  = capture([0..5],"bin/pairfq makepairs 2>&1");
 my @splitpairs = capture([0..5],"bin/pairfq splitpairs 2>&1");
-my @joinpairs = capture([0..5],"bin/pairfq joinpairs 2>&1");
-my @wrongtask = capture([0..5],"bin/pairfq jonpairs 2>&1");
+my @joinpairs  = capture([0..5],"bin/pairfq joinpairs 2>&1");
+my @wrongtask  = capture([0..5],"bin/pairfq jonpairs 2>&1");
 
 ## just look to see if the task was handled correctly to generate a usage statement
 for my $out (@addinfo) {
