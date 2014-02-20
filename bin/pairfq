@@ -1,12 +1,8 @@
 #!/usr/bin/env perl
 
-use 5.012;
-use utf8;
+use 5.010;
 use strict;
 use warnings;
-use warnings FATAL => "utf8";
-use charnames qw(:full :short);
-use Encode qw(encode decode);
 use Cwd;
 use File::Basename;
 use File::Temp;
@@ -17,7 +13,7 @@ use List::Util qw(max);
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 my $infile;     # input file for 'addinfo' and 'splitpairs' methods
 my $outfile;    # output file for 'addinfo' and 'splitpairs' methods
@@ -173,10 +169,6 @@ sub make_pairs_and_singles {
     open my $rp, '>', $rpread or die "\nERROR: Could not open file: $rpread\n";
     open my $fs, '>', $fsread or die "\nERROR: Could not open file: $fsread\n";
 
-    binmode $fp, ":encoding(UTF-8)";
-    binmode $rp, ":encoding(UTF-8)";
-    binmode $fs, ":encoding(UTF-8)";
-
     while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$fh, \@faux)) {
 	$fct++;
 	if ($fname =~ /(\/\d)$/) {
@@ -192,7 +184,7 @@ sub make_pairs_and_singles {
 	    exit(1);
 	}
 	
-	if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
+	if ($fname =~ /\|\|/) {
 	    my ($name, $comm);
 	    ($name, $comm) = mk_vec($fname);
 	    $forw_id = $name.q{ 1}.$comm;
@@ -203,7 +195,7 @@ sub make_pairs_and_singles {
 	    $fpct++; $rpct++;
 	    if (defined $fqual) {
 		my ($rread, $rqual) = mk_vec($rseqpairs->{$fname});
-		if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
+		if ($fname =~ /\|\|/) {
 		    say $fp join "\n","@".$forw_id, $fseq, "+", $fqual;
 		    say $rp join "\n","@".$rev_id, $rread, "+", $rqual;
 		} 
@@ -213,7 +205,7 @@ sub make_pairs_and_singles {
 		}
 	    } 
 	    else {
-		if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
+		if ($fname =~ /\|\|/) {
 		    say $fp join "\n",">".$forw_id, $fseq;
 		    say $rp join "\n",">".$rev_id, $rseqpairs->{$fname};
 		} 
@@ -227,7 +219,7 @@ sub make_pairs_and_singles {
 	else {
 	    $fsct++;
 	    if (defined $fqual) {
-		if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
+		if ($fname =~ /\|\|/) {
 		    say $fs join "\n","@".$forw_id, $fseq, "+", $fqual;
 		} 
 		else {
@@ -235,7 +227,7 @@ sub make_pairs_and_singles {
 		}
 	    } 
 	    else {
-		if ($fname =~ /\N{INVISIBLE SEPARATOR}/) {
+		if ($fname =~ /\|\|/) {
 		    say $fs join "\n",">".$forw_id, $fseq;
 		} 
 		else {
@@ -252,7 +244,6 @@ sub make_pairs_and_singles {
     close $fs;
 
     open my $rs, '>', $rsread or die "\nERROR: Could not open file: $rsread\n";
-    binmode $rs, ":encoding(UTF-8)";
 
     while (my ($rname_up_unenc, $rseq_up_unenc) = each %$rseqpairs) {
 	$rsct++;
@@ -308,7 +299,6 @@ sub pairs_to_interleaved {
 
     my $fh = get_fh($reverse);
     open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
-    binmode $out, ":encoding(UTF-8)";
 
     my @raux = undef;
     my ($rname, $rcomm, $rseq, $rqual, $forw_id, $rev_id, $rname_enc);
@@ -327,7 +317,7 @@ sub pairs_to_interleaved {
 	    exit(1);
 	}
 
-	if ($rname =~ /\N{INVISIBLE SEPARATOR}/) {
+	if ($rname =~ /\|\|/) {
 	    my ($name, $comm) = mk_vec($rname);
 	    $forw_id = $name.q{ 1}.$comm;
 	    $rev_id  = $name.q{ 2}.$comm;
@@ -336,7 +326,7 @@ sub pairs_to_interleaved {
 	if (exists $pairs->{$rname}) {
 	    if (defined $rqual) {
 		my ($seqf, $qualf) = mk_vec($pairs->{$rname});
-		if ($rname =~ /\N{INVISIBLE SEPARATOR}/) {
+		if ($rname =~ /\|\|/) {
 		    say $out join "\n", "@".$forw_id, $seqf, "+", $qualf;
 		    say $out join "\n", "@".$rev_id, $rseq, "+", $rqual;
 		}
@@ -346,7 +336,7 @@ sub pairs_to_interleaved {
 		}
 	    }
 	    else {
-		if ($rname =~ /\N{INVISIBLE SEPARATOR}/) {
+		if ($rname =~ /\|\|/) {
 		    say $out join "\n", ">".$forw_id, $pairs->{$rname};
 		    say $out join "\n", ">".$rev_id, $rseq;
 		}
@@ -472,12 +462,6 @@ sub store_pair {
     if (defined $index) {
 	my $db = tie %rseqpairs, 'BerkeleyDB::Btree', -Filename => $db_file, -Flags => DB_CREATE
             or die "\nERROR: Could not open DBM file: $db_file: $! $BerkeleyDB::Error\n";
-	
-	$db->filter_store_key( sub { $_ = encode("utf8", $_); } );
-	$db->filter_fetch_key( sub { $_ = decode("utf8", $_); } );
-	
-	$db->filter_store_value( sub { $_ = encode("utf8", $_); } );
-	$db->filter_fetch_value( sub { $_ = decode("utf8", $_); } );
     }
     
     my @raux = undef;
@@ -558,9 +542,9 @@ sub readfq {
     return ($name, $seq);
 }
 
-sub mk_key { return join "\N{INVISIBLE SEPARATOR}", @_ }
+sub mk_key { return join "||", @_ }
 
-sub mk_vec { return split "\N{INVISIBLE SEPARATOR}", shift }
+sub mk_vec { return split /\|\|/, shift }
 
 sub usage {
     my $script = basename($0);
@@ -701,7 +685,7 @@ fix paired-end files which have lost the pair information.
 
 =head1 DEPENDENCIES
 
-Perl is required (version 5.12 or greater), along with two modules used for testing
+The module BerkeleyDB is required, along with two modules used for testing
 (IPC::System::Simple and List::MoreUtils). See below for information
 on which Perls have been tested.
 
