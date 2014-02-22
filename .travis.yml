@@ -6,7 +6,12 @@ perl:
   - "5.12"
   - "5.10"
 
-before_install: sudo apt-get install libdb-dev libdb++-dev
+before_install:
+  - sudo apt-get install libdb-dev libdb++-dev
+  - cpanm -n Devel::Cover::Report::Coveralls
+
+script:
+  - perl Makefile.PL &&	make &&	cover -test -report coveralls
 
 branches:
   only:
