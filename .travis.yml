@@ -11,7 +11,7 @@ before_install:
   - cpanm -n Devel::Cover::Report::Coveralls
 
 script:
-  - perl Makefile.PL && make &&	cover -test -report coveralls
+  - perl Makefile.PL && make &&	cover -delete && HARNESS_PERL_SWITCHES=-MDevel::Cover make test && cover
 
 branches:
   only:
