@@ -288,7 +288,7 @@ sub make_pairs_and_singles {
 	printf "%-${offset}s %s %10d\n", "Total forward unpaired reads ($fsread)", ":", $fsct;
 	printf "%-${offset}s %s %10d\n\n", "Total reverse unpaired reads ($rsread)", ":", $rsct;
 	printf "%-${offset}s %s %10d\n", "Total paired reads", ":",  $pct;
-	printf "%-${offset}s %s %10d\n", "Total upaired reads", ":", $sct;
+	printf "%-${offset}s %s %10d\n", "Total unpaired reads", ":", $sct;
     }
     exit;
 }
