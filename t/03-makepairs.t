@@ -67,29 +67,29 @@ sub makepairs_inmemory {
     
     for my $fqo (@pfq_fqout) {
 	if ($fqo =~ /Total forward reads\s.*(\d+)/) { 
-	    is($1, 8, 'Correct number of forward fastq reads calculated');
+	    is($1, 8, 'Correct number of forward fastq reads calculated in memory');
 	}
 	elsif ($fqo =~ /Total reverse reads\s.*(\d+)/) {
-	    is($1, 6, 'Correct number of reverse fastq reads calculated');
+	    is($1, 6, 'Correct number of reverse fastq reads calculated in memory');
 	}
 	elsif ($fqo =~ /Total forward paired reads\s.*(\d+)/) {
-	    is($1, 6, 'Correct number of paired forward fastq reads');
+	    is($1, 6, 'Correct number of paired forward fastq reads in memory');
 	}
 	elsif ($fqo =~ /Total reverse paired reads\s.*(\d+)/) {
-	    is($1, 6, 'Correct number of paired reverse fastq reads');
+	    is($1, 6, 'Correct number of paired reverse fastq reads in memory');
 	}
 	elsif ($fqo =~ /Total forward unpaired reads\s.*(\d+)/) {
-	    is($1, 2, 'Correct number of unpaired forward fastq reads');
+	    is($1, 2, 'Correct number of unpaired forward fastq reads in memory');
 	}
 	elsif ($fqo =~ /Total reverse unpaired reads\s.*(\d+)/) {
-	    is($1, 0, 'Correct number of unpaired reverse fastq reads');
+	    is($1, 0, 'Correct number of unpaired reverse fastq reads in memory');
 	}
 	elsif ($fqo =~ /Total paired reads\s.*(\s\d+)/) {
 	    my $tot = $1; $tot =~ s/^\s//;
-	    is($tot, 12, 'Correct number of total paired fastq reads');
+	    is($tot, 12, 'Correct number of total paired fastq reads in memory');
 	}
-	elsif ($fqo =~ /Total upaired reads\s.*(\d+)/) {
-	    is($1, 2, 'Correct number of total upaired fastq reads');
+	elsif ($fqo =~ /Total unpaired reads\s.*(\d+)/) {
+	    is($1, 2, 'Correct number of total upaired fastq reads in memory');
 	}
     }
     
@@ -97,29 +97,29 @@ sub makepairs_inmemory {
     
     for my $fao (@pfq_faout) {
 	if ($fao =~ /Total forward reads\s.*(\d+)/) { 
-	    is($1, 8, 'Correct number of forward fasta reads calculated');
+	    is($1, 8, 'Correct number of forward fasta reads calculated in memory');
 	}
 	elsif ($fao =~ /Total reverse reads\s.*(\d+)/) {
-	    is($1, 6, 'Correct number of reverse fasta reads calculated');
+	    is($1, 6, 'Correct number of reverse fasta reads calculated in memory');
 	}
 	elsif ($fao =~ /Total forward paired reads\s.*(\d+)/) {
-	    is($1, 6, 'Correct number of paired forward fasta reads');
+	    is($1, 6, 'Correct number of paired forward fasta reads in memory');
 	}
 	elsif ($fao =~ /Total reverse paired reads\s.*(\d+)/) {
-	    is($1, 6, 'Correct number of paired reverse fasta reads');
+	    is($1, 6, 'Correct number of paired reverse fasta reads in memory');
 	}
 	elsif ($fao =~ /Total forward unpaired reads\s.*(\d+)/) {
-	    is($1, 2, 'Correct number of unpaired forward fasta reads');
+	    is($1, 2, 'Correct number of unpaired forward fasta reads in memory');
 	}
 	elsif ($fao =~ /Total reverse unpaired reads\s.*(\d+)/) {
-	    is($1, 0, 'Correct number of unpaired reverse fasta reads');
+	    is($1, 0, 'Correct number of unpaired reverse fasta reads in memory');
 	}
 	elsif ($fao =~ /Total paired reads\s.*(\s\d+)/) {
 	    my $tot = $1; $tot =~ s/^\s//;
-	    is($tot, 12, 'Correct number of total paired fasta reads');
+	    is($tot, 12, 'Correct number of total paired fasta reads in memory');
 	}
-	elsif ($fao =~ /Total upaired reads\s.*(\d+)/) {
-	    is($1, 2, 'Correct number of total upaired fasta reads');
+	elsif ($fao =~ /Total unpaired reads\s.*(\d+)/) {
+	    is($1, 2, 'Correct number of total upaired fasta reads in memory');
 	}
     }
     
@@ -174,29 +174,29 @@ sub makepairs_ondisk {
 
     for my $fqo (@pfq_fqout) {
         if ($fqo =~ /Total forward reads\s.*(\d+)/) { 
-            is($1, 8, 'Correct number of forward fastq reads calculated');
+            is($1, 8, 'Correct number of forward fastq reads calculated in dbm file');
         }
         elsif ($fqo =~ /Total reverse reads\s.*(\d+)/) {
-            is($1, 6, 'Correct number of reverse fastq reads calculated');
+            is($1, 6, 'Correct number of reverse fastq reads calculated in dbm file');
         }
         elsif ($fqo =~ /Total forward paired reads\s.*(\d+)/) {
-            is($1, 6, 'Correct number of paired forward fastq reads');
+            is($1, 6, 'Correct number of paired forward fastq reads in dbm file');
         }
         elsif ($fqo =~ /Total reverse paired reads\s.*(\d+)/) {
-            is($1, 6, 'Correct number of paired reverse fastq reads');
+            is($1, 6, 'Correct number of paired reverse fastq reads in dbm file');
         }
         elsif ($fqo =~ /Total forward unpaired reads\s.*(\d+)/) {
-            is($1, 2, 'Correct number of unpaired forward fastq reads');
+            is($1, 2, 'Correct number of unpaired forward fastq reads in dbm file');
         }
         elsif ($fqo =~ /Total reverse unpaired reads\s.*(\d+)/) {
-            is($1, 0, 'Correct number of unpaired reverse fastq reads');
+            is($1, 0, 'Correct number of unpaired reverse fastq reads in dbm file');
         }
         elsif ($fqo =~ /Total paired reads\s.*(\s\d+)/) {
             my $tot = $1; $tot =~ s/^\s//;
-            is($tot, 12, 'Correct number of total paired fastq reads');
+            is($tot, 12, 'Correct number of total paired fastq reads in dbm file');
         }
-        elsif ($fqo =~ /Total upaired reads\s.*(\d+)/) {
-            is($1, 2, 'Correct number of total upaired fastq reads');
+        elsif ($fqo =~ /Total unpaired reads\s.*(\d+)/) {
+            is($1, 2, 'Correct number of total upaired fastq reads in dbm file');
         }
     }
     
@@ -204,29 +204,29 @@ sub makepairs_ondisk {
 
     for my $fao (@pfq_faout) {
         if ($fao =~ /Total forward reads\s.*(\d+)/) { 
-            is($1, 8, 'Correct number of forward fasta reads calculated');
+            is($1, 8, 'Correct number of forward fasta reads calculated in dbm file');
         }
         elsif ($fao =~ /Total reverse reads\s.*(\d+)/) {
-            is($1, 6, 'Correct number of reverse fasta reads calculated');
+            is($1, 6, 'Correct number of reverse fasta reads calculated in dbm file');
         }
         elsif ($fao =~ /Total forward paired reads\s.*(\d+)/) {
-            is($1, 6, 'Correct number of paired forward fasta reads');
+            is($1, 6, 'Correct number of paired forward fasta reads in dbm file');
         }
         elsif ($fao =~ /Total reverse paired reads\s.*(\d+)/) {
-            is($1, 6, 'Correct number of paired reverse fasta reads');
+            is($1, 6, 'Correct number of paired reverse fasta reads in dbm file');
         }
         elsif ($fao =~ /Total forward unpaired reads\s.*(\d+)/) {
-            is($1, 2, 'Correct number of unpaired forward fasta reads');
+            is($1, 2, 'Correct number of unpaired forward fasta reads in dbm file');
         }
         elsif ($fao =~ /Total reverse unpaired reads\s.*(\d+)/) {
-            is($1, 0, 'Correct number of unpaired reverse fasta reads');
+            is($1, 0, 'Correct number of unpaired reverse fasta reads in dbm file');
         }
         elsif ($fao =~ /Total paired reads\s.*(\s\d+)/) {
             my $tot = $1; $tot =~ s/^\s//;
-            is($tot, 12, 'Correct number of total paired fasta reads');
+            is($tot, 12, 'Correct number of total paired fasta reads in dbm file');
         }
-        elsif ($fao =~ /Total upaired reads\s.*(\d+)/) {
-            is($1, 2, 'Correct number of total upaired fasta reads');
+        elsif ($fao =~ /Total unpaired reads\s.*(\d+)/) {
+            is($1, 2, 'Correct number of total upaired fasta reads in dbm file');
         }
     }
     
