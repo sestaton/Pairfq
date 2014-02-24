@@ -275,7 +275,6 @@ sub make_pairs_and_singles {
     untie %$rseqpairs if defined $index;
     unlink $db_file if -e $db_file;
 
-    ##TODO: make printing stats an option
     if (defined $stats) {
 	my $maxfn = max(length($fread), length($rread), length($fpread), length($rpread), length($fsread), length($rsread));
 	my $offset = $maxfn + 38;
