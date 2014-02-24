@@ -27,6 +27,7 @@ my $pairnum;    # for the 'addinfo' method
 my $index;      # option for the 'makepairs' and 'joinpairs' methods
 my $compress;   # for any/all the methods
 my $uppercase;  # for 'addinfo' method
+my $stats;      # currently, for 'makepairs' option only
 
 my $version; 
 my $help;
@@ -45,6 +46,7 @@ GetOptions(
 	   'idx|index'          => \$index,
 	   'c|compress=s'       => \$compress,
 	   'uc|uppercase'       => \$uppercase,
+	   's|stats'            => \$stats,
 	   'version'            => \$version,
 	   'h|help'             => \$help,
 	   'm|man'              => \$man,
@@ -88,7 +90,7 @@ elsif ($method eq 'makepairs') {
 	makepairs_usage();
 	exit(1);
     }
-    make_pairs_and_singles($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress);
+    make_pairs_and_singles($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress, $stats);
 }
 elsif ($method eq 'joinpairs') {
     if (!$fread || !$rread || !$outfile) {
@@ -154,7 +156,7 @@ sub add_pair_info {
 }
 
 sub make_pairs_and_singles {
-    my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress) = @_;
+    my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress, $stats) = @_;
 
     my ($rseqpairs, $db_file, $rct) = store_pair($rread, $index);
 
@@ -274,19 +276,21 @@ sub make_pairs_and_singles {
     unlink $db_file if -e $db_file;
 
     ##TODO: make printing stats an option
-    my $maxfn = max(length($fread), length($rread), length($fpread), length($rpread), length($fsread), length($rsread));
-    my $offset = $maxfn + 38;
-    my $date = qx(date); chomp $date;
-    my $prog = basename($0, ());
-    say "========= $prog version : $VERSION (completion time: $date)";
-    printf "%-${offset}s %s %10d\n", "Total forward reads ($fread)", ":",$fct;
-    printf "%-${offset}s %s %10d\n", "Total reverse reads ($rread)", ":", $rct;
-    printf "%-${offset}s %s %10d\n", "Total forward paired reads ($fpread)", ":", $fpct;
-    printf "%-${offset}s %s %10d\n", "Total reverse paired reads ($rpread)", ":", $rpct;
-    printf "%-${offset}s %s %10d\n", "Total forward unpaired reads ($fsread)", ":", $fsct;
-    printf "%-${offset}s %s %10d\n\n", "Total reverse unpaired reads ($rsread)", ":", $rsct;
-    printf "%-${offset}s %s %10d\n", "Total paired reads", ":",  $pct;
-    printf "%-${offset}s %s %10d\n", "Total upaired reads", ":", $sct;
+    if (defined $stats) {
+	my $maxfn = max(length($fread), length($rread), length($fpread), length($rpread), length($fsread), length($rsread));
+	my $offset = $maxfn + 38;
+	my $date = qx(date); chomp $date;
+	my $prog = basename($0, ());
+	say "========= $prog version : $VERSION (completion time: $date)";
+	printf "%-${offset}s %s %10d\n", "Total forward reads ($fread)", ":",$fct;
+	printf "%-${offset}s %s %10d\n", "Total reverse reads ($rread)", ":", $rct;
+	printf "%-${offset}s %s %10d\n", "Total forward paired reads ($fpread)", ":", $fpct;
+	printf "%-${offset}s %s %10d\n", "Total reverse paired reads ($rpread)", ":", $rpct;
+	printf "%-${offset}s %s %10d\n", "Total forward unpaired reads ($fsread)", ":", $fsct;
+	printf "%-${offset}s %s %10d\n\n", "Total reverse unpaired reads ($rsread)", ":", $rsct;
+	printf "%-${offset}s %s %10d\n", "Total paired reads", ":",  $pct;
+	printf "%-${offset}s %s %10d\n", "Total upaired reads", ":", $sct;
+    }
     exit;
 }
 
@@ -584,6 +588,7 @@ Options:
     -idx|index        :       Construct an index for limiting memory usage.
                               NB: This may result in long run times for a large number of sequences. 
     -c|compress       :       Compress the output files. Options are 'gzip' or 'bzip2' (Default: No).
+    -s|stats          :       Print statistics on the pairing results to STDOUT (Default: No).
     -h|help           :       Print a usage statement.
     -m|man            :       Print the full documentation.
 
@@ -663,7 +668,7 @@ pairfq addinfo -i s_1_2_trim.fq -o s_1_2_trim_info.fq -p 2
 
 ## Sync paired-end reads and write singleton reads to separate files
 
-pairfq makepairs -f s_1_1_trim_info.fq -r s_1_2_trim_info.fq -fp s_1_1_trim_paired.fq -rp s_1_2_trim_paired.fq -fs s_1_1_trim_unpaired.fq -rs s_1_2_trim_unpaired.fq
+pairfq makepairs -f s_1_1_trim_info.fq -r s_1_2_trim_info.fq -fp s_1_1_trim_paired.fq -rp s_1_2_trim_paired.fq -fs s_1_1_trim_unpaired.fq -rs s_1_2_trim_unpaired.fq --stats
 
 ## Interleave the paired-end reads
 
@@ -775,6 +780,12 @@ statonse at gmail dot com
 =item -uc, --uppercase
 
  For the 'addinfo' method, uppercase the sequence.
+
+=item -s, --stats
+
+ For the 'makepairs' method, print (to STDOUT) statistics for paired/unpaired forward and reverse reads. This is useful for
+ record keeping and debugging. The reason this is not the default is that people may want to run multiple instances of this
+ command and redirect the output to the same file or to another program.
 
 =item --version
 
