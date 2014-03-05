@@ -463,7 +463,7 @@ sub store_pair {
     unlink $db_file if -e $db_file;
     
     if (defined $index) {
-	my $db = tie %rseqpairs, 'BerkeleyDB::Btree', -Filename => $db_file, -Flags => DB_CREATE
+	tie %rseqpairs, 'BerkeleyDB::Btree', -Filename => $db_file, -Flags => DB_CREATE
             or die "\nERROR: Could not open DBM file: $db_file: $! $BerkeleyDB::Error\n";
     }
     
