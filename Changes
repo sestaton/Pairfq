@@ -1,6 +1,12 @@
 Revision history for Pairfq
 
 Version	Date	Location
+0.09.1	3/18/2014	Athens, GA
+
+Add check for ExtUtils::MakeMaker version.
+Remove tying objects for dbm files since we are no
+longer filtering keys/values.
+
 0.09	2/20/2014	Athens, GA
 
 Rework mk_key and mk_vec functions for storing data
