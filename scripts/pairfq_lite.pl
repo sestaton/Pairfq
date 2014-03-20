@@ -258,7 +258,7 @@ sub make_pairs_and_singles {
 	my $offset = $maxfn + 38;
 	my $date = qx(date); chomp $date;
 	my $prog = basename($0, ());
-	print "========= $prog version : $VERSION (completion time: $date)";
+	print "========= $prog version : $VERSION (completion time: $date)\n";
 	printf "%-${offset}s %s %10d\n", "Total forward reads ($fread)", ":",$fct;
 	printf "%-${offset}s %s %10d\n", "Total reverse reads ($rread)", ":", $rct;
 	printf "%-${offset}s %s %10d\n", "Total forward paired reads ($fpread)", ":", $fpct;
@@ -502,7 +502,7 @@ EOF
 sub makepairs_usage {
     my $script = basename($0);
     print STDERR<<EOF
-USAGE: $script makepairs [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-im] [-h] [-m]
+USAGE: $script makepairs [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-s] [-h] [-m]
 
 Required:
     -f|forward        :       File of foward reads (usually with "/1" or " 1" in the header).
@@ -541,7 +541,7 @@ EOF
 sub splitpairs_usage {
     my $script = basename($0);
     print STDERR<<EOF
-USAGE: $script splitpairs [-i] [-f] [-r] [-c] [-h] [-m]
+USAGE: $script splitpairs [-i] [-f] [-r] [-h] [-m]
 
 Required:
     -i|infile         :       File of interleaved forward and reverse reads.
@@ -558,7 +558,7 @@ EOF
 sub joinpairs_usage {
     my $script = basename($0);
     print STDERR<<EOF
-USAGE: $script joinpairs [-f] [-r] [-o] [-im] [-h] [-m]
+USAGE: $script joinpairs [-f] [-r] [-o] [-h] [-m]
 
 Required:
     -f|forward        :       File of foward reads (usually with "/1" or " 1" in the header).
