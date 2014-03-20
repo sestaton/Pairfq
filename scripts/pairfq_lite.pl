@@ -139,7 +139,7 @@ sub add_pair_info {
 }
 
 sub make_pairs_and_singles {
-    my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $stats) = @_;
+    my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $stats) = @_;
 
     my ($rseqpairs, $rct) = store_pair($rread);
 
