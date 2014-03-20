@@ -4,8 +4,12 @@ Version	Date	Location
 0.09.2	3/20/2014	Athens, GA
 
 Add standalone script with no dependencies
-or version requirements. Improve doc readability 
-by listing path to program.
+or version requirements. 
+
+Improve doc readability by listing path to program.
+
+Modify standalone script to work with v5.6 by
+removing List::Util dep that is in core as of 5.8.9.
 
 0.09.1	3/18/2014	Athens, GA
 
