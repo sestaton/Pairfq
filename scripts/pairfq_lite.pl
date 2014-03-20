@@ -126,10 +126,10 @@ sub add_pair_info {
     while (($name, $comm, $seq, $qual) = readfq(\*$fh, \@aux)) {
 	$seq = uc($seq) if $uppercase;
 	if (defined $qual) {
-	    print $out join "\n", "@".$name.$pair, $seq, '+', $qual, "\n";
+	    print $out join "\n", "@".$name.$pair, $seq, '+', "$qual\n";
 	}
 	else {
-	    print $out join "\n", ">".$name.$pair, $seq, "\n";
+	    print $out join "\n", ">".$name.$pair, "$seq\n";
 	}
     }
     close $fh;
@@ -179,22 +179,22 @@ sub make_pairs_and_singles {
 	    if (defined $fqual) {
 		my ($rread, $rqual) = mk_vec($rseqpairs->{$fname});
 		if ($fname =~ /\|\|/) {
-		    print $fp join "\n","@".$forw_id, $fseq, "+", $fqual, "\n";
-		    print $rp join "\n","@".$rev_id, $rread, "+", $rqual, "\n";
+		    print $fp join "\n","@".$forw_id, $fseq, "+", "$fqual\n";
+		    print $rp join "\n","@".$rev_id, $rread, "+", "$rqual\n";
 		} 
 		else {
-		    print $fp join "\n","@".$fname.q{/1}, $fseq, "+", $fqual, "\n";
-		    print $rp join "\n","@".$fname.q{/2}, $rread, "+", $rqual, "\n";
+		    print $fp join "\n","@".$fname.q{/1}, $fseq, "+", "$fqual\n";
+		    print $rp join "\n","@".$fname.q{/2}, $rread, "+", "$rqual\n";
 		}
 	    } 
 	    else {
 		if ($fname =~ /\|\|/) {
-		    print $fp join "\n",">".$forw_id, $fseq, "\n";
-		    print $rp join "\n",">".$rev_id, $rseqpairs->{$fname}, "\n";
+		    print $fp join "\n",">".$forw_id, "$fseq\n";
+		    print $rp join "\n",">".$rev_id, "$rseqpairs->{$fname}\n";
 		} 
 		else {
-		    print $fp join "\n",">".$fname.q{/1}, $fseq, "\n";
-		    print $rp join "\n",">".$fname.q{/2}, $rseqpairs->{$fname}, "\n";
+		    print $fp join "\n",">".$fname.q{/1}, "$fseq\n";
+		    print $rp join "\n",">".$fname.q{/2}, "$rseqpairs->{$fname}\n";
 		}
 	    }
 	    delete $rseqpairs->{$fname};
@@ -203,18 +203,18 @@ sub make_pairs_and_singles {
 	    $fsct++;
 	    if (defined $fqual) {
 		if ($fname =~ /\|\|/) {
-		    print $fs join "\n","@".$forw_id, $fseq, "+", $fqual, "\n";
+		    print $fs join "\n","@".$forw_id, $fseq, "+", "$fqual\n";
 		} 
 		else {
-		    print $fs join "\n","@".$fname.q{/1}, $fseq, "+", $fqual, "\n";
+		    print $fs join "\n","@".$fname.q{/1}, $fseq, "+", "$fqual\n";
 		}
 	    } 
 	    else {
 		if ($fname =~ /\|\|/) {
-		    print $fs join "\n",">".$forw_id, $fseq, "\n";
+		    print $fs join "\n",">".$forw_id, "$fseq\n";
 		} 
 		else {
-		    print $fs join "\n",">".$fname.q{/1}, $fseq, "\n";
+		    print $fs join "\n",">".$fname.q{/1}, "$fseq\n";
 		}
 	    }
 	}
@@ -236,16 +236,16 @@ sub make_pairs_and_singles {
 	my $rev_id_up .= $rname_up.q{ 2}.$rcomm_up if defined $rcomm_up;
     
 	if (defined $rcomm_up && defined $rqual_up) {
-	    print $rs join "\n","@".$rev_id_up, $rseq_up, "+", $rqual_up, "\n";
+	    print $rs join "\n","@".$rev_id_up, $rseq_up, "+", "$rqual_up\n";
 	} 
 	elsif (defined $rcomm_up && !defined $rqual_up) {
-	    print $rs join "\n",">".$rev_id_up, $rseq_up_unenc, "\n";
+	    print $rs join "\n",">".$rev_id_up, "$rseq_up_unenc\n";
 	} 
 	elsif (!defined $rcomm_up && defined $rqual_up) {
-	    print $rs join "\n", "@".$rname_up.q{/2}, $rseq_up, "+", $rqual_up, "\n";
+	    print $rs join "\n", "@".$rname_up.q{/2}, $rseq_up, "+", "$rqual_up\n";
 	}
 	else {
-	    print $rs join "\n",">".$rname_up.q{/2}, $rseq_up_unenc, "\n";
+	    print $rs join "\n",">".$rname_up.q{/2}, "$rseq_up_unenc\n";
 	}
     }
     close $rs;
@@ -306,22 +306,22 @@ sub pairs_to_interleaved {
 	    if (defined $rqual) {
 		my ($seqf, $qualf) = mk_vec($pairs->{$rname});
 		if ($rname =~ /\|\|/) {
-		    print $out join "\n", "@".$forw_id, $seqf, "+", $qualf, "\n";
-		    print $out join "\n", "@".$rev_id, $rseq, "+", $rqual, "\n";
+		    print $out join "\n", "@".$forw_id, $seqf, "+", "$qualf\n";
+		    print $out join "\n", "@".$rev_id, $rseq, "+", "$rqual\n";
 		}
 		else {
-		    print $out join "\n", "@".$rname.q{/1}, $seqf, "+", $qualf, "\n";
-		    print $out join "\n", "@".$rname.q{/2}, $rseq, "+", $rqual, "\n";
+		    print $out join "\n", "@".$rname.q{/1}, $seqf, "+", "$qualf\n";
+		    print $out join "\n", "@".$rname.q{/2}, $rseq, "+", "$rqual\n";
 		}
 	    }
 	    else {
 		if ($rname =~ /\|\|/) {
-		    print $out join "\n", ">".$forw_id, $pairs->{$rname}, "\n";
-		    print $out join "\n", ">".$rev_id, $rseq, "\n";
+		    print $out join "\n", ">".$forw_id, "$pairs->{$rname}\n";
+		    print $out join "\n", ">".$rev_id, "$rseq\n";
 		}
 		else {
-		    print $out join "\n", ">".$rname.q{/1}, $pairs->{$rname}, "\n";
-		    print $out join "\n", ">".$rname.q{/2}, $rseq, "\n";                                               
+		    print $out join "\n", ">".$rname.q{/1}, "$pairs->{$rname}\n";
+		    print $out join "\n", ">".$rname.q{/2}, "$rseq\n";                                               
 		}
 	    }
 	}
@@ -344,16 +344,16 @@ sub interleaved_to_pairs {
 
     while (($name, $comm, $seq, $qual) = readfq(\*$fh, \@aux)) {
 	if (defined $comm && $comm =~ /^1/ || $name =~ /\/1$/) {
-	    print $f join "\n", ">".$name, $seq, "\n" if !defined $qual && !defined $comm;
-	    print $f join "\n", ">".$name.q{ }.$comm, $seq, "\n"if !defined $qual && defined $comm;
-	    print $f join "\n", "@".$name, $seq, '+', $qual, "\n" if defined $qual && !defined $comm;
-	    print $f join "\n", "@".$name.q{ }.$comm, $seq, '+', $qual, "\n" if defined $qual && defined $comm;
+	    print $f join "\n", ">".$name, "$seq\n" if !defined $qual && !defined $comm;
+	    print $f join "\n", ">".$name.q{ }.$comm, "$seq\n" if !defined $qual && defined $comm;
+	    print $f join "\n", "@".$name, $seq, '+', "$qual\n" if defined $qual && !defined $comm;
+	    print $f join "\n", "@".$name.q{ }.$comm, $seq, '+', "$qual\n" if defined $qual && defined $comm;
 	}
 	elsif (defined $comm && $comm =~ /^2/ || $name =~ /\/2$/) {
-	    print $r join "\n", ">".$name, $seq, "\n" if !defined $qual && !defined $comm;
-	    print $r join "\n", ">".$name.q{ }.$comm, $seq, "\n" if !defined $qual && defined $comm;
-	    print $r join "\n", "@".$name, $seq, "+", $qual, "\n" if defined $qual && !defined $comm;
-	    print $r join "\n", "@".$name.q{ }.$comm, $seq, "+", $qual, "\n" if defined $qual && defined $comm;
+	    print $r join "\n", ">".$name, "$seq\n" if !defined $qual && !defined $comm;
+	    print $r join "\n", ">".$name.q{ }.$comm, "$seq\n" if !defined $qual && defined $comm;
+	    print $r join "\n", "@".$name, $seq, "+", "$qual\n" if defined $qual && !defined $comm;
+	    print $r join "\n", "@".$name.q{ }.$comm, $seq, "+", "$qual\n" if defined $qual && defined $comm;
 	}
     }
     close $fh;
