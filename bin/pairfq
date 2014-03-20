@@ -13,7 +13,7 @@ use List::Util qw(max);
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.09.1';
+our $VERSION = '0.09.2';
 
 my $infile;     # input file for 'addinfo' and 'splitpairs' methods
 my $outfile;    # output file for 'addinfo' and 'splitpairs' methods
@@ -32,6 +32,7 @@ my $stats;      # currently, for 'makepairs' option only
 my $version; 
 my $help;
 my $man;
+my $script = basename($0);
 
 GetOptions(
 	   'i|infile=s'         => \$infile,
@@ -109,7 +110,7 @@ elsif ($method eq 'splitpairs') {
     interleaved_to_pairs($infile, $fread, $rread, $compress);
 }
 else {
-    say "\nERROR: '$method' is not recognized. See the manual by typing 'perl pairfq -m',".
+    say "\nERROR: '$method' is not recognized. See the manual by typing '$script -m',".
 	" or see https://github.com/sestaton/Pairfq.\n";
     exit(1);
 }
