@@ -574,7 +574,7 @@ EOF
 sub makepairs_usage {
     my $script = basename($0);
     print STDERR<<EOF
-USAGE: $script makepairs [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-im] [-h] [-m]
+USAGE: $script makepairs [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-idx] [-c] [-s] [-h] [-m]
 
 Required:
     -f|forward        :       File of foward reads (usually with "/1" or " 1" in the header).
@@ -598,7 +598,7 @@ EOF
 sub addinfo_usage {
     my $script = basename($0);
     print STDERR<<EOF
-USAGE: $script addinfo [-i] [-o] [-p] [-uc] [-h] [-m]
+USAGE: $script addinfo [-i] [-o] [-p] [-c] [-uc] [-h] [-m]
 
 Required:
     -i|infile        :       The file of sequences without the pair information in the sequence name.
@@ -635,7 +635,7 @@ EOF
 sub joinpairs_usage {
     my $script = basename($0);
     print STDERR<<EOF
-USAGE: $script joinpairs [-f] [-r] [-o] [-im] [-h] [-m]
+USAGE: $script joinpairs [-f] [-r] [-o] [-idx] [-c] [-h] [-m]
 
 Required:
     -f|forward        :       File of foward reads (usually with "/1" or " 1" in the header).
