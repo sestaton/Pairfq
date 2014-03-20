@@ -5,9 +5,6 @@ use warnings;
 use Cwd;
 use File::Basename;
 use File::Temp;
-use IO::Compress::Gzip qw(gzip $GzipError);
-use IO::Compress::Bzip2 qw(bzip2 $Bzip2Error);
-use List::Util qw(max);
 use Getopt::Long;
 use Pod::Usage;
 
@@ -22,14 +19,13 @@ my $rpread;     # file of paired reverse reads for 'makepairs' method
 my $fsread;     # file of unpaired forward reads for 'makepairs' method
 my $rsread;     # file of unpaired reverse reads for 'makepairs' method 
 my $pairnum;    # for the 'addinfo' method
-my $compress;   # for any/all the methods
 my $uppercase;  # for 'addinfo' method
 my $stats;      # currently, for 'makepairs' option only
 
 my $version; 
 my $help;
 my $man;
-my $script = basename($0);
+my $script = basename($0, ());
 
 GetOptions(
 	   'i|infile=s'         => \$infile,
@@ -41,7 +37,6 @@ GetOptions(
 	   'rp|rev_paired=s'    => \$rpread,
 	   'fs|forw_unpaired=s' => \$fsread,
 	   'rs|rev_unpaired=s'  => \$rsread,
-	   'c|compress=s'       => \$compress,
 	   'uc|uppercase'       => \$uppercase,
 	   's|stats'            => \$stats,
 	   'version'            => \$version,
@@ -65,21 +60,13 @@ if (!defined $method) {
     exit(1);
 }
 
-if ($compress) {
-    unless ($compress eq 'gzip' || $compress eq 'bzip2') {
-	print "\nERROR: '$compress' is not recognized as an argument to the --compress option.".
-	    " Must be 'gzip' or 'bzip2'. Exiting.\n\n";
-	exit(1);
-    }
-}
-
 if ($method eq 'addinfo') {
     if (!$pairnum || !$infile || !$outfile) {
 	print "\nERROR: Command line not parsed correctly. Check input.\n\n";
 	addinfo_usage();
 	exit(1);
     }
-    add_pair_info($pairnum, $infile, $outfile, $compress, $uppercase);
+    add_pair_info($pairnum, $infile, $outfile, $uppercase);
 }
 elsif ($method eq 'makepairs') {
     if (!$fread || !$rread || !$fpread || !$rpread || !$fsread || !$rsread) {
@@ -87,7 +74,7 @@ elsif ($method eq 'makepairs') {
 	makepairs_usage();
 	exit(1);
     }
-    make_pairs_and_singles($fread, $rread, $fpread, $rpread, $fsread, $rsread, $compress, $stats);
+    make_pairs_and_singles($fread, $rread, $fpread, $rpread, $fsread, $rsread, $stats);
 }
 elsif ($method eq 'joinpairs') {
     if (!$fread || !$rread || !$outfile) {
@@ -95,7 +82,7 @@ elsif ($method eq 'joinpairs') {
 	joinpairs_usage();
 	exit(1);
     }
-    pairs_to_interleaved($fread, $rread, $outfile, $compress);
+    pairs_to_interleaved($fread, $rread, $outfile);
 }
 elsif ($method eq 'splitpairs') {
     if (!$infile || !$fread || !$rread) {
@@ -103,7 +90,7 @@ elsif ($method eq 'splitpairs') {
 	splitpairs_usage();
 	exit(1);
     }
-    interleaved_to_pairs($infile, $fread, $rread, $compress);
+    interleaved_to_pairs($infile, $fread, $rread);
 }
 else {
     print "\nERROR: '$method' is not recognized. See the manual by typing 'perl $script -m',".
@@ -116,7 +103,7 @@ exit;
 # Methods
 #
 sub add_pair_info {
-    my ($pairnum, $infile, $outfile, $compress, $uppercase) = @_;
+    my ($pairnum, $infile, $outfile, $uppercase) = @_;
 
     my $pair;
     if ($pairnum == 1) {
@@ -148,12 +135,11 @@ sub add_pair_info {
     close $fh;
     close $out;
 
-    compress($compress, $outfile) if $compress;
     exit;
 }
 
 sub make_pairs_and_singles {
-    my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress, $stats) = @_;
+    my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $stats) = @_;
 
     my ($rseqpairs, $rct) = store_pair($rread);
 
@@ -264,7 +250,6 @@ sub make_pairs_and_singles {
     }
     close $rs;
 
-    compress($compress, $fpread, $rpread, $fsread, $rsread) if $compress;
     $pct = $fpct + $rpct;
     $sct = $fsct + $rsct;
 
@@ -287,7 +272,7 @@ sub make_pairs_and_singles {
 }
 
 sub pairs_to_interleaved {
-    my ($forward, $reverse, $outfile, $compress) = @_;
+    my ($forward, $reverse, $outfile) = @_;
 
     my ($pairs, $ct) = store_pair($forward);
 
@@ -344,12 +329,11 @@ sub pairs_to_interleaved {
     close $fh;
     close $out;
 
-    compress($compress, $outfile) if $compress;
     exit;
 }
 
 sub interleaved_to_pairs {
-    my ($infile, $forward, $reverse, $compress) = @_;
+    my ($infile, $forward, $reverse) = @_;
 
     my $fh = get_fh($infile);
     open my $f, '>', $forward or die "\nERROR: Could not open file: $forward\n";
@@ -376,7 +360,6 @@ sub interleaved_to_pairs {
     close $f;
     close $r;
 
-    compress($compress, $forward, $reverse) if $compress;
     exit;
 }
 
@@ -398,44 +381,6 @@ sub get_fh {
     }
 
     return $fh;
-}
-
-sub compress {
-    my ($compress, $fp, $rp, $fs, $rs) = @_;
-
-    if ($compress eq 'gzip') {
-	my $fpo = $fp.".gz";
-	my $rpo = $rp.".gz" if defined $rp;
-	my $fso = $fs.".gz" if defined $fs;
-	my $rso = $rs.".gz" if defined $rs;
-	
-	gzip $fp => $fpo or die "gzip failed: $GzipError\n";
-	gzip $rp => $rpo or die "gzip failed: $GzipError\n" if defined $rp;
-	gzip $fs => $fso or die "gzip failed: $GzipError\n" if defined $fs;
-        gzip $rs => $rso or die "gzip failed: $GzipError\n" if defined $rs;
-
-	unlink $fp;
-	unlink $rp if defined $rp;
-	unlink $fs if defined $fs;
-	unlink $rs if defined $rs;
-    }
-    elsif ($compress eq 'bzip2') {
-	my $fpo = $fp.".bz2";
-	my $rpo = $rp.".bz2" if defined $rp;
-	my $fso = $fs.".bz2" if defined $fs;
-	my $rso = $rs.".bz2" if defined $rs;
-
-	bzip2 $fp => $fpo or die "bzip2 failed: $Bzip2Error\n";
-	bzip2 $rp => $rpo or die "bzip2 failed: $Bzip2Error\n" if defined $rp;
-	bzip2 $fs => $fso or die "bzip2 failed: $Bzip2Error\n" if defined $fs;
-	bzip2 $rs => $rso or die "bzip2 failed: $Bzip2Error\n" if defined $rs;
-
-	unlink $fp; 
-	unlink $rp if defined $rp;
-	unlink $fs if defined $fs;
-	unlink $rs if defined $rs;
-    }
-    return;
 }
 
 sub store_pair {
@@ -527,6 +472,12 @@ sub mk_key { return join "||", @_ }
 
 sub mk_vec { return split /\|\|/, shift }
 
+sub max {
+    my $max = shift;
+    for (@_) { $max = $_ if $_ > $max }
+    return $max;
+}
+
 sub usage {
     my $script = basename($0);
     print STDERR<<EOF
@@ -562,9 +513,6 @@ Required:
     -rs|rev_unpaired  :       Name for the file of singleton reverse reads.
 
 Options:
-    -idx|index        :       Construct an index for limiting memory usage.
-                              NB: This may result in long run times for a large number of sequences. 
-    -c|compress       :       Compress the output files. Options are 'gzip' or 'bzip2' (Default: No).
     -s|stats          :       Print statistics on the pairing results to STDOUT (Default: No).
     -h|help           :       Print a usage statement.
     -m|man            :       Print the full documentation.
@@ -583,7 +531,6 @@ Required:
     -p|pairnum       :       The number to append to the sequence name. Integer (Must be 1 or 2).
 
 Options:
-    -c|compress      :       Compress the output files. Options are 'gzip' or 'bzip2' (Default: No).
     -uc|uppercase    :       Convert the sequence to uppercase.
     -h|help          :       Print a usage statement.
     -m|man           :       Print the full documentation.
@@ -602,7 +549,6 @@ Required:
     -r|reverse        :       File to place the reverse reads.
 
 Options:
-    -c|compress       :       Compress the output files. Options are 'gzip' or 'bzip2' (Default: No).
     -h|help           :       Print a usage statement.
     -m|man            :       Print the full documentation.
 
@@ -620,9 +566,6 @@ Required:
     -o|outfile        :       File of interleaved reads.
 
 Options:
-    -idx|index        :       Construct an index for limiting memory usage.
-                              NB: This may result in long run times for a large number of sequences.
-    -c|compress       :       Compress the output files. Options are 'gzip' or 'bzip2' (Default: No).
     -h|help           :       Print a usage statement.
     -m|man            :       Print the full documentation.
 
@@ -649,7 +592,7 @@ pairfq_lite.pl makepairs -f s_1_1_trim_info.fq -r s_1_2_trim_info.fq -fp s_1_1_t
 
 ## Interleave the paired-end reads
 
-pairfq_lite.pl joinpairs -f s_1_1_trim_paired.fq -r s_1_2_trim_paired.fq -o s_1_interl.fq -im
+pairfq_lite.pl joinpairs -f s_1_1_trim_paired.fq -r s_1_2_trim_paired.fq -o s_1_interl.fq
 
 ## Split the interleaved reads into separate forward and reverse files
 
@@ -681,16 +624,22 @@ Copyright (C) 2013 S. Evan Staton
 =over
 
 =item *
+Perl 5.6.2 (Ubuntu 12.04.3 LTS)
+
+=item *
+Perl 5.8.9 (Ubuntu 12.04.3 LTS)
+
+=item *
 Perl 5.14.1 (Red Hat Enterprise Linux Server release 5.7 (Tikanga))
 
 =item *
 Perl 5.14.2 (Red Hat Enterprise Linux Desktop release 6.2 (Santiago); Fedora 17)
 
 =item *
-Perl 5.16.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga)); BerkeleyDB 0.54
+Perl 5.16.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga))
 
 =item *
-Perl 5.18.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga)); BerkeleyDB 0.54
+Perl 5.18.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga))
 
 =back
 
@@ -742,16 +691,6 @@ statonse at gmail dot com
 =item -rs, --rev_unpaired
 
   The output file to place the unpaired reverse reads. 
-
-=item -idx, --index
-
-  The computation should be not be in memory but on disk. This will be much slower, but it will not use hardly any
-  RAM, even if there are many millions of sequences in each input file.
-
-=item -c, --compress
-
-  The output files should be compressed. If given, this option must be given the arguments 'gzip' to compress with gzip,
-  or 'bzip2' to compress with bzip2.
 
 =item -uc, --uppercase
 
