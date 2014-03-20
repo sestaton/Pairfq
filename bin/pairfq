@@ -374,7 +374,7 @@ sub interleaved_to_pairs {
     while (($name, $comm, $seq, $qual) = readfq(\*$fh, \@aux)) {
 	if (defined $comm && $comm =~ /^1/ || $name =~ /\/1$/) {
 	    say $f join "\n", ">".$name, $seq if !defined $qual && !defined $comm;
-	    say $f join "\n", ">".$name.q{ }.$comm, $seq, if !defined $qual && defined $comm;
+	    say $f join "\n", ">".$name.q{ }.$comm, $seq if !defined $qual && defined $comm;
 	    say $f join "\n", "@".$name, $seq, '+', $qual if defined $qual && !defined $comm;
 	    say $f join "\n", "@".$name.q{ }.$comm, $seq, '+', $qual if defined $qual && defined $comm;
 	}
