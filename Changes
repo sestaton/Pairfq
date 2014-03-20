@@ -1,6 +1,12 @@
 Revision history for Pairfq
 
 Version	Date	Location
+0.09.2	3/20/2014	Athens, GA
+
+Add standalone script with no dependencies
+or version requirements. Improve doc readability 
+by listing path to program.
+
 0.09.1	3/18/2014	Athens, GA
 
 Add check for ExtUtils::MakeMaker version.
