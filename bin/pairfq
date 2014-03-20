@@ -705,16 +705,31 @@ Copyright (C) 2013 S. Evan Staton
 =over
 
 =item *
+Perl 5.10.1 (Ubuntu 12.04.3 LTS)
+
+=item *
+Perl 5.12.5 (Ubuntu 12.04.3 LTS)
+
+=item *
 Perl 5.14.1 (Red Hat Enterprise Linux Server release 5.7 (Tikanga))
 
 =item *
 Perl 5.14.2 (Red Hat Enterprise Linux Desktop release 6.2 (Santiago); Fedora 17)
 
 =item *
+Perl 5.14.4 (Ubuntu 12.04.3 LTS)
+
+=item *
 Perl 5.16.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga)); BerkeleyDB 0.54
 
 =item *
+Perl 5.16.3 (Ubuntu 12.04.3 LTS)
+
+=item *
 Perl 5.18.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga)); BerkeleyDB 0.54
+
+=item *
+Perl 5.18.1 (Ubuntu 12.04.3 LTS)
 
 =back
 
