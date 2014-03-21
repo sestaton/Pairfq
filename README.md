@@ -3,6 +3,8 @@ Pairfq
 
 Sync paired-end FASTA/Q files and keep singleton reads
 
+[![Build Status](https://travis-ci.org/sestaton/Pairfq.png?branch=master)](https://travis-ci.org/sestaton/Pairfq)
+
 **BASIC USAGE**
 
 There is a standalone script in the 'scripts' directory that has no dependencies and will work with Perl version 5.6 or newer. This script has fewer features than the main application but it may be useful in an environment where installing libraries and dependencies is not convenient. However, it is recommended that users follow the directions below to install and use Pairfq.
