@@ -9,7 +9,7 @@ use IPC::System::Simple qw(capture system);
 use File::Temp;
 use File::Basename;
 use autodie qw(open);
-use Test::More tests => 32;
+use Test::More tests => 8;
 
 #TODO: Add tests that sequences and IDs are correct between tests
 my $fq_data = _build_fq_data();
