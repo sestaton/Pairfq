@@ -14,13 +14,13 @@ use Test::More tests => 32;
 #TODO: Add tests that sequences and IDs are correct between tests
 my $fq_data = _build_fq_data();
 
-makepairs_inmemory($fq_data, $fa_data);
+makepairs_inmemory($fq_data);
 
 #
 # methods
 #
 sub makepairs_inmemory {
-    my ($fq_data, $fa_data) = @_;
+    my ($fq_data) = @_;
     my $fpfq = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
 				DIR      => 't',
 				SUFFIX   => ".fastq",
