@@ -8,7 +8,7 @@ use File::Temp;
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 my $infile;     # input file for 'addinfo' and 'splitpairs' methods
 my $outfile;    # output file for 'addinfo' and 'splitpairs' methods
@@ -373,7 +373,7 @@ sub get_fh {
     elsif ($file =~ /\.bz2$/) {
         open $fh, '-|', 'bzcat', $file or die "\nERROR: Could not open file: $file\n";
     }
-    elsif ($file =~ /-|STDIN/) {
+    elsif ($file =~ /^-$|STDIN/) {
 	open $fh, '< -' or die "\nERROR: Could not open STDIN\n";
     }
     else {
