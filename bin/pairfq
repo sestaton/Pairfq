@@ -143,7 +143,7 @@ sub add_pair_info {
     while (($name, $comm, $seq, $qual) = readfq(\*$fh, \@aux)) {
 	$seq = uc($seq) if $uppercase;
 	if (defined $qual) {
-	    say $out join "\n", "@".$name.$pair, $seq, '+', $qual;
+	    say $out join "\n", "@".$name.$pair, $seq, "+", $qual;
 	}
 	else {
 	    say $out join "\n", ">".$name.$pair, $seq;
@@ -164,7 +164,7 @@ sub make_pairs_and_singles {
     local @SIG{qw(INT TERM HUP)} = sub { untie %$rseqpairs if defined $index; unlink $db_file if -e $db_file; };
 
     my @faux = undef;
-    my ($fname, $fcomm, $fseq, $fqual, $forw_id, $rev_id, $fname_enc);
+    my ($fname, $fcomm, $fseq, $fqual, $forw_id, $rev_id);
     my ($fct, $fpct, $rpct, $pct, $fsct, $rsct, $sct) = (0, 0, 0, 0, 0, 0, 0);
 
     my $fh = get_fh($fread);
@@ -190,27 +190,28 @@ sub make_pairs_and_singles {
 	if ($fname =~ /\|\|/) {
 	    my ($name, $comm);
 	    ($name, $comm) = mk_vec($fname);
-	    $forw_id = $name.q{ 1}.$comm;
-	    $rev_id  = $name.q{ 2}.$comm;
+	    $forw_id = $name." 1".$comm;
+	    $rev_id  = $name." 2".$comm;
 	}
 
 	if (exists $rseqpairs->{$fname}) {
-	    $fpct++; $rpct++;
+	    $fpct++; 
+	    $rpct++;
 	    if (defined $fqual) {
 		my ($rread, $rqual) = mk_vec($rseqpairs->{$fname});
 		if ($fname =~ /\|\|/) {
-		    say $fp join "\n","@".$forw_id, $fseq, "+", $fqual;
-		    say $rp join "\n","@".$rev_id, $rread, "+", $rqual;
+		    say $fp join "\n", "@".$forw_id, $fseq, "+", $fqual;
+		    say $rp join "\n", "@".$rev_id, $rread, "+", $rqual;
 		} 
 		else {
-		    say $fp join "\n","@".$fname.q{/1}, $fseq, "+", $fqual;
-		    say $rp join "\n","@".$fname.q{/2}, $rread, "+", $rqual;
+		    say $fp join "\n", "@".$fname."/1", $fseq, "+", $fqual;
+		    say $rp join "\n", "@".$fname."/2", $rread, "+", $rqual;
 		}
 	    } 
 	    else {
 		if ($fname =~ /\|\|/) {
-		    say $fp join "\n",">".$forw_id, $fseq;
-		    say $rp join "\n",">".$rev_id, $rseqpairs->{$fname};
+		    say $fp join "\n", ">".$forw_id, $fseq;
+		    say $rp join "\n", ">".$rev_id, $rseqpairs->{$fname};
 		} 
 		else {
 		    say $fp join "\n",">".$fname.q{/1}, $fseq;
@@ -223,18 +224,18 @@ sub make_pairs_and_singles {
 	    $fsct++;
 	    if (defined $fqual) {
 		if ($fname =~ /\|\|/) {
-		    say $fs join "\n","@".$forw_id, $fseq, "+", $fqual;
+		    say $fs join "\n", "@".$forw_id, $fseq, "+", $fqual;
 		} 
 		else {
-		    say $fs join "\n","@".$fname.q{/1}, $fseq, "+", $fqual;
+		    say $fs join "\n", "@".$fname."/1", $fseq, "+", $fqual;
 		}
 	    } 
 	    else {
 		if ($fname =~ /\|\|/) {
-		    say $fs join "\n",">".$forw_id, $fseq;
+		    say $fs join "\n", ">".$forw_id, $fseq;
 		} 
 		else {
-		    say $fs join "\n",">".$fname.q{/1}, $fseq;
+		    say $fs join "\n", ">".$fname."/1", $fseq;
 		}
 	    }
 	}
@@ -251,21 +252,21 @@ sub make_pairs_and_singles {
     while (my ($rname_up_unenc, $rseq_up_unenc) = each %$rseqpairs) {
 	$rsct++;
 	my ($rname_up, $rcomm_up) = mk_vec($rname_up_unenc);
-	my ($rseq_up, $rqual_up) = mk_vec($rseq_up_unenc);
+	my ($rseq_up, $rqual_up)  = mk_vec($rseq_up_unenc);
 
-	my $rev_id_up .= $rname_up.q{ 2}.$rcomm_up if defined $rcomm_up;
+	my $rev_id_up .= $rname_up." 2".$rcomm_up if defined $rcomm_up;
     
 	if (defined $rcomm_up && defined $rqual_up) {
-	    say $rs join "\n","@".$rev_id_up, $rseq_up, "+", $rqual_up;
+	    say $rs join "\n", "@".$rev_id_up, $rseq_up, "+", $rqual_up;
 	} 
 	elsif (defined $rcomm_up && !defined $rqual_up) {
-	    say $rs join "\n",">".$rev_id_up, $rseq_up_unenc;
+	    say $rs join "\n", ">".$rev_id_up, $rseq_up_unenc;
 	} 
 	elsif (!defined $rcomm_up && defined $rqual_up) {
-	    say $rs join "\n", "@".$rname_up.q{/2}, $rseq_up, "+", $rqual_up;
+	    say $rs join "\n", "@".$rname_up."/2", $rseq_up, "+", $rqual_up;
 	}
 	else {
-	    say $rs join "\n",">".$rname_up.q{/2}, $rseq_up_unenc;
+	    say $rs join "\n", ">".$rname_up."/2", $rseq_up_unenc;
 	}
     }
     close $rs;
@@ -305,7 +306,7 @@ sub pairs_to_interleaved {
     open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
 
     my @raux = undef;
-    my ($rname, $rcomm, $rseq, $rqual, $forw_id, $rev_id, $rname_enc);
+    my ($rname, $rcomm, $rseq, $rqual, $forw_id, $rev_id);
 
     while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$fh, \@raux)) {
 	if ($rname =~ /(\/\d)$/) {
@@ -323,8 +324,8 @@ sub pairs_to_interleaved {
 
 	if ($rname =~ /\|\|/) {
 	    my ($name, $comm) = mk_vec($rname);
-	    $forw_id = $name.q{ 1}.$comm;
-	    $rev_id  = $name.q{ 2}.$comm;
+	    $forw_id = $name." 1".$comm;
+	    $rev_id  = $name." 2".$comm;
 	}
 
 	if (exists $pairs->{$rname}) {
@@ -335,8 +336,8 @@ sub pairs_to_interleaved {
 		    say $out join "\n", "@".$rev_id, $rseq, "+", $rqual;
 		}
 		else {
-		    say $out join "\n", "@".$rname.q{/1}, $seqf, "+", $qualf;
-		    say $out join "\n", "@".$rname.q{/2}, $rseq, "+", $rqual;
+		    say $out join "\n", "@".$rname."/1", $seqf, "+", $qualf;
+		    say $out join "\n", "@".$rname."/2", $rseq, "+", $rqual;
 		}
 	    }
 	    else {
@@ -345,8 +346,8 @@ sub pairs_to_interleaved {
 		    say $out join "\n", ">".$rev_id, $rseq;
 		}
 		else {
-		    say $out join "\n", ">".$rname.q{/1}, $pairs->{$rname};
-		    say $out join "\n", ">".$rname.q{/2}, $rseq;                                               
+		    say $out join "\n", ">".$rname."/1", $pairs->{$rname};
+		    say $out join "\n", ">".$rname."/2", $rseq;                                               
 		}
 	    }
 	}
@@ -374,15 +375,15 @@ sub interleaved_to_pairs {
     while (($name, $comm, $seq, $qual) = readfq(\*$fh, \@aux)) {
 	if (defined $comm && $comm =~ /^1/ || $name =~ /\/1$/) {
 	    say $f join "\n", ">".$name, $seq if !defined $qual && !defined $comm;
-	    say $f join "\n", ">".$name.q{ }.$comm, $seq if !defined $qual && defined $comm;
-	    say $f join "\n", "@".$name, $seq, '+', $qual if defined $qual && !defined $comm;
-	    say $f join "\n", "@".$name.q{ }.$comm, $seq, '+', $qual if defined $qual && defined $comm;
+	    say $f join "\n", ">".$name." ".$comm, $seq if !defined $qual && defined $comm;
+	    say $f join "\n", "@".$name, $seq, "+", $qual if defined $qual && !defined $comm;
+	    say $f join "\n", "@".$name." ".$comm, $seq, "+", $qual if defined $qual && defined $comm;
 	}
 	elsif (defined $comm && $comm =~ /^2/ || $name =~ /\/2$/) {
 	    say $r join "\n", ">".$name, $seq if !defined $qual && !defined $comm;
-	    say $r join "\n", ">".$name.q{ }.$comm, $seq if !defined $qual && defined $comm;
+	    say $r join "\n", ">".$name." ".$comm, $seq if !defined $qual && defined $comm;
 	    say $r join "\n", "@".$name, $seq, "+", $qual if defined $qual && !defined $comm;
-	    say $r join "\n", "@".$name.q{ }.$comm, $seq, "+", $qual if defined $qual && defined $comm;
+	    say $r join "\n", "@".$name." ".$comm, $seq, "+", $qual if defined $qual && defined $comm;
 	}
     }
     close $fh;
@@ -469,7 +470,7 @@ sub store_pair {
     }
     
     my @raux = undef;
-    my ($rname, $rcomm, $rseq, $rqual, $rname_k, $rname_enc);
+    my ($rname, $rcomm, $rseq, $rqual);
 
     my $fh = get_fh($file);
 
