@@ -3,17 +3,12 @@
 use 5.010;
 use strict;
 use warnings;
-#use Cwd;
 use File::Basename;
-#use File::Temp;
-#use BerkeleyDB;
-#use IO::Compress::Gzip qw(gzip $GzipError);
-#use IO::Compress::Bzip2 qw(bzip2 $Bzip2Error);
-#use List::Util qw(max);
 use Getopt::Long;
 use Pod::Usage;
+use Data::Dump qw(dd);
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 my $infile;     # input file for 'addinfo' and 'splitpairs' methods
 my $outfile;    # output file for 'addinfo' and 'splitpairs' methods
@@ -159,15 +154,7 @@ sub add_pair_info {
 sub make_pairs_and_singles {
     my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress, $stats) = @_;
 
-    eval { 
-	require List::Util;
-	List::Util->import();
-	1;
-    } or do {
-	my $error = $@;
-	say "\nERROR: The module List::Util is required but it is not installed. Exiting.";
-	exit(1);
-    };
+    load_classes('List::Util');
 
     my ($rseqpairs, $db_file, $rct) = store_pair($rread, $index);
 
@@ -426,25 +413,7 @@ sub get_fh {
 sub compress {
     my ($compress, $fp, $rp, $fs, $rs) = @_;
 
-    eval {
-	require IO::Compress::Gzip;
-	IO::Compress::Gzip->import();
-	1;
-    } or do {
-	my $error = $@;
-	say "\nERROR: The module List::Util is required but it is not installed. Exiting.";
-	exit(1);
-    };
-
-    eval {
-	require IO::Compress::Bzip2;
-	IO::Compress::Bzip2->import();
-	1;
-    } or do {
-	my $error = $@;
-	say "\nERROR: The module List::Util is required but it is not installed. Exiting.";
-	exit(1);
-    };
+    load_classes('IO::Compress::Gzip', 'IO::Compress::Bzip2');
 
     if ($compress eq 'gzip') {
 	my $fpo = $fp.".gz";
@@ -484,41 +453,11 @@ sub compress {
 sub store_pair {
     my ($file, $index) = @_;
 
-    no strict 'subs';
-    eval {
-	require Cwd;
-	Cwd->import();
-	1;
-    } or do {
-	my $error = $@;
-	say "\nERROR: The module List::Util is required but it is not installed. Exiting.";
-	exit(1);
-    };
-
-    eval {
-	require File::Temp;
-	File::Temp->import();
-	1;
-    } or do {
-	my $error = $@;
-	say "\nERROR: The module List::Util is required but it is not installed. Exiting.";
-	exit(1);
-    };
-
-    #eval {
-        #require BerkeleyDB;
-	#BerkeleyDB->import();
-	#1;
-    #} or do {
-	#my $error = $@;
-	#say "\nERROR: The module BerkeleyDB is required but it is not installed. Exiting.";
-	#exit(1);
-    #};
-    my $class = 'BerkeleyDB';
-    eval "require $class";
+    load_classes('Cwd', 'File::Temp', 'BerkeleyDB');
 
     my $rct = 0;
     my %rseqpairs;
+    $BerkeleyDB::Error = undef;
     my $cwd = Cwd::getcwd();
     my $db_file = File::Temp->new( TEMPLATE => "pairfq_XXXX",
 				   DIR      => $cwd,
@@ -526,10 +465,8 @@ sub store_pair {
 				   UNLINK   => 0 );
     unlink $db_file if -e $db_file;
 
-    #-Flags => $BerkeleyDB::DB_CREATE
-
     if (defined $index) {
-	tie %rseqpairs, 'BerkeleyDB::Btree', -Filename => $db_file, -Flags => DB_CREATE
+	tie %rseqpairs, 'BerkeleyDB::Btree', -Filename => $db_file, -Flags => &DB_CREATE
             or die "\nERROR: Could not open DBM file: $db_file: $! $BerkeleyDB::Error\n";
     }
     
@@ -609,6 +546,22 @@ sub readfq {
     }
     $aux->[1] = 1;
     return ($name, $seq);
+}
+
+sub load_classes {
+    my @classes = @_;
+
+    for my $class (@classes) {
+	eval {
+	    eval "require $class";
+	    $class->import();
+	    1;
+	} or do {
+	    my $error = $@;
+	    die "\nERROR: The module $class is required but it couldn't be loaded. ".
+		"Here is the exception: $error." if $error;
+	};
+    }
 }
 
 sub mk_key { return join "||", @_ }
