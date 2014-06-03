@@ -3,117 +3,118 @@ Revision history for Pairfq
 Version	Date	Location
 0.12	6/3/2014	Athens, GA
 
-Add method to not load modules until they are required.
+- Add method to not load modules until they are required.
+- Remove List::Util dependency from main application.
 
 0.11	4/14/2014	Athens, GA
 
-Bug fix for reading files containing a dash.
-A patch was kindly provided by Dietmar Rieder.
+- Bug fix for reading files containing a dash.
+  A patch was kindly provided by Dietmar Rieder.
 
 0.10	3/20/2014	Athens, GA
 
-Add standalone script with no dependencies
-or version requirements in a separate /scripts
-directory.
+-Add standalone script with no dependencies
+ or version requirements in a separate /scripts
+ directory.
 
-Improve doc readability by not listing path to program.
+- Improve doc readability by not listing path to program.
 
-Modify standalone script to work with v5.6 by
-removing List::Util dep that is in not core in v5.6
-(List::Util is in core in v5.8.9).
+- Modify standalone script to work with v5.6 by
+  removing List::Util dep that is in not core in v5.6
+  (List::Util is in core in v5.8.9).
 
-Fix help message option listings for main application
-and standalone script.
+- Fix help message option listings for main application
+  and standalone script.
 
 0.09.1	3/18/2014	Athens, GA
 
-Add check for ExtUtils::MakeMaker version.
-Remove tying objects for dbm files since we are no
-longer filtering keys/values.
+- Add check for ExtUtils::MakeMaker version.
+- Remove tying objects for dbm files since we are no
+  longer filtering keys/values.
 
 0.09	2/20/2014	Athens, GA
 
-Rework mk_key and mk_vec functions for storing data
-so they do not use UTF-8 characters. This results in
-a 40% decrease in execution time, and a 14% decrease
-in memory usage for the default in memory execution.
+- Rework mk_key and mk_vec functions for storing data
+  so they do not use UTF-8 characters. This results in
+  a 40% decrease in execution time, and a 14% decrease
+  in memory usage for the default in memory execution.
 
-The indexing method now uses 185X less memory. This appears
-to be due to a leak in the DB filter. The indexing method
-is also 25% faster now.
+- The indexing method now uses 185X less memory. This appears
+  to be due to a leak in the DB filter. The indexing method
+  is also 25% faster now.
 
-Due to removing the utf8 pragma, the version requirement has
-now been lowered from 5.12 to 5.10.
+- Due to removing the utf8 pragma, the version requirement has
+  now been lowered from 5.12 to 5.10.
 
-Make printing stats for 'makepairs' method an option.
+- Make printing stats for 'makepairs' method an option.
 
 0.08	2/10/2014	Athens, GA
 
-Bugfix for encoding read names with a comment line. Data
-was not being decoded and this was causing no pairs to 
-be found.
+- Bugfix for encoding read names with a comment line. Data
+  was not being decoded and this was causing no pairs to 
+  be found.
 
-Update README to point to wiki instead of having lengthy 
-descriptions of each method in a single file.
+- Update README to point to wiki instead of having lengthy 
+  descriptions of each method in a single file.
 
 0.07	1/27/2014	Athens, GA
 
-Remove use of DB_File. Reasons: 1) I discovered it has
-only been a core module since v5.16 (I think, at least it was
-not in v5.14.2). 2) It is much, much slower than BerkeleyDB and
-less powerful in terms of features.
+- Remove use of DB_File. Reasons: 1) I discovered it has
+  only been a core module since v5.16 (I think, at least it was
+  not in v5.14.2). 2) It is much, much slower than BerkeleyDB and
+  less powerful in terms of features.
 
-This was the source of much frustration and failure trying to get
-everything to work in cases where DB_File was present, or BerkeleyDB
-was present, or neither. The best solution was simply to install 
-BerkeleyDB during the build process and forget about using DB_File
-because it is quite slow and may not be available anyway (as I'd
-assumed since I as using v5.18 -- and that's what the Perl docs describe).
+- This was the source of much frustration and failure trying to get
+  everything to work in cases where DB_File was present, or BerkeleyDB
+  was present, or neither. The best solution was simply to install 
+  BerkeleyDB during the build process and forget about using DB_File
+  because it is quite slow and may not be available anyway (as I'd
+  assumed since I as using v5.18 -- and that's what the Perl docs describe).
 
 0.06	1/25/2014	Athens, GA
 
-Added support for using BerkeleyDB if it is available, 
-but falling back to using DB_File for indexing method.
+- Added support for using BerkeleyDB if it is available, 
+  but falling back to using DB_File for indexing method.
 
 0.05	1/22/2014	Athens, GA
 
-Enhancements: 1) Make in-memory processing default instead of
-optional. This should be the expected behavior and is most used, 
-so is a better default. 
+- Enhancements: 1) Make in-memory processing default instead of
+  optional. This should be the expected behavior and is most used, 
+  so is a better default. 
 
-2) Make --index an option instead of this being the default. 
-This makes the code much more expressive now by checking if the 
-index option is defined, instead of seeing if the memory option 
-is not defined.
+  2) Make --index an option instead of this being the default. 
+  This makes the code much more expressive now by checking if the 
+  index option is defined, instead of seeing if the memory option 
+  is not defined.
 
-3) Add explicit exit or return from subroutines so it is clear
-to anyone wanting to contribute what the flow of execution is 
-for each method.
+  3) Add explicit exit or return from subroutines so it is clear
+  to anyone wanting to contribute what the flow of execution is 
+  for each method.
 
-4) More sig handlers for indexing method to clean up index.
+  4) More sig handlers for indexing method to clean up index.
 
 0.04	11/18/2013	Athens, GA
 
-Bug fix for taking positional arguments (options were not
-being recognized correctly). Add option to get version, for 
-testing or general use.
+- Bug fix for taking positional arguments (options were not
+  being recognized correctly). Add option to get version, for 
+  testing or general use.
 
-0.03	11/18/2013	Athens, GA
+0.0dd3	11/18/2013	Athens, GA
 
-Bug fixes for splitting pairs, storing files in memory,
-and naming DBM files. Update/add tests.
+- Bug fixes for splitting pairs, storing files in memory,
+  and naming DBM files. Update/add tests.
 
 0.02	11/11/2013	Athens, GA	
 
-Removed all utility scripts and rolled methods into a single
-executable. Completely redesigned pairfq to work as an application
-with numerous methods, instead of a single script for just pairing
-reads.
+- Removed all utility scripts and rolled methods into a single
+  executable. Completely redesigned pairfq to work as an application
+  with numerous methods, instead of a single script for just pairing
+  reads.
 
-Make individual methods positional arguments instead of options. Fix
-formatting of output and add time/version stamp.
+- Make individual methods positional arguments instead of options. Fix
+  formatting of output and add time/version stamp.
 
 0.01	11/01/2013	Athens, GA
 
-Initial release.	
+- Initial release.	
 
