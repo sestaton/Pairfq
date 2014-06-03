@@ -1,6 +1,10 @@
 Revision history for Pairfq
 
 Version	Date	Location
+0.12	6/3/2014	Athens, GA
+
+Add method to not load modules until they are required.
+
 0.11	4/14/2014	Athens, GA
 
 Bug fix for reading files containing a dash.
