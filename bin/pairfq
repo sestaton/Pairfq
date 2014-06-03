@@ -6,7 +6,6 @@ use warnings;
 use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
-use Data::Dump qw(dd);
 
 our $VERSION = '0.12';
 
