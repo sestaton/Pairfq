@@ -11,11 +11,11 @@ There is a standalone script in the 'scripts' directory that has no dependencies
  
 **DEPENDENCIES**
 
-There is an external package used by Pairfq (called Berkeley DB) and it can be installed through your package manager, though it may be installed already. See the [Installing dependencies](https://github.com/sestaton/Pairfq/wiki/Installing-dependencies) page for suggestions on how to install for common operating systems.
+There is an external package used by Pairfq (called Berkeley DB) and it can be installed through your package manager, though it may be installed already. See the [installing dependencies](https://github.com/sestaton/Pairfq/wiki/Installing-dependencies) page for suggestions on how to install for common operating systems.
 
 **INSTALLATION**
 
-Perl version 5.10 (or greater) must be installed to use Pairfq, and there are a couple of external modules required. If you have [cpanminus](http://search.cpan.org/~miyagawa/App-cpanminus-1.6935/lib/App/cpanminus.pm), installation can be done with a single command:
+Perl version 5.10 (or greater) must be installed to use Pairfq, and there are a couple of external modules required. If you have [cpanminus](https://metacpan.org/pod/App::cpanminus), installation can be done with a single command:
 
     cpanm git://github.com/sestaton/Pairfq.git
 
