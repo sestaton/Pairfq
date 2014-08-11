@@ -10,8 +10,8 @@ use Pod::Usage;
 
 our $VERSION = '0.13';
 
-my $infile;     # input file for 'addinfo' and 'splitpairs' methods
-my $outfile;    # output file for 'addinfo' and 'splitpairs' methods
+my $infile;     # input file for 'addinfo', 'splitpairs' and 'makepairs' methods
+my $outfile;    # output file for 'addinfo' method
 my $fread;      # file of forward reads for 'splitpairs', 'makepairs' and 'joinpairs' methods
 my $rread;      # file of forward reads for 'splitpairs', 'makepairs' and 'joinpairs' methods
 my $fpread;     # file of paired forward reads for 'makepairs' method
@@ -70,13 +70,13 @@ if ($method eq 'addinfo') {
 }
 elsif ($method eq 'makepairs') {
     if ($infile && $fpread && $rpread && $fsread && $rsread) {
-        interleaved_to_pairs_and_singles($infile, $fpread, $rpread, $fsread, $rsread, $compress, $stats);
+        interleaved_to_pairs_and_singles($infile, $fpread, $rpread, $fsread, $rsread, $stats);
     }
     elsif (!$infile && $fread && $rread && $fpread && $rpread && $fsread && $rsread) {
-        make_pairs_and_singles($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress, $stats);
+        make_pairs_and_singles($fread, $rread, $fpread, $rpread, $fsread, $rsread, $stats);
     }
     else {
-        say "\nERROR: Command line not parsed correctly. Check input.\n";
+        print "\nERROR: Command line not parsed correctly. Check input.\n\n";
         makepairs_usage();
         exit(1);
     }
@@ -278,7 +278,7 @@ sub make_pairs_and_singles {
 }
 
 sub interleaved_to_pairs_and_singles {
-    my ($infile, $fpread, $rpread, $fsread, $rsread, $compress, $stats) = @_;
+    my ($infile, $fpread, $rpread, $fsread, $rsread, $stats) = @_;
 
     my $fh = get_fh($infile);
     open my $fp, '>', $fpread or die "\nERROR: Could not open file: $fpread\n";
@@ -374,7 +374,6 @@ sub interleaved_to_pairs_and_singles {
     close $fs;
     close $rs;
 
-    compress($compress, $fpread, $rpread, $fsread, $rsread) if $compress;
     $pct = $fpct + $rpct;
     $sct = $fsct + $rsct;
 
@@ -383,7 +382,7 @@ sub interleaved_to_pairs_and_singles {
         my $offset = $maxfn + 38;
         my $date = qx(date); chomp $date;
         my $prog = basename($0, ());
-        say "========= $prog version : $VERSION (completion time: $date)";
+        print "========= $prog version : $VERSION (completion time: $date)\n";
         printf "%-${offset}s %s %10d\n", "Total forward reads ($infile)", ":",$fct;
         printf "%-${offset}s %s %10d\n", "Total reverse reads ($infile)", ":", $rct;
         printf "%-${offset}s %s %10d\n", "Total forward paired reads ($fpread)", ":", $fpct;
@@ -627,9 +626,12 @@ EOF
 sub makepairs_usage {
     my $script = basename($0);
     print STDERR<<EOF
-USAGE: $script makepairs [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-s] [-h] [-m]
+USAGE: $script makepairs [-i] [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-s] [-h] [-m]
 
 Required:
+    -i|infile         :       File of interleaved forward and reverse reads that has been trimmed.
+                              As below, the forward and reverse reads must be labeled in the name
+                              or comment.
     -f|forward        :       File of foward reads (usually with "/1" or " 1" in the header).
     -r|reverse        :       File of reverse reads (usually with "/2" or " 2" in the header).
     -fp|forw_paired   :       Name for the file of paired forward reads.
@@ -715,6 +717,9 @@ pairfq_lite.pl addinfo -i s_1_2_trim.fq -o s_1_2_trim_info.fq -p 2
 
 pairfq_lite.pl makepairs -f s_1_1_trim_info.fq -r s_1_2_trim_info.fq -fp s_1_1_trim_paired.fq -rp s_1_2_trim_paired.fq -fs s_1_1_trim_unpaired.fq -rs s_1_2_trim_unpaired.fq --stats
 
+OR
+
+pairfq_lite.pl makepairs -i s_interl_trimmed.fq -fp s_1_1_trim_paired.fq -rp s_1_2_trim_paired.fq -fs s_1_1_trim_unpaired.fq -rs s_1_2_trim_unpaired.fq --stats
 ## Interleave the paired-end reads
 
 pairfq_lite.pl joinpairs -f s_1_1_trim_paired.fq -r s_1_2_trim_paired.fq -o s_1_interl.fq
@@ -793,6 +798,17 @@ statonse at gmail dot com
 
 =over 2
 
+=item -i, --infile
+
+  For the 'addinfo' method, this would be any FastA/Q file. For the 'splitpairs' method,
+  this would be either the forward or reverse file from a paired-end sequencing run. For the
+  'makepairs' method, this would be the interleaved file of forward and reverse reads that
+  has been trimmed.
+
+=item -o, --outfile
+
+  The outfile for the 'addinfo' method, with corrected pair information.
+
 =item -f, --forward
 
   The file of forward sequences from an Illumina paired-end sequencing run.
@@ -816,6 +832,11 @@ statonse at gmail dot com
 =item -rs, --rev_unpaired
 
   The output file to place the unpaired reverse reads. 
+
+=item -p, --pairnum
+
+  The pair number to add to the file with the 'addinfo' method. Should be either '1' or '2' and other arguments
+  with generate an exception.
 
 =item -uc, --uppercase
 
