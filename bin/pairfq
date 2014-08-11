@@ -720,9 +720,12 @@ EOF
 sub makepairs_usage {
     my $script = basename($0);
     print STDERR<<EOF
-USAGE: $script makepairs [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-idx] [-c] [-s] [-h] [-m]
+USAGE: $script makepairs [-i] [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-idx] [-c] [-s] [-h] [-m]
 
 Required:
+    -i|infile         :       File of interleaved forward and reverse reads that has been trimmed.
+                              As below, the forward and reverse reads must be labeled in the name
+                              or comment.
     -f|forward        :       File of foward reads (usually with "/1" or " 1" in the header).
     -r|reverse        :       File of reverse reads (usually with "/2" or " 2" in the header).
     -fp|forw_paired   :       Name for the file of paired forward reads.
@@ -731,7 +734,8 @@ Required:
     -rs|rev_unpaired  :       Name for the file of singleton reverse reads.
 
 Options:
-    -idx|index        :       Construct an index for limiting memory usage.
+    -idx|index        :       Construct an index for limiting memory usage (only applies to pairing reads
+                              from separate files, not from an interleaved file).
                               NB: This may result in long run times for a large number of sequences. 
     -c|compress       :       Compress the output files. Options are 'gzip' or 'bzip2' (Default: No).
     -s|stats          :       Print statistics on the pairing results to STDOUT (Default: No).
@@ -815,6 +819,10 @@ pairfq addinfo -i s_1_2_trim.fq -o s_1_2_trim_info.fq -p 2
 ## Sync paired-end reads and write singleton reads to separate files
 
 pairfq makepairs -f s_1_1_trim_info.fq -r s_1_2_trim_info.fq -fp s_1_1_trim_paired.fq -rp s_1_2_trim_paired.fq -fs s_1_1_trim_unpaired.fq -rs s_1_2_trim_unpaired.fq --stats
+
+OR
+
+pairfq makepairs -i s_interl_trimmed.fq -fp s_1_1_trim_paired.fq -rp s_1_2_trim_paired.fq -fs s_1_1_trim_unpaired.fq -rs s_1_2_trim_unpaired.fq --stats
 
 ## Interleave the paired-end reads
 
@@ -904,6 +912,17 @@ statonse at gmail dot com
 
 =over 2
 
+=item -i, --infile
+
+  For the 'addinfo' method, this would be any FastA/Q file. For the 'splitpairs' method,
+  this would be either the forward or reverse file from a paired-end sequencing run. For the
+  'makepairs' method, this would be the interleaved file of forward and reverse reads that
+  has been trimmed.
+
+=item -o, --outfile
+
+  The outfile for the 'addinfo' method, with corrected pair information.
+
 =item -f, --forward
 
   The file of forward sequences from an Illumina paired-end sequencing run.
@@ -927,6 +946,11 @@ statonse at gmail dot com
 =item -rs, --rev_unpaired
 
   The output file to place the unpaired reverse reads. 
+
+=item -p, --pairnum
+
+  The pair number to add to the file with the 'addinfo' method. Should be either '1' or '2' and other arguments
+  with generate an exception.
 
 =item -idx, --index
 
