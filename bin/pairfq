@@ -7,7 +7,7 @@ use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 my $infile;     # input file for 'addinfo' and 'splitpairs' methods
 my $outfile;    # output file for 'addinfo' and 'splitpairs' methods
@@ -80,12 +80,17 @@ if ($method eq 'addinfo') {
     add_pair_info($pairnum, $infile, $outfile, $compress, $uppercase);
 }
 elsif ($method eq 'makepairs') {
-    if (!$fread || !$rread || !$fpread || !$rpread || !$fsread || !$rsread) {
+    if ($infile && $fpread && $rpread && $fsread && $rsread) {
+	interleaved_to_pairs_and_singles($infile, $fpread, $rpread, $fsread, $rsread, $index, $compress, $stats);
+    }
+    elsif (!$infile && $fread && $rread && $fpread && $rpread && $fsread && $rsread) {
+	make_pairs_and_singles($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress, $stats);
+    }
+    else {
 	say "\nERROR: Command line not parsed correctly. Check input.\n";
 	makepairs_usage();
 	exit(1);
     }
-    make_pairs_and_singles($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress, $stats);
 }
 elsif ($method eq 'joinpairs') {
     if (!$fread || !$rread || !$outfile) {
@@ -286,6 +291,93 @@ sub make_pairs_and_singles {
 	printf "%-${offset}s %s %10d\n", "Total paired reads", ":",  $pct;
 	printf "%-${offset}s %s %10d\n", "Total unpaired reads", ":", $sct;
     }
+    exit;
+}
+
+sub interleaved_to_pairs_and_singles {
+    my ($infile, $fpread, $rpread, $fsread, $rsread, $index, $compress, $stats) = @_;
+
+    my $fh = get_fh($infile);
+    open my $fp, '>', $fpread or die "\nERROR: Could not open file: $fpread\n";
+    open my $rp, '>', $rpread or die "\nERROR: Could not open file: $rpread\n";
+    open my $fs, '>', $fsread or die "\nERROR: Could not open file: $fsread\n";
+    open my $rs, '>', $rsread or die "\nERROR: Could not open file: $rsread\n";
+
+    my @aux = undef;
+    my ($readct, $pair) = (0, 0);
+    my %singles;
+    my ($fpairname, $rpairname);
+    my ($name, $comm, $seq, $qual);
+    my ($fname, $fcomm, $fseq, $fqual, $rname, $rcomm, $rseq, $rqual);
+
+    while (($name, $comm, $seq, $qual) = readfq(\*$fh, \@aux)) {
+	$readct++;
+	if ($name =~ /\/1$/) {
+	    $pair = 1;
+	    ($fname, $fpairname, $fseq, $fqual) = ($name, $name, $seq, $qual);
+	    $fpairname =~ s/\/1//;
+	    $singles{$fname} = { name => $fname, seq => $fseq, qual => $fqual, pair => $pair };
+	}
+	elsif (defined $comm && $comm =~ /^1/) {
+	    $pair = 1;
+	    ($fname, $fpairname, $fseq, $fcomm, $fqual) = ($name, $name, $seq, $comm, $qual);
+	    $singles{$fname} = { name => $fname, seq => $fseq, comm => $fcomm, qual => $fqual, pair => $pair };
+	}
+	elsif ($name =~ /\/2$/) {
+	    $pair = 2;
+	    ($rname, $rpairname, $rseq, $rqual) = ($name, $name, $seq, $qual);
+	    $rpairname =~ s/\/2//;
+	    $singles{$rname} = { name => $rname, seq => $rseq, qual => $rqual, pair => $pair };
+	}
+	elsif (defined $comm && $comm =~ /^2/) {
+	    $pair = 2;
+	    ($rname, $rpairname, $rseq, $rcomm, $rqual) = ($name, $name, $seq, $comm, $qual);
+	    $singles{$rname} = { name => $rname, seq => $rseq, comm => $rcomm, qual => $rqual, pair => $pair };
+	}
+
+	next unless defined $fpairname && defined $rpairname;
+	if ($fpairname eq $rpairname) {
+	    say $fp join "\n", ">".$fname, $fseq 
+	          if !defined $fqual && !defined $fcomm;
+	    say $fp join "\n", ">".$fname." ".$fcomm, $fseq 
+	        if !defined $fqual && defined $fcomm;
+	    say $fp join "\n", "@".$fname, $fseq, "+", $fqual 
+	        if defined $fqual && !defined $fcomm;
+	    say $fp join "\n", "@".$fname." ".$fcomm, $fseq, "+", $fqual 
+	        if defined $fqual && defined $fcomm;
+	    
+	    say $rp join "\n", ">".$rname, $rseq 
+	        if !defined $rqual && !defined $rcomm;
+	    say $rp join "\n", ">".$rname." ".$rcomm, $rseq 
+	        if !defined $rqual && defined $rcomm;
+	    say $rp join "\n", "@".$rname, $rseq, "+", $rqual 
+	        if defined $rqual && !defined $rcomm;
+	    say $rp join "\n", "@".$rname." ".$rcomm, $rseq, "+", $rqual 
+	        if defined $rqual && defined $rcomm;
+	    delete $singles{$fname};
+	    delete $singles{$rname};
+	}
+	$pair = 0;
+    }
+    close $fh;
+    close $fp;
+    close $rp;
+
+    for my $id (keys %singles) {
+	my $sfh = ($singles{$id}->{'pair'} == 1) ? $fs : $rs;
+	say $sfh join "\n", ">".$singles{$id}->{'name'}, $singles{$id}->{'seq'} 
+	    if !defined $singles{$id}->{'qual'} && !defined $singles{$id}->{'comm'};
+	say $sfh join "\n", ">".$singles{$id}->{'name'}." ".$singles{$id}->{'comm'}, $singles{$id}->{'seq'} 
+	    if !defined $singles{$id}->{'qual'} && defined $singles{$id}->{'comm'};
+	say $sfh join "\n", "@".$singles{$id}->{'name'}, $singles{$id}->{'seq'}, "+", $singles{$id}->{'qual'} 
+	    if defined $singles{$id}->{'qual'} && !defined $singles{$id}->{'comm'};
+	say $sfh join "\n", "@".$singles{$id}->{'name'}." ".$singles{$id}->{'comm'}, $singles{$id}->{'seq'}, "+", $singles{$id}->{'qual'} 
+	    if defined $singles{$id}->{'qual'} && defined $singles{$id}->{'comm'};
+    }
+    close $fs;
+    close $rs;
+
+    compress($compress, $fpread, $rpread, $fsread, $rsread) if $compress;
     exit;
 }
 
