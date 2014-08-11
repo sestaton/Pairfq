@@ -9,8 +9,8 @@ use Pod::Usage;
 
 our $VERSION = '0.13';
 
-my $infile;     # input file for 'addinfo' and 'splitpairs' methods
-my $outfile;    # output file for 'addinfo' and 'splitpairs' methods
+my $infile;     # input file for 'addinfo', 'splitpairs' and 'makepairs' methods
+my $outfile;    # output file for 'addinfo' method
 my $fread;      # file of forward reads for 'splitpairs', 'makepairs' and 'joinpairs' methods
 my $rread;      # file of forward reads for 'splitpairs', 'makepairs' and 'joinpairs' methods
 my $fpread;     # file of paired forward reads for 'makepairs' method
