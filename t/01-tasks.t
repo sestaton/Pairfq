@@ -4,7 +4,7 @@ use 5.010;
 use strict;
 use warnings FATAL => 'all';
 use IPC::System::Simple qw(capture);
-use Test::More tests => 8;
+use Test::More tests => 10;
 
 my @addinfo    = capture([0..5],"bin/pairfq addinfo 2>&1");
 my @makepairs  = capture([0..5],"bin/pairfq makepairs 2>&1");
