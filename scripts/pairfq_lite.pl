@@ -70,7 +70,7 @@ if ($method eq 'addinfo') {
 }
 elsif ($method eq 'makepairs') {
     if ($infile && $fpread && $rpread && $fsread && $rsread) {
-        interleaved_to_pairs_and_singles($infile, $fpread, $rpread, $fsread, $rsread, $index, $compress, $stats);
+        interleaved_to_pairs_and_singles($infile, $fpread, $rpread, $fsread, $rsread, $compress, $stats);
     }
     elsif (!$infile && $fread && $rread && $fpread && $rpread && $fsread && $rsread) {
         make_pairs_and_singles($fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress, $stats);
@@ -278,7 +278,7 @@ sub make_pairs_and_singles {
 }
 
 sub interleaved_to_pairs_and_singles {
-    my ($infile, $fpread, $rpread, $fsread, $rsread, $index, $compress, $stats) = @_;
+    my ($infile, $fpread, $rpread, $fsread, $rsread, $compress, $stats) = @_;
 
     my $fh = get_fh($infile);
     open my $fp, '>', $fpread or die "\nERROR: Could not open file: $fpread\n";
@@ -287,32 +287,35 @@ sub interleaved_to_pairs_and_singles {
     open my $rs, '>', $rsread or die "\nERROR: Could not open file: $rsread\n";
 
     my @aux = undef;
-    my ($readct, $pair) = (0, 0);
+    my ($fct, $rct, $fpct, $rpct, $pct, $fsct, $rsct, $sct, $pair) = (0, 0, 0, 0, 0, 0, 0, 0, 0);
     my %singles;
     my ($fpairname, $rpairname);
     my ($name, $comm, $seq, $qual);
     my ($fname, $fcomm, $fseq, $fqual, $rname, $rcomm, $rseq, $rqual);
 
     while (($name, $comm, $seq, $qual) = readfq(\*$fh, \@aux)) {
-        $readct++;
         if ($name =~ /\/1$/) {
+            $fct++;
             $pair = 1;
             ($fname, $fpairname, $fseq, $fqual) = ($name, $name, $seq, $qual);
             $fpairname =~ s/\/1//;
             $singles{$fname} = { name => $fname, seq => $fseq, qual => $fqual, pair => $pair };
         }
         elsif (defined $comm && $comm =~ /^1/) {
+            $fct++;
             $pair = 1;
             ($fname, $fpairname, $fseq, $fcomm, $fqual) = ($name, $name, $seq, $comm, $qual);
             $singles{$fname} = { name => $fname, seq => $fseq, comm => $fcomm, qual => $fqual, pair => $pair };
         }
         elsif ($name =~ /\/2$/) {
+            $rct++;
             $pair = 2;
             ($rname, $rpairname, $rseq, $rqual) = ($name, $name, $seq, $qual);
             $rpairname =~ s/\/2//;
             $singles{$rname} = { name => $rname, seq => $rseq, qual => $rqual, pair => $pair };
         }
         elsif (defined $comm && $comm =~ /^2/) {
+            $rct++;
             $pair = 2;
             ($rname, $rpairname, $rseq, $rcomm, $rqual) = ($name, $name, $seq, $comm, $qual);
             $singles{$rname} = { name => $rname, seq => $rseq, comm => $rcomm, qual => $rqual, pair => $pair };
@@ -320,6 +323,8 @@ sub interleaved_to_pairs_and_singles {
 
 	next unless defined $fpairname && defined $rpairname;
         if ($fpairname eq $rpairname) {
+            $fpct++;
+            $rpct++;
             say $fp join "\n", ">".$fname, $fseq 
                   if !defined $fqual && !defined $fcomm;
             say $fp join "\n", ">".$fname." ".$fcomm, $fseq 
@@ -347,8 +352,17 @@ sub interleaved_to_pairs_and_singles {
     close $rp;
 
     for my $id (keys %singles) {
-        my $sfh = ($singles{$id}->{'pair'} == 1) ? $fs : $rs;
-        say $sfh join "\n", ">".$singles{$id}->{'name'}, $singles{$id}->{'seq'} 
+        my $sfh;
+        if ($singles{$id}->{'pair'} == 1) {
+            $fsct++;
+            $sfh = $fs;
+        }
+        else {
+            $rsct++;
+            $sfh = $rs;
+        }
+
+	say $sfh join "\n", ">".$singles{$id}->{'name'}, $singles{$id}->{'seq'} 
             if !defined $singles{$id}->{'qual'} && !defined $singles{$id}->{'comm'};
         say $sfh join "\n", ">".$singles{$id}->{'name'}." ".$singles{$id}->{'comm'}, $singles{$id}->{'seq'} 
             if !defined $singles{$id}->{'qual'} && defined $singles{$id}->{'comm'};
@@ -361,6 +375,24 @@ sub interleaved_to_pairs_and_singles {
     close $rs;
 
     compress($compress, $fpread, $rpread, $fsread, $rsread) if $compress;
+    $pct = $fpct + $rpct;
+    $sct = $fsct + $rsct;
+
+    if (defined $stats) {
+        my $maxfn = max(length($infile), length($fpread), length($rpread), length($fsread), length($rsread));
+        my $offset = $maxfn + 38;
+        my $date = qx(date); chomp $date;
+        my $prog = basename($0, ());
+        say "========= $prog version : $VERSION (completion time: $date)";
+        printf "%-${offset}s %s %10d\n", "Total forward reads ($infile)", ":",$fct;
+        printf "%-${offset}s %s %10d\n", "Total reverse reads ($infile)", ":", $rct;
+        printf "%-${offset}s %s %10d\n", "Total forward paired reads ($fpread)", ":", $fpct;
+        printf "%-${offset}s %s %10d\n", "Total reverse paired reads ($rpread)", ":", $rpct;
+        printf "%-${offset}s %s %10d\n", "Total forward unpaired reads ($fsread)", ":", $fsct;
+        printf "%-${offset}s %s %10d\n\n", "Total reverse unpaired reads ($rsread)", ":", $rsct;
+        printf "%-${offset}s %s %10d\n", "Total paired reads", ":",  $pct;
+        printf "%-${offset}s %s %10d\n", "Total unpaired reads", ":", $sct;
+    }
     exit;
 }
 
