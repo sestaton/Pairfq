@@ -72,7 +72,7 @@ sub makepairs_inmemory {
 	}
     }
     
-    unlink $fpfq, $rpfq, $fsfq, $rsfq;
+    unlink $fq_data->[0], $fq_data->[1], $fpfq, $rpfq, $fsfq, $rsfq;
     
 }
 
