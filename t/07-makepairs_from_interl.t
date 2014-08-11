@@ -7,7 +7,7 @@ use IPC::System::Simple qw(capture system);
 use File::Temp;
 use File::Basename;
 use autodie qw(open);
-use Test::More tests => 14;
+use Test::More tests => 22;
 
 my $fq_data = _build_fq_data();
 my $fa_data = _build_fa_data();
@@ -51,8 +51,7 @@ my $tmpfars_out = File::Temp->new( TEMPLATE => "pairfq_fars_XXXX",
 				  DIR      => 't',
 				  SUFFIX   => ".fasta",
 				  UNLINK   => 0 );
-
-system([0..5],"bin/pairfq makepairs -i $fq_data -fp $tmpfqfp_out -rp $tmpfqrp_out -fs $tmpfqfs_out -rs $tmpfqrs_out");
+my @pfq_fqout = capture([0..5],"bin/pairfq makepairs -i $fq_data -fp $tmpfqfp_out -rp $tmpfqrp_out -fs $tmpfqfs_out -rs $tmpfqrs_out --stats");
 system([0..5],"bin/pairfq makepairs -i $fa_data -fp $tmpfafp_out -rp $tmpfarp_out -fs $tmpfafs_out -rs $tmpfars_out");
 
 my $tmpfqfp = $tmpfqfp_out->filename;
@@ -108,6 +107,34 @@ is($fqfs_ct + $fqrs_ct,   2, 'Correct number of total singleton fastq reads');
 is($fqfp_ct + $fqrp_ct,   8, 'Correct number of total paired fastq reads');
 is($fqfp_ct + $fqrp_ct + 
    $fqfs_ct + $fqrs_ct,  10, 'Correct number of total fastq reads');
+
+for my $fqo (@pfq_fqout) {
+    if ($fqo =~ /Total forward reads\s.*(\d+)/) { 
+	is($1, 5, 'Correct number of forward fastq reads');
+    }
+    elsif ($fqo =~ /Total reverse reads\s.*(\d+)/) {
+	is($1, 5, 'Correct number of reverse fastq reads');
+    }
+    elsif ($fqo =~ /Total forward paired reads\s.*(\d+)/) {
+	is($1, 4, 'Correct number of paired forward fastq reads');
+    }
+    elsif ($fqo =~ /Total reverse paired reads\s.*(\d+)/) {
+	is($1, 4, 'Correct number of paired reverse fastq reads');
+    }
+    elsif ($fqo =~ /Total forward unpaired reads\s.*(\d+)/) {
+	is($1, 1, 'Correct number of unpaired forward fastq reads');
+    }
+    elsif ($fqo =~ /Total reverse unpaired reads\s.*(\d+)/) {
+	is($1, 1, 'Correct number of unpaired reverse fastq reads');
+    }
+    elsif ($fqo =~ /Total paired reads\s.*(\s\d+)/) {
+	my $tot = $1; $tot =~ s/^\s//;
+	is($tot, 8, 'Correct number of total paired fastq reads');
+    }
+    elsif ($fqo =~ /Total unpaired reads\s.*(\d+)/) {
+	is($1, 2, 'Correct number of total upaired fastq reads');
+    }
+}
 
 unlink $fq_data, $tmpfqfp, $tmpfqrp, $tmpfqfs, $tmpfqrs;
 
