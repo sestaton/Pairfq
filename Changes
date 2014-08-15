@@ -1,6 +1,10 @@
 Revision history for Pairfq
 
 Version	Date	Location
+0.13.1	8/15/2014	Vancouver, BC
+
+- Add DOI to make repo citable.
+
 0.13    8/11/2014	Vancouver, BC
 
 - Add method for finding pairs from an interleaved file 
