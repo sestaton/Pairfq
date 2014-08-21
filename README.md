@@ -49,10 +49,7 @@ The documentation can also be accessed by specifying the manual option with `pai
 Report any issues at the Pairfq issue tracker: https://github.com/sestaton/Pairfq/issues
 
 Be aware that Pairfq will not work for every data set given the wide range of FASTA/Q formats. Feel free to fork the project and modify the code to your needs, or submit code changes if you find any bugs. 
-
-**CITATION**
-
-Staton, SE. 2014. Pairfq: A tool to sync paired-end FASTA/Q files and keep singleton reads. 
+ 
 **ATTRIBUTION**
 
 This project uses the [readfq](https://github.com/lh3/readfq) library written by Heng Li. The readfq code has been modified for error handling and to parse the comment line in the Casava header.
