@@ -14,7 +14,7 @@ BEGIN {
 }
 
 WriteMakefile(
-    NAME             => 'bin/pairfq',
+    NAME             => 'Pairfq',
     AUTHOR           => q{S. Evan Staton <statonse@gmail.com>},
     VERSION_FROM     => 'bin/pairfq',
     LICENSE          => 'MIT',
