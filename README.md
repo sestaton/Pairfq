@@ -23,7 +23,7 @@ Alternatively, download the latest [release](https://github.com/sestaton/Pairfq/
 
     perl Makefile.PL
 
-If any Perl dependencies are listed after running this command, install them through the CPAN shell (or any method you like). Then build and install the package.
+If any Perl dependencies are listed after running this command, install them through the CPAN shell or any method you like (see the [installing dependencies](https://github.com/sestaton/Pairfq/wiki/Installing-dependencies) page for instructions). Then build and install the package.
 
     perl Makefile.PL
     make
