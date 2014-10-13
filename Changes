@@ -1,6 +1,14 @@
 Revision history for Pairfq
 
 Version	Date	Location
+0.13.2	10/13/2014	Vancouver, BC
+
+- Fix bug in 'pairfq_lite.pl' script. For some reason,
+  a temp file was being created for storage but it wasn't
+  being used. This was likely from a previous indexing method.
+  This did not affect any of the methods, it was just leaving
+  behind a temp file.
+
 0.13.1	8/15/2014	Vancouver, BC
 
 - Add DOI to make repo citable.
