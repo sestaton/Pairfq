@@ -4,11 +4,10 @@ use strict;
 use warnings;
 use Cwd;
 use File::Basename;
-use File::Temp;
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.13.1';
+our $VERSION = '0.13.2';
 
 my $infile;     # input file for 'addinfo', 'splitpairs' and 'makepairs' methods
 my $outfile;    # output file for 'addinfo' method
@@ -513,10 +512,6 @@ sub store_pair {
     my $rct = 0;
     my %rseqpairs;
     my $cwd = getcwd();
-    my $db_file = File::Temp->new( TEMPLATE => "pairfq_XXXX",
-				   DIR      => $cwd,
-				   SUFFIX   => ".bdb",
-				   UNLINK   => 0 );
     
     my @raux = undef;
     my ($rname, $rcomm, $rseq, $rqual);
