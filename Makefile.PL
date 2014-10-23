@@ -27,7 +27,8 @@ WriteMakefile(
         'Test::More' => 0,
     },
     PREREQ_PM => {
-	'BerkeleyDB'          => 0.54,       
+	'DBD::SQLite'         => 1.44,       
+	'Tie::Hash::DBD'      => 0.13,
         'IPC::System::Simple' => 1.21,
 	'List::MoreUtils'     => 0.33,
     },
