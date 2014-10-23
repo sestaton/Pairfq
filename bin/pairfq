@@ -575,21 +575,29 @@ sub compress {
 sub store_pair {
     my ($file, $index) = @_;
 
-    load_classes('Cwd', 'File::Temp', 'BerkeleyDB');
+    load_classes('Cwd', 'File::Temp', 'DBI', 'DBD::SQLite', 'Tie::Hash::DBD');
 
     my $rct = 0;
     my %rseqpairs;
-    $BerkeleyDB::Error = undef;
+    #$BerkeleyDB::Error = undef;
     my $cwd = Cwd::getcwd();
     my $db_file = File::Temp->new( TEMPLATE => "pairfq_XXXX",
 				   DIR      => $cwd,
-				   SUFFIX   => ".bdb",
+				   SUFFIX   => ".db",
 				   UNLINK   => 0 );
     unlink $db_file if -e $db_file;
 
     if (defined $index) {
-	tie %rseqpairs, 'BerkeleyDB::Btree', -Filename => $db_file, -Flags => &DB_CREATE
-            or die "\nERROR: Could not open DBM file: $db_file: $! $BerkeleyDB::Error\n";
+	my $dsn    = "dbi:SQLite:dbname=$db_file";
+        my $user   = "";
+        my $pass   = "";
+
+	tie %rseqpairs, "Tie::Hash::DBD", $dsn, {
+	    PrintError       => 0, 
+	    RaiseError       => 1,
+	    AutoCommit       => 1,
+	    FetchHashKeyName => 'NAME_lc'
+	};
     }
     
     my @raux = undef;
@@ -598,7 +606,10 @@ sub store_pair {
     my $fh = get_fh($file);
 
     {
-	local @SIG{qw(INT TERM HUP)} = sub { untie %rseqpairs if defined $index; unlink $db_file if -e $db_file; };
+	local @SIG{qw(INT TERM HUP)} = sub { 
+	    untie %rseqpairs if defined $index; 
+	    unlink $db_file if -e $db_file; 
+	};
 
 	while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$fh, \@raux)) {
 	    $rct++;
