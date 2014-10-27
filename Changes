@@ -1,6 +1,14 @@
 Revision history for Pairfq
 
 Version	Date	Location
+0.14	10/27/2014	Vancouver, BC
+
+- Replace BerkeleyDB indexing method with SQLite. This
+  makes installation much easier and doesn't require sudo to 
+  install C libraries. This method also scales much better with
+  large data sets (e.g., speed up of about 50X for more than 
+  10 million reads).
+
 0.13.2	10/13/2014	Vancouver, BC
 
 - Fix bug in 'pairfq_lite.pl' script. For some reason,
