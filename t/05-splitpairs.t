@@ -5,10 +5,12 @@ use strict;
 use warnings FATAL => 'all';
 use IPC::System::Simple qw(capture system);
 use File::Temp;
+use File::Spec;
 use File::Basename;
 use autodie qw(open);
 use Test::More tests => 6;
 
+my $cmd     = File::Spec->catfile('bin', 'pairfq');
 my $fq_data = _build_fq_data();
 my $fa_data = _build_fa_data();
 
@@ -32,8 +34,8 @@ my $tmpfa2_out = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
 				  SUFFIX   => ".fasta",
 				  UNLINK   => 0 );
 
-system([0..5],"bin/pairfq splitpairs -i $fq_data -f $tmpfq1_out -r $tmpfq2_out");
-system([0..5],"bin/pairfq splitpairs -i $fa_data -f $tmpfa1_out -r $tmpfa2_out");
+system([0..5],"$cmd splitpairs -i $fq_data -f $tmpfq1_out -r $tmpfq2_out");
+system([0..5],"$cmd splitpairs -i $fa_data -f $tmpfa1_out -r $tmpfa2_out");
 
 my $tmpfq1 = $tmpfq1_out->filename;
 my $tmpfq2 = $tmpfq2_out->filename;
