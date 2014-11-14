@@ -3,14 +3,16 @@
 use 5.010;
 use strict;
 use warnings FATAL => 'all';
+use File::Spec;
 use IPC::System::Simple qw(capture);
 use Test::More tests => 10;
 
-my @addinfo    = capture([0..5],"bin/pairfq addinfo 2>&1");
-my @makepairs  = capture([0..5],"bin/pairfq makepairs 2>&1");
-my @splitpairs = capture([0..5],"bin/pairfq splitpairs 2>&1");
-my @joinpairs  = capture([0..5],"bin/pairfq joinpairs 2>&1");
-my @wrongtask  = capture([0..5],"bin/pairfq jonpairs 2>&1");
+my $cmd        = File::Spec->catfile('bin', 'pairfq');
+my @addinfo    = capture([0..5],"$cmd addinfo 2>&1");
+my @makepairs  = capture([0..5],"$cmd makepairs 2>&1");
+my @splitpairs = capture([0..5],"$cmd splitpairs 2>&1");
+my @joinpairs  = capture([0..5],"$cmd joinpairs 2>&1");
+my @wrongtask  = capture([0..5],"$cmd jonpairs 2>&1");
 
 ## just look to see if the task was handled correctly to generate a usage statement
 for my $out (@addinfo) {

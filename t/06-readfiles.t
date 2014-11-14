@@ -7,20 +7,22 @@ use strict;
 use warnings FATAL => 'all';
 use IPC::System::Simple qw(capture system);
 use File::Temp;
+use File::Spec;
 use File::Basename;
 use autodie qw(open);
 use Test::More tests => 8;
 
 #TODO: Add tests that sequences and IDs are correct between tests
+my $cmd     = File::Spec->catfile('bin', 'pairfq');
 my $fq_data = _build_fq_data();
 
-makepairs_inmemory($fq_data);
+makepairs_inmemory($cmd, $fq_data);
 
 #
 # methods
 #
 sub makepairs_inmemory {
-    my ($fq_data) = @_;
+    my ($cmd, $fq_data) = @_;
     my $fpfq = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
 				DIR      => 't',
 				SUFFIX   => ".fastq",
@@ -41,7 +43,7 @@ sub makepairs_inmemory {
 				SUFFIX   => ".fastq",
 				UNLINK   => 0 );
     
-    my @pfq_fqout = capture([0..5],"bin/pairfq makepairs -f $fq_data->[0] -r $fq_data->[1] -fp $fpfq -rp $rpfq -fs $fsfq -rs $rsfq --stats");
+    my @pfq_fqout = capture([0..5],"$cmd makepairs -f $fq_data->[0] -r $fq_data->[1] -fp $fpfq -rp $rpfq -fs $fsfq -rs $rsfq --stats");
     
 
     for my $fqo (@pfq_fqout) {

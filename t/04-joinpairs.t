@@ -5,23 +5,25 @@ use strict;
 use warnings FATAL => 'all';
 use IPC::System::Simple qw(capture system);
 use File::Temp;
+use File::Spec;
 use File::Basename;
 use autodie qw(open);
 use List::MoreUtils qw(first_index);
 use Test::More tests => 20;
 
 #TODO: Add tests that sequences and IDs are correct between tests 
+my $cmd     = File::Spec->catfile('bin', 'pairfq');
 my $fq_data = _build_fq_data();
 my $fa_data = _build_fa_data();
 
-joinpairs_inmemory($fq_data, $fa_data);
-joinpairs_ondisk($fq_data, $fa_data);
+joinpairs_inmemory($cmd, $fq_data, $fa_data);
+joinpairs_ondisk($cmd, $fq_data, $fa_data);
 
 #
 # methods
 #
 sub joinpairs_inmemory {
-    my ($fq_data, $fa_data) = @_;
+    my ($cmd, $fq_data, $fa_data) = @_;
     my $tmpfq_out = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
 				     DIR      => 't',
 				     SUFFIX   => ".fastq",
@@ -32,8 +34,8 @@ sub joinpairs_inmemory {
 				     SUFFIX   => ".fasta",
 				     UNLINK   => 0 );
     
-    system([0..5],"bin/pairfq joinpairs -f $fq_data->[0] -r $fq_data->[1] -o $tmpfq_out");
-    system([0..5],"bin/pairfq joinpairs -f $fa_data->[0] -r $fa_data->[1] -o $tmpfa_out");
+    system([0..5],"$cmd joinpairs -f $fq_data->[0] -r $fq_data->[1] -o $tmpfq_out");
+    system([0..5],"$cmd joinpairs -f $fa_data->[0] -r $fa_data->[1] -o $tmpfa_out");
 
     open my $fqo, '<', $tmpfq_out;
     open my $fao, '<', $tmpfa_out;
@@ -88,7 +90,7 @@ sub joinpairs_inmemory {
 }
 
 sub joinpairs_ondisk {
-    my ($fq_data, $fa_data) = @_;
+    my ($cmd, $fq_data, $fa_data) = @_;
     my $tmpfq_out = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
                                      DIR      => 't',
                                      SUFFIX   => ".fastq",
@@ -99,8 +101,8 @@ sub joinpairs_ondisk {
                                      SUFFIX   => ".fasta",
                                      UNLINK   => 0 );
     
-    system([0..5],"bin/pairfq joinpairs -f $fq_data->[0] -r $fq_data->[1] -o $tmpfq_out -idx");
-    system([0..5],"bin/pairfq joinpairs -f $fa_data->[0] -r $fa_data->[1] -o $tmpfa_out -idx");
+    system([0..5],"$cmd joinpairs -f $fq_data->[0] -r $fq_data->[1] -o $tmpfq_out -idx");
+    system([0..5],"$cmd joinpairs -f $fa_data->[0] -r $fa_data->[1] -o $tmpfa_out -idx");
 
     open my $fqo, '<', $tmpfq_out;
     open my $fao, '<', $tmpfa_out;
