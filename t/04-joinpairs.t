@@ -1,14 +1,10 @@
-#!/usr/bin/env perl
-
 use 5.010;
 use strict;
 use warnings FATAL => 'all';
-use IPC::System::Simple qw(capture system);
 use File::Temp;
 use File::Spec;
 use File::Basename;
 use autodie qw(open);
-use List::MoreUtils qw(first_index);
 use Test::More tests => 20;
 
 #TODO: Add tests that sequences and IDs are correct between tests 
@@ -34,8 +30,10 @@ sub joinpairs_inmemory {
 				     SUFFIX   => ".fasta",
 				     UNLINK   => 0 );
     
-    system([0..5],"$cmd joinpairs -f $fq_data->[0] -r $fq_data->[1] -o $tmpfq_out");
-    system([0..5],"$cmd joinpairs -f $fa_data->[0] -r $fa_data->[1] -o $tmpfa_out");
+    system("$cmd joinpairs -f $fq_data->[0] -r $fq_data->[1] -o $tmpfq_out") == 0 
+	or die "system failed: $?";
+    system("$cmd joinpairs -f $fa_data->[0] -r $fa_data->[1] -o $tmpfa_out") == 0 
+	or die "system failed: $?";
 
     open my $fqo, '<', $tmpfq_out;
     open my $fao, '<', $tmpfa_out;
@@ -101,8 +99,10 @@ sub joinpairs_ondisk {
                                      SUFFIX   => ".fasta",
                                      UNLINK   => 0 );
     
-    system([0..5],"$cmd joinpairs -f $fq_data->[0] -r $fq_data->[1] -o $tmpfq_out -idx");
-    system([0..5],"$cmd joinpairs -f $fa_data->[0] -r $fa_data->[1] -o $tmpfa_out -idx");
+    system("$cmd joinpairs -f $fq_data->[0] -r $fq_data->[1] -o $tmpfq_out -idx") == 0 
+	or die "system failed: $?";
+    system("$cmd joinpairs -f $fa_data->[0] -r $fa_data->[1] -o $tmpfa_out -idx") == 0 
+	or die "system failed: $?";
 
     open my $fqo, '<', $tmpfq_out;
     open my $fao, '<', $tmpfa_out;
@@ -272,9 +272,13 @@ sub _build_fa_data {
 # http://stackoverflow.com/a/2305879/1543853
 sub all_the_same {
     my ($ref) = @_;
-    my $first = \ $ref->[0];
-    return -1 == first_index {
-        (defined $$first != defined)
-            or (defined and $_ ne $$first)
-	} @$ref;
+    return 1 unless @$ref;
+    my $cmpv = \ $ref->[-1];
+    for my $i (0 .. $#$ref - 1)  {
+        my $this = \ $ref->[$i];
+        return unless defined $$cmpv == defined $$this;
+        return if defined $$this
+            and ( $$cmpv ne $$this );
+    }
+    return 1;
 }

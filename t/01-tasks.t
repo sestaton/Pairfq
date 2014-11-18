@@ -1,18 +1,16 @@
-#!/usr/bin/env perl
-
 use 5.010;
 use strict;
 use warnings FATAL => 'all';
 use File::Spec;
-use IPC::System::Simple qw(capture);
+use Cwd qw(getcwd);
 use Test::More tests => 10;
 
 my $cmd        = File::Spec->catfile('bin', 'pairfq');
-my @addinfo    = capture([0..5],"$cmd addinfo 2>&1");
-my @makepairs  = capture([0..5],"$cmd makepairs 2>&1");
-my @splitpairs = capture([0..5],"$cmd splitpairs 2>&1");
-my @joinpairs  = capture([0..5],"$cmd joinpairs 2>&1");
-my @wrongtask  = capture([0..5],"$cmd jonpairs 2>&1");
+my @addinfo    = qx($cmd addinfo 2>&1);
+my @makepairs  = qx($cmd makepairs 2>&1);
+my @splitpairs = qx($cmd splitpairs 2>&1);
+my @joinpairs  = qx($cmd joinpairs 2>&1);
+my @wrongtask  = qx($cmd jonpairs 2>&1);
 
 ## just look to see if the task was handled correctly to generate a usage statement
 for my $out (@addinfo) {

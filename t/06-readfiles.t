@@ -1,11 +1,9 @@
-#!/usr/bin/env perl
-
 # this is a test to fix a bug with reading files with dashes
-# https://github.com/sestaton/Pairfq/commit/405fea5e6eaad3fcab3700ab3bf251992708005f
+# https://github.com/sestaton/Pairfq/issues/3
+
 use 5.010;
 use strict;
 use warnings FATAL => 'all';
-use IPC::System::Simple qw(capture system);
 use File::Temp;
 use File::Spec;
 use File::Basename;
@@ -43,8 +41,7 @@ sub makepairs_inmemory {
 				SUFFIX   => ".fastq",
 				UNLINK   => 0 );
     
-    my @pfq_fqout = capture([0..5],"$cmd makepairs -f $fq_data->[0] -r $fq_data->[1] -fp $fpfq -rp $rpfq -fs $fsfq -rs $rsfq --stats");
-    
+    my @pfq_fqout = qx($cmd makepairs -f $fq_data->[0] -r $fq_data->[1] -fp $fpfq -rp $rpfq -fs $fsfq -rs $rsfq --stats);
 
     for my $fqo (@pfq_fqout) {
 	if ($fqo =~ /Total forward reads\s.*(\d+)/) { 

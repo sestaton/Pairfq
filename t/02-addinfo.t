@@ -1,11 +1,8 @@
-#!/usr/bin/env perl
-
 use 5.010;
 use strict;
 use warnings FATAL => 'all';
 use File::Temp;
 use File::Spec;
-use IPC::System::Simple qw(capture system);
 use autodie qw(open);
 use Test::More tests => 6;
 
@@ -23,8 +20,10 @@ my $tmpfa_out = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
                                  SUFFIX   => ".fasta",
                                  UNLINK   => 0 );
 
-system([0..5],"$cmd addinfo -i $fq_data -o $tmpfq_out -p 1 2>&1");
-system([0..5],"$cmd addinfo -i $fa_data -o $tmpfa_out -p 1 2>&1");
+system("$cmd addinfo -i $fq_data -o $tmpfq_out -p 1 2>&1") == 0 
+    or die "system failed: $?";
+system("$cmd addinfo -i $fa_data -o $tmpfa_out -p 1 2>&1") == 0 
+    or die "system failed: $?";
 
 open my $fq, '<', $tmpfq_out;
 open my $fa, '<', $tmpfa_out;
