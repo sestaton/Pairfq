@@ -29,8 +29,6 @@ WriteMakefile(
     PREREQ_PM => {
 	'DBD::SQLite'         => 1.44,       
 	'Tie::Hash::DBD'      => 0.13,
-        'IPC::System::Simple' => 1.21,
-	'List::MoreUtils'     => 0.33,
     },
     INST_SCRIPT => 'bin',
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
