@@ -1,9 +1,6 @@
-#!/usr/bin/env perl
-
 use 5.010;
 use strict;
 use warnings FATAL => 'all';
-use IPC::System::Simple qw(capture system);
 use File::Temp;
 use File::Basename;
 use autodie qw(open);
@@ -42,8 +39,8 @@ sub makepairs_inmemory {
 				SUFFIX   => ".fastq",
 				UNLINK   => 0 );
     
-    my @pfq_fqout = capture([0..5],"$cmd makepairs -f $fq_data->[0] -r $fq_data->[1] -fp $fpfq -rp $rpfq -fs $fsfq -rs $rsfq --stats");
-    
+    my @pfq_fqout = qx($cmd makepairs -f $fq_data->[0] -r $fq_data->[1] -fp $fpfq -rp $rpfq -fs $fsfq -rs $rsfq --stats);
+
     my $fpfa = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
 				DIR      => 't',
 				SUFFIX   => ".fasta",
@@ -64,8 +61,8 @@ sub makepairs_inmemory {
 				SUFFIX   => ".fasta",
 				UNLINK   => 0 );
     
-    my @pfq_faout = capture([0..5],"$cmd makepairs -f $fa_data->[0] -r $fa_data->[1] -fp $fpfa -rp $rpfa -fs $fsfa -rs $rsfa --stats");
-    
+    my @pfq_faout = qx($cmd makepairs -f $fa_data->[0] -r $fa_data->[1] -fp $fpfa -rp $rpfa -fs $fsfa -rs $rsfa --stats);
+
     for my $fqo (@pfq_fqout) {
 	if ($fqo =~ /Total forward reads\s.*(\d+)/) { 
 	    is($1, 8, 'Correct number of forward fastq reads calculated in memory');
@@ -149,7 +146,7 @@ sub makepairs_ondisk {
                                 SUFFIX   => ".fastq",
                                 UNLINK   => 0 );
     
-    my @pfq_fqout = capture([0..5],"$cmd makepairs -f $fq_data->[0] -r $fq_data->[1] -fp $fpfq -rp $rpfq -fs $fsfq -rs $rsfq -idx --stats");
+    my @pfq_fqout = qx($cmd makepairs -f $fq_data->[0] -r $fq_data->[1] -fp $fpfq -rp $rpfq -fs $fsfq -rs $rsfq -idx --stats);
 
     my $fpfa = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
                                 DIR      => 't',
@@ -171,7 +168,7 @@ sub makepairs_ondisk {
                                 SUFFIX   => ".fasta",
                                 UNLINK   => 0 );
     
-    my @pfq_faout = capture([0..5],"$cmd makepairs -f $fa_data->[0] -r $fa_data->[1] -fp $fpfa -rp $rpfa -fs $fsfa -rs $rsfa -idx --stats");
+    my @pfq_faout = qx($cmd makepairs -f $fa_data->[0] -r $fa_data->[1] -fp $fpfa -rp $rpfa -fs $fsfa -rs $rsfa -idx --stats);
 
     for my $fqo (@pfq_fqout) {
         if ($fqo =~ /Total forward reads\s.*(\d+)/) { 

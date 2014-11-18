@@ -1,9 +1,6 @@
-#!/usr/bin/env perl
-
 use 5.010;
 use strict;
 use warnings FATAL => 'all';
-use IPC::System::Simple qw(capture system);
 use File::Temp;
 use File::Spec;
 use File::Basename;
@@ -53,8 +50,9 @@ my $tmpfars_out = File::Temp->new( TEMPLATE => "pairfq_fars_XXXX",
 				  DIR      => 't',
 				  SUFFIX   => ".fasta",
 				  UNLINK   => 0 );
-my @pfq_fqout = capture([0..5],"$cmd makepairs -i $fq_data -fp $tmpfqfp_out -rp $tmpfqrp_out -fs $tmpfqfs_out -rs $tmpfqrs_out --stats");
-system([0..5],"$cmd makepairs -i $fa_data -fp $tmpfafp_out -rp $tmpfarp_out -fs $tmpfafs_out -rs $tmpfars_out");
+my @pfq_fqout = qx($cmd makepairs -i $fq_data -fp $tmpfqfp_out -rp $tmpfqrp_out -fs $tmpfqfs_out -rs $tmpfqrs_out --stats);
+system("$cmd makepairs -i $fa_data -fp $tmpfafp_out -rp $tmpfarp_out -fs $tmpfafs_out -rs $tmpfars_out") == 0 
+    or die "system failed: $?";
 
 my $tmpfqfp = $tmpfqfp_out->filename;
 my $tmpfqrp = $tmpfqrp_out->filename;
