@@ -11,7 +11,7 @@ There is a standalone script in the 'scripts' directory that has no dependencies
  
 **INSTALLATION**
 
-The following command will install Pairfq:
+The following command will install Pairfq (note that this requires [git](http://git-scm.com/))::
 
     curl -L cpanmin.us | perl - git://github.com/sestaton/Pairfq.git
 
