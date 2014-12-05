@@ -7,13 +7,13 @@ Sync paired-end FASTA/Q files and keep singleton reads
 
 **BASIC USAGE**
 
-There is a standalone script in the 'scripts' directory that has no dependencies and will work with Perl version 5.6 or newer. This script has fewer features than the main application but it may be useful in an environment where installing libraries and dependencies is not convenient. However, it is recommended that users follow the directions below to install and use Pairfq.
+There is a standalone script in the 'scripts' directory that has no dependencies and will work with Perl version 5.6 or newer. This script has fewer features (mainly, it lacks the indexing function for working with large data) than the main application but it may be useful in an environment where installing libraries and dependencies is not convenient. However, it is recommended that users follow the directions below to install and use Pairfq. Note that the commands below require Perl version 5.10.
  
 **INSTALLATION**
 
-Perl version 5.10 (or greater) must be installed to use Pairfq, and there are a couple of external modules required. If you have [cpanminus](https://metacpan.org/pod/App::cpanminus), installation can be done with a single command:
+The following command will install Pairfq:
 
-    cpanm git://github.com/sestaton/Pairfq.git
+    curl -L cpanmin.us | perl - git://github.com/sestaton/Pairfq.git
 
 Alternatively, download the latest [release](https://github.com/sestaton/Pairfq/releases) and run the following command in the top directory:
 
