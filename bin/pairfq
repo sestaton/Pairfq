@@ -855,15 +855,14 @@ fix paired-end files which have lost the pair information.
 
 =head1 DEPENDENCIES
 
-The module BerkeleyDB is required, along with two modules used for testing
-(IPC::System::Simple and List::MoreUtils). See below for information
-on which Perls have been tested.
+The modules DBD::SQLite and Tie::Hash::DBD are required for the indexing methods. 
+See below for information on which Perls have been tested.
 
 =head1 LICENSE
  
 The MIT License should included with the project. If not, it can be found at: http://opensource.org/licenses/mit-license.php
 
-Copyright (C) 2013 S. Evan Staton
+Copyright (C) 2013-2015 S. Evan Staton
  
 =head1 TESTED WITH:
 
@@ -885,16 +884,18 @@ Perl 5.14.2 (Red Hat Enterprise Linux Desktop release 6.2 (Santiago); Fedora 17)
 Perl 5.14.4 (Ubuntu 12.04.3 LTS)
 
 =item *
-Perl 5.16.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga)); BerkeleyDB 0.54
+Perl 5.16.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga))
 
 =item *
 Perl 5.16.3 (Ubuntu 12.04.3 LTS)
 
 =item *
-Perl 5.18.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga)); BerkeleyDB 0.54
+Perl 5.18.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga))
 
 =item *
 Perl 5.18.1 (Ubuntu 12.04.3 LTS)
+
+=item *                                                                                                                                                     Perl 5.20.1 (Red Hat Enterprise Linux Server release 5.9 (Tikanga))
 
 =back
 
