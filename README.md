@@ -7,7 +7,16 @@ Sync paired-end FASTA/Q files and keep singleton reads
 
 **BASIC USAGE**
 
-There is a standalone script in the 'scripts' directory that has no dependencies and will work with Perl version 5.6 or newer. This script has fewer features (mainly, it lacks the indexing function for working with large data) than the main application but it may be useful in an environment where installing libraries is not convenient. However, it is recommended that users follow the directions below to install and use Pairfq. Note that the commands below require Perl version 5.10.
+There is a standalone script in the 'scripts' directory that has no dependencies and will work with Perl version 5.6 or newer. This script has fewer features (mainly, it lacks the indexing function for working with large data) than the main application but it may be useful in an environment where installing libraries is not convenient. Obtaining this version can be done with curl:
+
+    curl -L git.io/pairfq_lite > pairfq_lite
+
+You can then make the script executable and check the usage:
+
+    chmod +x pairfq_lite
+    pairfq_lite -h
+
+It is recommended that users follow the directions below to install and use Pairfq. Note that the commands below require Perl version 5.10. To obtain a full explanation of all commands, please see the Support and Documenation section below.
  
 **INSTALLATION**
 
@@ -38,7 +47,7 @@ After installation, you can find documentation for Pairfq with the `perldoc` com
 
     perldoc pairfq
 
-The documentation can also be accessed by specifying the manual option with `pairfq -m` or `pairfq --man`. The `pairfq` program will also print a diagnostic help message when executed with no arguments.
+The documentation can also be accessed by specifying the manual option with `pairfq -m` or `pairfq --man`. The `pairfq` program will also print a diagnostic help message when executed with no arguments. In addition, there is extensive documentation on the Pairfq [wiki](https://github.com/sestaton/Pairfq/wiki) online.
 
 **ISSUES**
 
