@@ -14,7 +14,7 @@ There is a standalone script in the 'scripts' directory that has no dependencies
 You can then make the script executable and check the usage:
 
     chmod +x pairfq_lite
-    pairfq_lite -h
+    ./pairfq_lite -h
 
 It is recommended that users follow the directions below to install and use Pairfq. Note that the commands below require Perl version 5.10. To obtain a full explanation of all commands, please see the Support and Documenation section below.
  
