@@ -51,7 +51,7 @@ The documentation can also be accessed by specifying the manual option with `pai
 
 **ISSUES**
 
-Report any issues or feature requests at the Pairfq issue tracker: https://github.com/sestaton/Pairfq/issues
+Report any issues or feature requests at the Pairfq [issue tracker](https://github.com/sestaton/Pairfq/issues).
 
 **ATTRIBUTION**
 
