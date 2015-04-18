@@ -7,7 +7,7 @@ use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.14.1';
+our $VERSION = '0.14.2';
 
 my $infile;     # input file for 'addinfo', 'splitpairs' and 'makepairs' methods
 my $outfile;    # output file for 'addinfo' method
@@ -25,6 +25,7 @@ my $version;
 my $help;
 my $man;
 my $script = basename($0, ());
+$script = "pairfq" if $script =~ /^-$|stdin/i;
 
 GetOptions(
 	   'i|infile=s'         => \$infile,
@@ -46,7 +47,7 @@ GetOptions(
 #
 # Check @ARGV
 #
-usage() and exit(0) if $help;
+usage($script) and exit(0) if $help;
 
 pod2usage( -verbose => 2 ) if $man;
 
@@ -55,35 +56,35 @@ print $VERSION and exit(0) if $version;
 my $method = shift;
 if (!defined $method) {
     print "\nERROR: Command line not parsed correctly. Check input.\n\n";
-    usage();
+    usage($script);
     exit(1);
 }
 
 if ($method eq 'addinfo') {
     if (!$pairnum || !$infile || !$outfile) {
 	print "\nERROR: Command line not parsed correctly. Check input.\n\n";
-	addinfo_usage();
+	addinfo_usage($script);
 	exit(1);
     }
     add_pair_info($pairnum, $infile, $outfile, $uppercase);
 }
 elsif ($method eq 'makepairs') {
     if ($infile && $fpread && $rpread && $fsread && $rsread) {
-        interleaved_to_pairs_and_singles($infile, $fpread, $rpread, $fsread, $rsread, $stats);
+        interleaved_to_pairs_and_singles($script, $infile, $fpread, $rpread, $fsread, $rsread, $stats);
     }
     elsif (!$infile && $fread && $rread && $fpread && $rpread && $fsread && $rsread) {
-        make_pairs_and_singles($fread, $rread, $fpread, $rpread, $fsread, $rsread, $stats);
+        make_pairs_and_singles($script, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $stats);
     }
     else {
         print "\nERROR: Command line not parsed correctly. Check input.\n\n";
-        makepairs_usage();
+        makepairs_usage($script);
         exit(1);
     }
 }
 elsif ($method eq 'joinpairs') {
     if (!$fread || !$rread || !$outfile) {
 	print "\nERROR: Command line not parsed correctly. Check input.\n\n";
-	joinpairs_usage();
+	joinpairs_usage($script);
 	exit(1);
     }
     pairs_to_interleaved($fread, $rread, $outfile);
@@ -91,7 +92,7 @@ elsif ($method eq 'joinpairs') {
 elsif ($method eq 'splitpairs') {
     if (!$infile || !$fread || !$rread) {
 	print "\nERROR: Command line not parsed correctly. Check input.\n\n";
-	splitpairs_usage();
+	splitpairs_usage($script);
 	exit(1);
     }
     interleaved_to_pairs($infile, $fread, $rread);
@@ -143,7 +144,7 @@ sub add_pair_info {
 }
 
 sub make_pairs_and_singles {
-    my ($fread, $rread, $fpread, $rpread, $fsread, $rsread, $stats) = @_;
+    my ($script, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $stats) = @_;
 
     my ($rseqpairs, $rct) = store_pair($rread);
 
@@ -262,8 +263,7 @@ sub make_pairs_and_singles {
 	my $maxfn = max(length($fread), length($rread), length($fpread), length($rpread), length($fsread), length($rsread));
 	my $offset = $maxfn + 38;
 	my $date = qx(date); chomp $date;
-	my $prog = basename($0, ());
-	print "========= $prog version : $VERSION (completion time: $date)\n";
+	print "========= $script version : $VERSION (completion time: $date)\n";
 	printf "%-${offset}s %s %10d\n", "Total forward reads ($fread)", ":",$fct;
 	printf "%-${offset}s %s %10d\n", "Total reverse reads ($rread)", ":", $rct;
 	printf "%-${offset}s %s %10d\n", "Total forward paired reads ($fpread)", ":", $fpct;
@@ -277,7 +277,7 @@ sub make_pairs_and_singles {
 }
 
 sub interleaved_to_pairs_and_singles {
-    my ($infile, $fpread, $rpread, $fsread, $rsread, $stats) = @_;
+    my ($script, $infile, $fpread, $rpread, $fsread, $rsread, $stats) = @_;
 
     my $fh = get_fh($infile);
     open my $fp, '>', $fpread or die "\nERROR: Could not open file: $fpread\n";
@@ -380,8 +380,7 @@ sub interleaved_to_pairs_and_singles {
         my $maxfn = max(length($infile), length($fpread), length($rpread), length($fsread), length($rsread));
         my $offset = $maxfn + 38;
         my $date = qx(date); chomp $date;
-        my $prog = basename($0, ());
-        print "========= $prog version : $VERSION (completion time: $date)\n";
+        print "========= $script version : $VERSION (completion time: $date)\n";
         printf "%-${offset}s %s %10d\n", "Total forward reads ($infile)", ":",$fct;
         printf "%-${offset}s %s %10d\n", "Total reverse reads ($infile)", ":", $rct;
         printf "%-${offset}s %s %10d\n", "Total forward paired reads ($fpread)", ":", $fpct;
@@ -598,7 +597,7 @@ sub max {
 }
 
 sub usage {
-    my $script = basename($0);
+    my ($script) = @_;
     print STDERR<<EOF
 USAGE: $script [-h] [-m] [--version]
 
@@ -619,7 +618,7 @@ EOF
 }
 
 sub makepairs_usage {
-    my $script = basename($0);
+    my ($script) = @_;
     print STDERR<<EOF
 USAGE: $script makepairs [-i] [-f] [-r] [-fp] [-rp] [-fs] [-rs] [-s] [-h] [-m]
 
@@ -643,7 +642,7 @@ EOF
 }
 
 sub addinfo_usage {
-    my $script = basename($0);
+    my ($script) = @_;
     print STDERR<<EOF
 USAGE: $script addinfo [-i] [-o] [-p] [-uc] [-h] [-m]
 
@@ -661,7 +660,7 @@ EOF
 }
 
 sub splitpairs_usage {
-    my $script = basename($0);
+    my ($script) = @_;
     print STDERR<<EOF
 USAGE: $script splitpairs [-i] [-f] [-r] [-h] [-m]
 
@@ -678,7 +677,7 @@ EOF
 }
 
 sub joinpairs_usage {
-    my $script = basename($0);
+    my ($script) = @_;
     print STDERR<<EOF
 USAGE: $script joinpairs [-f] [-r] [-o] [-h] [-m]
 
