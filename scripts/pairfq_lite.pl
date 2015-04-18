@@ -25,7 +25,7 @@ my $version;
 my $help;
 my $man;
 my $script = basename($0, ());
-$script = "pairfq" if $script =~ /^-$|stdin/i;
+$script = "pairfq_lite" if $script =~ /^-$|stdin/i;
 
 GetOptions(
 	   'i|infile=s'         => \$infile,
