@@ -22,7 +22,7 @@ For a full explanation of all commands, please see the Support and Documenation 
 
 The following command will install Pairfq (note that this requires [git](http://git-scm.com/)):
 
-    curl -L cpanmin.us | perl - git://github.com/sestaton/Pairfq.git
+    curl -sL cpanmin.us | perl - git://github.com/sestaton/Pairfq.git
 
 Alternatively, download the latest [release](https://github.com/sestaton/Pairfq/releases) and run the following command in the top directory:
 
@@ -31,7 +31,7 @@ Alternatively, download the latest [release](https://github.com/sestaton/Pairfq/
 If any Perl dependencies are listed after running this command, install them through the CPAN shell or any method you like (see the [installing dependencies](https://github.com/sestaton/Pairfq/wiki/Installing-dependencies) page for instructions). Then build and install the package.
 
     perl Makefile.PL
-    make
+    make 
     make test
     make install
 
@@ -51,10 +51,8 @@ The documentation can also be accessed by specifying the manual option with `pai
 
 **ISSUES**
 
-Report any issues at the Pairfq issue tracker: https://github.com/sestaton/Pairfq/issues
+Report any issues or feature requests at the Pairfq [issue tracker](https://github.com/sestaton/Pairfq/issues).
 
-Be aware that Pairfq will not work for every data set given the wide range of FASTA/Q formats. Feel free to fork the project and modify the code to your needs, or submit code changes if you find any bugs. 
- 
 **ATTRIBUTION**
 
 This project uses the [readfq](https://github.com/lh3/readfq) library written by Heng Li. The readfq code has been modified for error handling and to parse the comment line in the Casava header.
