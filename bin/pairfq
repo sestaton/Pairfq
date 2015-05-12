@@ -7,7 +7,7 @@ use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.14.2';
+our $VERSION = '0.14.3';
 
 my $infile;     # input file for 'addinfo', 'splitpairs' and 'makepairs' methods
 my $outfile;    # output file for 'addinfo' method
@@ -188,10 +188,13 @@ sub make_pairs_and_singles {
 	}
 	
 	if ($fname =~ /\|\|/) {
+	    #say STDERR $fname;
 	    my ($name, $comm);
 	    ($name, $comm) = mk_vec($fname);
-	    $forw_id = $name." 1".$comm;
-	    $rev_id  = $name." 2".$comm;
+	    $forw_id = $name." 1".$comm if defined $comm;
+	    $forw_id = $name."/1" if !defined $comm;
+	    $rev_id  = $name." 2".$comm if defined $comm;
+	    $rev_id  = $name."/2" if !defined $comm;
 	}
 
 	if (exists $rseqpairs->{$fname}) {
@@ -441,8 +444,10 @@ sub pairs_to_interleaved {
 
 	if ($rname =~ /\|\|/) {
 	    my ($name, $comm) = mk_vec($rname);
-	    $forw_id = $name." 1".$comm;
-	    $rev_id  = $name." 2".$comm;
+	    $forw_id = $name." 1".$comm if defined $comm;
+	    $forw_id = $name."/1" if !defined $comm;
+	    $rev_id  = $name." 2".$comm if defined $comm;
+	    $rev_id  = $name."/2" if !defined $comm;
 	}
 
 	if (exists $pairs->{$rname}) {
