@@ -1,6 +1,11 @@
 Revision history for Pairfq
 
 Version	Date	Location
+0.14.3	05/11/2015	Vancouver, BC
+
+- Add conditional to check if comment is missing after pair
+  id with Illumina 1.8+ identifiers.
+
 0.14.2	04/18/2015	Vancouver, BC
 
 - Fix logging script name when reading from stdin.
