@@ -496,7 +496,7 @@ sub get_fh {
         open $fh, '-|', 'bzcat', $file or die "\nERROR: Could not open file: $file\n";
     }
     elsif ($file =~ /^-$|STDIN/i) {
-	open $fh, '&<', \*STDIN or die "\nERROR: Could not open STDIN\n";
+	open $fh, '<&', \*STDIN or die "\nERROR: Could not open STDIN\n";
 	    }
     else {
         open $fh, '<', $file or die "\nERROR: Could not open file: $file\n";
