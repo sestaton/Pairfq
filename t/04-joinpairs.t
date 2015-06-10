@@ -101,16 +101,18 @@ sub joinpairs_stdout {
 				     UNLINK   => 0 );
 
     {
-        open STDOUT, '>', $tmpfq_out;
+        my $fqstdo = \*STDOUT;
+        open $fqstdo, '>', $tmpfq_out;
         system("$cmd joinpairs -f $fq_data->[0] -r $fq_data->[1] -o -") == 0 
 	    or die "system failed: $?";
-	close STDOUT;
+	#close $fqstdo;
     }
     {
-        open STDOUT, '>', $tmpfa_out;
+        my $fastdo = \*STDOUT;
+        open $fastdo, '>', $tmpfa_out;
  	system("$cmd joinpairs -f $fa_data->[0] -r $fa_data->[1] -o -") == 0 
 	    or die "system failed: $?";
-	close STDOUT;
+	#close $fastdo;
     }
 
     open my $fqo, '<', $tmpfq_out;
