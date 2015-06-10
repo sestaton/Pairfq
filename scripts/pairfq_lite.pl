@@ -7,7 +7,7 @@ use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.14.3';
+our $VERSION = '0.14.4';
 
 my $infile;     # input file for 'addinfo', 'splitpairs' and 'makepairs' methods
 my $outfile;    # output file for 'addinfo' method
@@ -122,8 +122,9 @@ sub add_pair_info {
 	exit(1);
     }
 
-    my $fh = get_fh($infile);
-    open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
+    my $fh  = get_fh($infile);
+    my $out = get_outfh($outfile);
+    #open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
 
     my @aux = undef;
     my ($name, $comm, $seq, $qual);
@@ -400,8 +401,9 @@ sub pairs_to_interleaved {
 
     my ($pairs, $ct) = store_pair($forward);
 
-    my $fh = get_fh($reverse);
-    open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
+    my $fh  = get_fh($reverse);
+    my $out = get_outfh($outfile);
+    #open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
 
     my @raux = undef;
     my ($rname, $rcomm, $rseq, $rqual, $forw_id, $rev_id, $rname_enc);
@@ -499,11 +501,25 @@ sub get_fh {
     elsif ($file =~ /\.bz2$/) {
         open $fh, '-|', 'bzcat', $file or die "\nERROR: Could not open file: $file\n";
     }
-    elsif ($file =~ /^-$|STDIN/) {
+    elsif ($file =~ /^-$|STDIN/i) {
 	open $fh, '< -' or die "\nERROR: Could not open STDIN\n";
     }
     else {
         open $fh, '<', $file or die "\nERROR: Could not open file: $file\n";
+    }
+
+    return $fh;
+}
+
+sub get_outfh {
+    my ($file) = @_;
+
+    my $fh;
+    if ($file =~ /^-$|STDOUT/i) {
+	$fh = \*STDOUT;
+    }
+    else {
+	open $fh, '>', $file or die "\nERROR: Could not open file: $file\n";
     }
 
     return $fh;
