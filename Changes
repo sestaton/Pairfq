@@ -1,6 +1,13 @@
 Revision history for Pairfq
 
 Version	Date	Location
+0.14.4	06/10/2015	Vancouver, BC
+
+- Add option to write to STDOUT for 'addinfo' and 'joinpairs'
+  commands.
+- Allow to read from stdin with a '-' or case-insensitive 'stdin'
+  term (this unintentionally only worked with uppercase STDIN before).
+
 0.14.3	05/11/2015	Vancouver, BC
 
 - Add conditional to check if comment is missing after pair
