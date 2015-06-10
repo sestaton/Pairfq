@@ -810,14 +810,14 @@ statonse at gmail dot com
 
 =item -i, --infile
 
-  For the 'addinfo' method, this would be any FastA/Q file. For the 'splitpairs' method,
+  For the 'addinfo' method, this would be any FASTA/Q file (or STDIN). For the 'splitpairs' method,
   this would be either the forward or reverse file from a paired-end sequencing run. For the
   'makepairs' method, this would be the interleaved file of forward and reverse reads that
   has been trimmed.
 
 =item -o, --outfile
 
-  The outfile for the 'addinfo' method, with corrected pair information.
+  The outfile for the 'addinfo' or 'joinpairs' methods (may be STDOUT instead of a file).
 
 =item -f, --forward
 
