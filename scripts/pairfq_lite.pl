@@ -124,19 +124,14 @@ sub add_pair_info {
 
     my $fh  = get_fh($infile);
     my $out = get_outfh($outfile);
-    #open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
 
     my @aux = undef;
     my ($name, $comm, $seq, $qual);
 
     while (($name, $comm, $seq, $qual) = readfq(\*$fh, \@aux)) {
 	$seq = uc($seq) if $uppercase;
-	if (defined $qual) {
-	    print $out join "\n", "@".$name.$pair, $seq, "+", "$qual\n";
-	}
-	else {
-	    print $out join "\n", ">".$name.$pair, "$seq\n";
-	}
+	print $out join "\n", "@".$name.$pair, $seq, "+", "$qual\n" if defined $qual;
+	print $out join "\n", ">".$name.$pair, "$seq\n" if !defined $qual;
     }
     close $fh;
     close $out;
@@ -403,7 +398,6 @@ sub pairs_to_interleaved {
 
     my $fh  = get_fh($reverse);
     my $out = get_outfh($outfile);
-    #open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
 
     my @raux = undef;
     my ($rname, $rcomm, $rseq, $rqual, $forw_id, $rev_id, $rname_enc);
@@ -502,8 +496,8 @@ sub get_fh {
         open $fh, '-|', 'bzcat', $file or die "\nERROR: Could not open file: $file\n";
     }
     elsif ($file =~ /^-$|STDIN/i) {
-	open $fh, '< -' or die "\nERROR: Could not open STDIN\n";
-    }
+	open $fh, '&<', \*STDIN or die "\nERROR: Could not open STDIN\n";
+	    }
     else {
         open $fh, '<', $file or die "\nERROR: Could not open file: $file\n";
     }
@@ -516,7 +510,7 @@ sub get_outfh {
 
     my $fh;
     if ($file =~ /^-$|STDOUT/i) {
-	$fh = \*STDOUT;
+	open $fh, '>&', \*STDOUT or die "\nERROR: Could not open STDOUT\n";
     }
     else {
 	open $fh, '>', $file or die "\nERROR: Could not open file: $file\n";
