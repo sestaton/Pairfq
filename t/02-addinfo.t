@@ -1,6 +1,7 @@
 use 5.010;
 use strict;
 use warnings FATAL => 'all';
+use diagnostics;
 use File::Temp;
 use File::Spec;
 use autodie qw(open);
@@ -41,16 +42,19 @@ my $fafile = $tmpfa_stdout->filename;
 my $fqfile = $tmpfq_stdout->filename;
 
 {
-    open STDOUT, '>', $fqfile or die $!;
+    my $fqstdo = \*STDOUT;
+    open $fqstdo, '>', $fqfile or die $!;
     system("$cmd addinfo -i $fq_data -o - -p 1 2>&1") == 0 
         or die "system failed: $?";
-    close STDOUT;
+    #close $fqstdo;
 }
+
 {
-    open STDOUT, '>', $fafile or die $!;
+    my $fastdo = \*STDOUT;
+    open $fastdo, '>', $fafile or die $!;
     system("$cmd addinfo -i $fa_data -o - -p 1 2>&1") == 0 
        or die "system failed: $?";
-    close STDOUT;
+    #close $fastdo;
 }
 
 check_pairinfo($tmpfq_out, $tmpfa_out);
