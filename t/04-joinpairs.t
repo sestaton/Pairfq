@@ -5,7 +5,7 @@ use File::Temp;
 use File::Spec;
 use File::Basename;
 use autodie qw(open);
-use Test::More tests => 20;
+use Test::More tests => 30;
 
 #TODO: Add tests that sequences and IDs are correct between tests 
 my $cmd     = File::Spec->catfile('bin', 'pairfq');
@@ -13,6 +13,7 @@ my $fq_data = _build_fq_data();
 my $fa_data = _build_fa_data();
 
 joinpairs_inmemory($cmd, $fq_data, $fa_data);
+joinpairs_stdout($cmd, $fq_data, $fa_data);
 joinpairs_ondisk($cmd, $fq_data, $fa_data);
 
 #
@@ -34,6 +35,85 @@ sub joinpairs_inmemory {
 	or die "system failed: $?";
     system("$cmd joinpairs -f $fa_data->[0] -r $fa_data->[1] -o $tmpfa_out") == 0 
 	or die "system failed: $?";
+
+    open my $fqo, '<', $tmpfq_out;
+    open my $fao, '<', $tmpfa_out;
+    
+    my ($fq_fct, $fq_rct, $fa_fct, $fa_rct) = (0, 0, 0, 0);
+    my (%fqpairs, %fapairs);
+    while (<$fqo>) {
+	if (/^\@(\S+)\/1$/) {
+	    $fqpairs{$1}++;
+	    $fq_fct++;
+	}
+	elsif (/^\@(\S+)\/2$/) {
+	    $fqpairs{$1}++;
+	    $fq_rct++;
+	}
+    }
+    close $fqo;
+    
+    my $fqpaired = (keys %fqpairs);
+    my @fqpairnum = (values %fqpairs);
+    my $allfqpaired = all_the_same(\@fqpairnum);
+    ok($allfqpaired == 1, 'All fastq reads were paired');
+
+    is($fqpaired,          6, 'Correct number of fastq pairs');
+    is($fq_fct,            6, 'Correct number of forward fastq reads paired');
+    is($fq_rct,            6, 'Correct number of reverse fastq reads paired');
+    is($fq_fct + $fq_fct, 12, 'Correct number of total fastq reads paired');
+    unlink $tmpfq_out;
+    
+    while (<$fao>) {
+	if (/^\>(\S+)\/1$/) {
+	    $fapairs{$1}++;
+	    $fa_fct++;
+	}
+	elsif (/^\>(\S+)\/2$/) {
+	    $fapairs{$1}++;
+	    $fa_rct++;
+	}
+    }
+    close $fao;
+    
+    my $fapaired = (keys %fapairs);
+    my @fapairnum = (values %fapairs);
+    my $allfapaired = all_the_same(\@fapairnum);
+    ok($allfapaired == 1, 'All fasta reads were paired');
+
+    is($fapaired,          6, 'Correct number of fasta pairs');
+    is($fa_fct,            6, 'Correct number of forward fasta reads paired');
+    is($fa_rct,            6, 'Correct number of reverse fasta reads paired');
+    is($fa_fct + $fa_fct, 12, 'Correct number of total fasta reads paired');
+    unlink $tmpfa_out;
+}
+
+sub joinpairs_stdout {
+    my ($cmd, $fq_data, $fa_data) = @_;
+    my $tmpfq_out = File::Temp->new( TEMPLATE => "pairfq_fq_XXXX",
+				     DIR      => 't',
+				     SUFFIX   => ".fastq",
+				     UNLINK   => 0 );
+    
+    my $tmpfa_out = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
+				     DIR      => 't',
+				     SUFFIX   => ".fasta",
+				     UNLINK   => 0 );
+
+    {
+        my $fqstdo = \*STDOUT;
+        open $fqstdo, '>', $tmpfq_out;
+        system("$cmd joinpairs -f $fq_data->[0] -r $fq_data->[1] -o -") == 0 
+	    or die "system failed: $?";
+	#close $fqstdo;
+    }
+    {
+        my $fastdo = \*STDOUT;
+        open $fastdo, '>', $tmpfa_out;
+ 	system("$cmd joinpairs -f $fa_data->[0] -r $fa_data->[1] -o -") == 0 
+	    or die "system failed: $?";
+	#close $fastdo;
+    }
 
     open my $fqo, '<', $tmpfq_out;
     open my $fao, '<', $tmpfa_out;

@@ -3,11 +3,12 @@
 use 5.010;
 use strict;
 use warnings;
+use diagnostics;
 use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.14.3';
+our $VERSION = '0.14.4';
 
 my $infile;     # input file for 'addinfo', 'splitpairs' and 'makepairs' methods
 my $outfile;    # output file for 'addinfo' method
@@ -122,6 +123,7 @@ exit;
 sub add_pair_info {
     my ($pairnum, $infile, $outfile, $compress, $uppercase) = @_;
 
+    no warnings 'io';
     my $pair;
     if ($pairnum == 1) {
 	$pair = "/1";
@@ -134,20 +136,16 @@ sub add_pair_info {
 	exit(1);
     }
 
-    my $fh = get_fh($infile);
-    open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
+    my $fh  = get_fh($infile);
+    my $out = get_outfh($outfile);
 
     my @aux = undef;
     my ($name, $comm, $seq, $qual);
 
     while (($name, $comm, $seq, $qual) = readfq(\*$fh, \@aux)) {
 	$seq = uc($seq) if $uppercase;
-	if (defined $qual) {
-	    say $out join "\n", "@".$name.$pair, $seq, "+", $qual;
-	}
-	else {
-	    say $out join "\n", ">".$name.$pair, $seq;
-	}
+	say $out join "\n", "@".$name.$pair, $seq, "+", $qual if defined $qual;
+	say $out join "\n", ">".$name.$pair, $seq if !defined $qual;
     }
     close $fh;
     close $out;
@@ -188,7 +186,6 @@ sub make_pairs_and_singles {
 	}
 	
 	if ($fname =~ /\|\|/) {
-	    #say STDERR $fname;
 	    my ($name, $comm);
 	    ($name, $comm) = mk_vec($fname);
 	    $forw_id = $name." 1".$comm if defined $comm;
@@ -422,8 +419,8 @@ sub pairs_to_interleaved {
 
     local @SIG{qw(INT TERM HUP)} = sub { untie %$pairs if defined $index; unlink $db_file if -e $db_file; };
 
-    my $fh = get_fh($reverse);
-    open my $out, '>', $outfile or die "\nERROR: Could not open file: $outfile\n";
+    my $fh  = get_fh($reverse);
+    my $out = get_outfh($outfile);
 
     my @raux = undef;
     my ($rname, $rcomm, $rseq, $rqual, $forw_id, $rev_id);
@@ -526,11 +523,25 @@ sub get_fh {
     elsif ($file =~ /\.bz2$/) {
         open $fh, '-|', 'bzcat', $file or die "\nERROR: Could not open file: $file\n";
     }
-    elsif ($file =~ /^-$|STDIN/) {
-	open $fh, '< -' or die "\nERROR: Could not open STDIN\n";
+    elsif ($file =~ /^-$|STDIN/i) {
+	open $fh, '<&', \*STDIN or die "\nERROR: Could not open STDIN\n";
     }
     else {
         open $fh, '<', $file or die "\nERROR: Could not open file: $file\n";
+    }
+
+    return $fh;
+}
+
+sub get_outfh {
+    my ($file) = @_;
+
+    my $fh;
+    if ($file =~ /^-$|STDOUT/i) {
+	open $fh, '>&', \*STDOUT or die "\nERROR: Could not open STDOUT\n";
+    }
+    else {
+	open $fh, '>', $file or die "\nERROR: Could not open file: $file\n";
     }
 
     return $fh;
@@ -930,14 +941,14 @@ statonse at gmail dot com
 
 =item -i, --infile
 
-  For the 'addinfo' method, this would be any FastA/Q file. For the 'splitpairs' method,
+  For the 'addinfo' method, this would be any FASTA/Q file (or STDIN). For the 'splitpairs' method,
   this would be either the forward or reverse file from a paired-end sequencing run. For the
   'makepairs' method, this would be the interleaved file of forward and reverse reads that
   has been trimmed.
 
 =item -o, --outfile
 
-  The outfile for the 'addinfo' method, with corrected pair information.
+  The outfile for the 'addinfo' or 'joinpairs' methods (may be STDOUT instead of a file).
 
 =item -f, --forward
 
