@@ -145,7 +145,7 @@ Version	Date	Location
   being recognized correctly). Add option to get version, for 
   testing or general use.
 
-0.0dd3	11/18/2013	Athens, GA
+0.03	11/18/2013	Athens, GA
 
 - Bug fixes for splitting pairs, storing files in memory,
   and naming DBM files. Update/add tests.
