@@ -6,5 +6,5 @@ use File::Find;
 use File::Basename;
 use Test::More tests => 1;
 
-my $cmd = File::Spec->catfile('bin', 'pairfq');
+my $cmd = File::Spec->catfile('blib', 'bin', 'pairfq');
 ok(-x $cmd, 'Can execute pairfq');
