@@ -1,6 +1,11 @@
 Revision history for Pairfq
 
 Version	Date	Location
+0.14.5	08/08/2015	Vancouver, BC
+
+- Allow build system to find Perl instead of using environment
+  variables which may not work on all systems.
+
 0.14.4	06/10/2015	Vancouver, BC
 
 - Add option to write to STDOUT for 'addinfo' and 'joinpairs'
