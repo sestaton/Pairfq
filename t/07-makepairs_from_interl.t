@@ -75,6 +75,7 @@ open my $fars, '<', $tmpfars;
 my ($fqfp_ct, $fqrp_ct, $fqfs_ct, $fqrs_ct, 
     $fafp_ct, $farp_ct, $fafs_ct, $fars_ct) = (0, 0, 0, 0, 0, 0, 0, 0);
 
+#TODO: add method to return these counts instead of repeating this code
 while (<$fqfp>) {
     s/^\s+|\s+$//g;
     $fqfp_ct++ if /\/1$/;
