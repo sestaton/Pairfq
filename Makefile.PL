@@ -30,7 +30,8 @@ WriteMakefile(
 	'DBD::SQLite'         => 1.44,       
 	'Tie::Hash::DBD'      => 0.13,
     },
-    INST_SCRIPT => 'bin',
+    INST_SCRIPT => 'blib/bin',
+    EXE_FILES   => [ 'bin/pairfq' ],
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     test  => { TESTS => 't/*.t' },
 );
