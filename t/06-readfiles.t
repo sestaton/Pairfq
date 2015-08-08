@@ -11,7 +11,7 @@ use autodie qw(open);
 use Test::More tests => 8;
 
 #TODO: Add tests that sequences and IDs are correct between tests
-my $cmd     = File::Spec->catfile('bin', 'pairfq');
+my $cmd     = File::Spec->catfile('blib', 'bin', 'pairfq');
 my $fq_data = _build_fq_data();
 
 makepairs_inmemory($cmd, $fq_data);

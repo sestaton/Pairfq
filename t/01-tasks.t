@@ -5,7 +5,7 @@ use File::Spec;
 use Cwd qw(getcwd);
 use Test::More tests => 10;
 
-my $cmd        = File::Spec->catfile('bin', 'pairfq');
+my $cmd        = File::Spec->catfile('blib', 'bin', 'pairfq');
 my @addinfo    = qx($cmd addinfo 2>&1);
 my @makepairs  = qx($cmd makepairs 2>&1);
 my @splitpairs = qx($cmd splitpairs 2>&1);

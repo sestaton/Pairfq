@@ -8,7 +8,7 @@ use autodie qw(open);
 use Test::More tests => 30;
 
 #TODO: Add tests that sequences and IDs are correct between tests 
-my $cmd     = File::Spec->catfile('bin', 'pairfq');
+my $cmd     = File::Spec->catfile('blib', 'bin', 'pairfq');
 my $fq_data = _build_fq_data();
 my $fa_data = _build_fa_data();
 
