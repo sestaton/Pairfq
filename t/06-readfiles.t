@@ -1,3 +1,4 @@
+#!perl
 # this is a test to fix a bug with reading files with dashes
 # https://github.com/sestaton/Pairfq/issues/3
 
