@@ -8,107 +8,72 @@ use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.14.5';
+our $VERSION = '0.14.6';
 
-my $infile;     # input file for 'addinfo', 'splitpairs' and 'makepairs' methods
-my $outfile;    # output file for 'addinfo' method
-my $fread;      # file of forward reads for 'splitpairs', 'makepairs' and 'joinpairs' methods
-my $rread;      # file of forward reads for 'splitpairs', 'makepairs' and 'joinpairs' methods
-my $fpread;     # file of paired forward reads for 'makepairs' method
-my $rpread;     # file of paired reverse reads for 'makepairs' method
-my $fsread;     # file of unpaired forward reads for 'makepairs' method
-my $rsread;     # file of unpaired reverse reads for 'makepairs' method 
-my $pairnum;    # for the 'addinfo' method
-my $index;      # option for the 'makepairs' and 'joinpairs' methods
-my $compress;   # for any/all the methods
-my $uppercase;  # for 'addinfo' method
-my $stats;      # currently, for 'makepairs' option only
-
-my $version; 
-my $help;
-my $man;
 my $script = basename($0, ());
 $script = "pairfq" if $script =~ /^-$|stdin/i;
 
-GetOptions(
-	   'i|infile=s'         => \$infile,
-	   'o|outfile=s'        => \$outfile,
-	   'p|pairnum=i'        => \$pairnum, 
-	   'f|forward=s'        => \$fread,
-	   'r|reverse=s'        => \$rread,
-	   'fp|forw_paired=s'   => \$fpread,
-	   'rp|rev_paired=s'    => \$rpread,
-	   'fs|forw_unpaired=s' => \$fsread,
-	   'rs|rev_unpaired=s'  => \$rsread,
-	   'idx|index'          => \$index,
-	   'c|compress=s'       => \$compress,
-	   'uc|uppercase'       => \$uppercase,
-	   's|stats'            => \$stats,
-	   'version'            => \$version,
-	   'h|help'             => \$help,
-	   'm|man'              => \$man,
-	  ) or pod2usage( "Try '$0 --man' for more information." );
+my %usage_table= (
+    'main'       => \&usage,
+    'makepairs'  => \&makepairs_usage,
+    'addinfo'    => \&addinfo_usage,
+    'splitpairs' => \&splitpairs_usage,
+    'joinpairs'  => \&joinpairs_usage,
+);
+
+my %opt;
+GetOptions(%opt,
+	   'i|infile=s'         => \$opt{infile},
+	   'o|outfile=s'        => \$opt{outfile},
+	   'p|pairnum=i'        => \$opt{pairnum}, 
+	   'f|forward=s'        => \$opt{fread},
+	   'r|reverse=s'        => \$opt{rread},
+	   'fp|forw_paired=s'   => \$opt{fpread},
+	   'rp|rev_paired=s'    => \$opt{rpread},
+	   'fs|forw_unpaired=s' => \$opt{fsread},
+	   'rs|rev_unpaired=s'  => \$opt{rsread},
+	   'idx|index'          => \$opt{index},
+	   'c|compress=s'       => \$opt{compress},
+	   'uc|uppercase'       => \$opt{uppercase},
+	   's|stats'            => \$opt{stats},
+	   'version'            => \$opt{version},
+	   'h|help'             => \$opt{help},
+	   'm|man'              => \$opt{man},
+	  ) or pod2usage( "Try '$script --man' for more information." );
 
 #
 # Check @ARGV
 #
-usage($script) and exit(0) if $help;
+$usage_table{main}->($script) and exit(0) if $opt{help};
 
-pod2usage( -verbose => 2 ) if $man;
+pod2usage( -verbose => 2 ) if $opt{man};
 
-say $VERSION and exit(0) if $version;
+say $VERSION and exit(0) if $opt{version};
 
-my $method = shift;
+my $method = shift;    
 if (!defined $method) {
     say "\nERROR: Command line not parsed correctly. Check input.\n";
-    usage($script);
+    $usage_table{main}->($script);
     exit(1);
 }
 
-if ($compress) {
-    unless ($compress eq 'gzip' || $compress eq 'bzip2') {
-	say "\nERROR: '$compress' is not recognized as an argument to the --compress option.".
+if ($opt{compress}) {
+    unless ($opt{compress} eq 'gzip' || $opt{compress} eq 'bzip2') {
+	say "\nERROR: '$opt{compress}' is not recognized as an argument to the --compress option.".
 	    " Must be 'gzip' or 'bzip2'. Exiting.\n";
 	exit(1);
     }
 }
 
-if ($method eq 'addinfo') {
-    if (!$pairnum || !$infile || !$outfile) {
-	say "\nERROR: Command line not parsed correctly. Check input.\n";
-	addinfo_usage($script);
-	exit(1);
-    }
-    add_pair_info($pairnum, $infile, $outfile, $compress, $uppercase);
-}
-elsif ($method eq 'makepairs') {
-    if ($infile && $fpread && $rpread && $fsread && $rsread) {
-	interleaved_to_pairs_and_singles($script, $infile, $fpread, $rpread, $fsread, $rsread, $compress, $stats);
-    }
-    elsif (!$infile && $fread && $rread && $fpread && $rpread && $fsread && $rsread) {
-	make_pairs_and_singles($script, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress, $stats);
-    }
-    else {
-	say "\nERROR: Command line not parsed correctly. Check input.\n";
-	makepairs_usage($script);
-	exit(1);
-    }
-}
-elsif ($method eq 'joinpairs') {
-    if (!$fread || !$rread || !$outfile) {
-	say "\nERROR: Command line not parsed correctly. Check input.\n";
-	joinpairs_usage($script);
-	exit(1);
-    }
-    pairs_to_interleaved($fread, $rread, $outfile, $index, $compress);
-}
-elsif ($method eq 'splitpairs') {
-    if (!$infile || !$fread || !$rread) {
-	say "\nERROR: Command line not parsed correctly. Check input.\n";
-	splitpairs_usage($script);
-	exit(1);
-    }
-    interleaved_to_pairs($infile, $fread, $rread, $compress);
+my %method_table = (
+    'addinfo'    => \&add_pair_info,
+    'makepairs'  => \&makepairs,
+    'joinpairs'  => \&pairs_to_interleaved,
+    'splitpairs' => \&interleaved_to_pairs,
+ );
+
+if (exists $method_table{$method}) {
+    $method_table{$method}->(\%opt, \%usage_table, $script);
 }
 else {
     say "\nERROR: '$method' is not recognized. See the manual by typing '$script -m',".
@@ -121,8 +86,16 @@ exit;
 # Methods
 #
 sub add_pair_info {
-    my ($pairnum, $infile, $outfile, $compress, $uppercase) = @_;
+    my ($opt, $usage_table, $script) = @_;
+    my ($pairnum, $infile, $outfile, $compress, $uppercase) = 
+	map { defined $opt->{$_} ? $opt->{$_} : undef } qw(pairnum infile outfile compress uppercase);
 
+    if (!$pairnum || !$infile || !$outfile) {
+	say "\nERROR: Command line not parsed correctly. Check input.\n";
+	$usage_table->{addinfo}->($script);
+	exit(1);
+    }
+    
     no warnings 'io';
     my $pair;
     if ($pairnum == 1) {
@@ -154,6 +127,27 @@ sub add_pair_info {
     exit;
 }
 
+sub makepairs {
+    my ($opt, $usage_table, $script) = @_;
+    my ($infile, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $compress, $stats, $index) =
+	map { defined $opt->{$_} ? $opt->{$_} : undef } 
+            qw(infile fread rread fpread rpread fsread rsread compress stats index);
+
+    if ($infile && $fpread && $rpread && $fsread && $rsread) {
+	interleaved_to_pairs_and_singles($script, $infile, $fpread, $rpread, $fsread, 
+					 $rsread, $compress, $stats);
+    }
+    elsif (!$infile && $fread && $rread && $fpread && $rpread && $fsread && $rsread) {
+	make_pairs_and_singles($script, $fread, $rread, $fpread, $rpread, $fsread, 
+			       $rsread, $index, $compress, $stats);
+    }
+    else {
+	say "\nERROR: Command line not parsed correctly. Check input.\n";
+            $usage_table->{makepairs}->($script);
+	exit(1);
+    }
+
+}
 sub make_pairs_and_singles {
     my ($script, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress, $stats) = @_;
 
@@ -413,7 +407,15 @@ sub interleaved_to_pairs_and_singles {
 }
 
 sub pairs_to_interleaved {
-    my ($forward, $reverse, $outfile, $index, $compress) = @_;
+    my ($opt, $usage_table, $script) = @_;
+    my ($forward, $reverse, $outfile, $index, $compress) =
+	map { defined $opt->{$_} ? $opt->{$_} : undef } qw(fread rread outfile index compress);
+
+    if (!$forward || !$reverse || !$outfile) {
+	say "\nERROR: Command line not parsed correctly. Check input.\n";
+	$usage_table->{joinpairs}->($script);
+	exit(1);
+    }
 
     my ($pairs, $db_file, $ct) = store_pair($forward, $index);
 
@@ -482,7 +484,15 @@ sub pairs_to_interleaved {
 }
 
 sub interleaved_to_pairs {
-    my ($infile, $forward, $reverse, $compress) = @_;
+    my ($opt, $usage_table, $script) = @_;
+    my ($infile, $forward, $reverse, $compress) =
+	map { defined $opt->{$_} ? $opt->{$_} : undef } qw(infile fread rread compress);
+
+    if (!$infile || !$forward || !$reverse) {
+	say "\nERROR: Command line not parsed correctly. Check input.\n";
+	$usage_table->{splitpairs}->($script);
+	exit(1);
+    }
 
     my $fh = get_fh($infile);
     open my $f, '>', $forward or die "\nERROR: Could not open file: $forward\n";
