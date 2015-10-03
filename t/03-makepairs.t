@@ -40,7 +40,7 @@ sub makepairs_inmemory {
 				DIR      => 't',
 				SUFFIX   => ".fastq",
 				UNLINK   => 0 );
-    
+
     my @pfq_fqout = qx($cmd makepairs -f $fq_data->[0] -r $fq_data->[1] -fp $fpfq -rp $rpfq -fs $fsfq -rs $rsfq --stats);
 
     my $fpfa = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
@@ -92,7 +92,6 @@ sub makepairs_inmemory {
 	    is($1, 2, 'Correct number of total upaired fastq reads in memory');
 	}
     }
-    
     unlink $fpfq, $rpfq, $fsfq, $rsfq;
     
     for my $fao (@pfq_faout) {
@@ -122,7 +121,6 @@ sub makepairs_inmemory {
 	    is($1, 2, 'Correct number of total upaired fasta reads in memory');
 	}
     }
-    
     unlink $fpfa, $rpfa, $fsfa, $rsfa;   
 }
 

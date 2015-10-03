@@ -1,6 +1,12 @@
 Revision history for Pairfq
 
 Version	Date	Location
+0.14.5  10/03/2015      Vancouver, BC
+
+- Use dispatch tables in main application for looking up methods and usage.
+  This makes adding methods easier and reduces the problem of checking input
+  for every command.
+
 0.14.5	08/08/2015	Vancouver, BC
 
 - Allow build system to find Perl instead of using environment

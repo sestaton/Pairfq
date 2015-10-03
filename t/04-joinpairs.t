@@ -32,7 +32,7 @@ sub joinpairs_inmemory {
 				     DIR      => 't',
 				     SUFFIX   => ".fasta",
 				     UNLINK   => 0 );
-    
+
     system("$cmd joinpairs -f $fq_data->[0] -r $fq_data->[1] -o $tmpfq_out") == 0 
 	or die "system failed: $?";
     system("$cmd joinpairs -f $fa_data->[0] -r $fa_data->[1] -o $tmpfa_out") == 0 
