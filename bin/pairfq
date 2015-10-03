@@ -8,7 +8,7 @@ use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.14.5';
+our $VERSION = '0.14.6';
 
 my $script = basename($0, ());
 $script = "pairfq" if $script =~ /^-$|stdin/i;
