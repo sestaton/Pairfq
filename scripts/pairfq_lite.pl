@@ -7,7 +7,7 @@ use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.14.6';
+our $VERSION = '0.14.7';
 
 my $infile;     # input file for 'addinfo', 'splitpairs' and 'makepairs' methods
 my $outfile;    # output file for 'addinfo' method
