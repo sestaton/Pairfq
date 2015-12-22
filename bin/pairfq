@@ -3,12 +3,11 @@
 use 5.010;
 use strict;
 use warnings;
-use diagnostics;
 use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.14.7';
+our $VERSION = '0.15';
 
 my $script = basename($0, ());
 $script = "pairfq" if $script =~ /^-$|stdin/i;
@@ -110,7 +109,7 @@ sub add_pair_info {
     }
 
     my $fh  = get_fh($infile);
-    my $out = get_outfh($outfile);
+    my $out = get_outfh($outfile, $compress);
 
     my @aux = undef;
     my ($name, $comm, $seq, $qual);
@@ -123,7 +122,6 @@ sub add_pair_info {
     close $fh;
     close $out;
 
-    compress($compress, $outfile) if $compress;
     exit;
 }
 
@@ -160,9 +158,9 @@ sub make_pairs_and_singles {
     my ($fct, $fpct, $rpct, $pct, $fsct, $rsct, $sct) = (0, 0, 0, 0, 0, 0, 0);
 
     my $fh = get_fh($fread);
-    open my $fp, '>', $fpread or die "\nERROR: Could not open file: $fpread\n";
-    open my $rp, '>', $rpread or die "\nERROR: Could not open file: $rpread\n";
-    open my $fs, '>', $fsread or die "\nERROR: Could not open file: $fsread\n";
+    my $fp = get_outfh($fpread, $compress);
+    my $rp = get_outfh($rpread, $compress);
+    my $fs = get_outfh($fsread, $compress);
 
     while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$fh, \@faux)) {
 	$fct++;
@@ -241,7 +239,7 @@ sub make_pairs_and_singles {
     close $rp;
     close $fs;
 
-    open my $rs, '>', $rsread or die "\nERROR: Could not open file: $rsread\n";
+    my $rs = get_outfh($rsread, $compress);
 
     while (my ($rname_up_unenc, $rseq_up_unenc) = each %$rseqpairs) {
 	$rsct++;
@@ -265,7 +263,6 @@ sub make_pairs_and_singles {
     }
     close $rs;
 
-    compress($compress, $fpread, $rpread, $fsread, $rsread) if $compress;
     $pct = $fpct + $rpct;
     $sct = $fsct + $rsct;
     untie %$rseqpairs if defined $index;
@@ -292,10 +289,10 @@ sub interleaved_to_pairs_and_singles {
     my ($script, $infile, $fpread, $rpread, $fsread, $rsread, $compress, $stats) = @_;
 
     my $fh = get_fh($infile);
-    open my $fp, '>', $fpread or die "\nERROR: Could not open file: $fpread\n";
-    open my $rp, '>', $rpread or die "\nERROR: Could not open file: $rpread\n";
-    open my $fs, '>', $fsread or die "\nERROR: Could not open file: $fsread\n";
-    open my $rs, '>', $rsread or die "\nERROR: Could not open file: $rsread\n";
+    my $fp = get_outfh($fpread, $compress);
+    my $rp = get_outfh($rpread, $compress);
+    my $fs = get_outfh($fsread, $compress);
+    my $rs = get_outfh($rsread, $compress);
 
     my @aux = undef;
     my ($fct, $rct, $fpct, $rpct, $pct, $fsct, $rsct, $sct, $pair) = (0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -385,7 +382,6 @@ sub interleaved_to_pairs_and_singles {
     close $fs;
     close $rs;
 
-    compress($compress, $fpread, $rpread, $fsread, $rsread) if $compress;
     $pct = $fpct + $rpct;
     $sct = $fsct + $rsct;
 
@@ -422,7 +418,7 @@ sub pairs_to_interleaved {
     local @SIG{qw(INT TERM HUP)} = sub { untie %$pairs if defined $index; unlink $db_file if -e $db_file; };
 
     my $fh  = get_fh($reverse);
-    my $out = get_outfh($outfile);
+    my $out = get_outfh($outfile, $compress);
 
     my @raux = undef;
     my ($rname, $rcomm, $rseq, $rqual, $forw_id, $rev_id);
@@ -479,7 +475,6 @@ sub pairs_to_interleaved {
     untie %$pairs if defined $index;
     unlink $db_file if -e $db_file;
 
-    compress($compress, $outfile) if $compress;
     exit;
 }
 
@@ -495,8 +490,8 @@ sub interleaved_to_pairs {
     }
 
     my $fh = get_fh($infile);
-    open my $f, '>', $forward or die "\nERROR: Could not open file: $forward\n";
-    open my $r, '>', $reverse or die "\nERROR: Could not open file: $reverse\n"; 
+    my $f  = get_outfh($forward, $compress);
+    my $r  = get_outfh($reverse, $compress);
 
     my @aux = undef;
     my ($name, $comm, $seq, $qual);
@@ -519,7 +514,6 @@ sub interleaved_to_pairs {
     close $f;
     close $r;
 
-    compress($compress, $forward, $reverse) if $compress;
     exit;
 }
 
@@ -544,65 +538,29 @@ sub get_fh {
 }
 
 sub get_outfh {
-    my ($file) = @_;
+    my ($file, $compress) = @_;
 
     my $fh;
-    if ($file =~ /^-$|STDOUT/i) {
-	open $fh, '>&', \*STDOUT or die "\nERROR: Could not open STDOUT\n";
+    if (defined $compress) {
+	if ($compress eq 'gzip') {
+	    $file .= ".gz" if $file !~ /\.gz$/;
+	    open $fh, '|-', "gzip > $file" or die "\nERROR: Could not open file: $file\n";
+	}
+	elsif ($compress eq 'bzip2') {
+	    $file .= ".bz2" if $file !~ /\.bz2$/;
+	    open $fh, '|-', "bzip2 > $file" or die "\nERROR: Could not open file: $file\n";
+	}
     }
     else {
-	open $fh, '>', $file or die "\nERROR: Could not open file: $file\n";
+	if ($file =~ /^-$|STDOUT/i) {
+	    open $fh, '>&', \*STDOUT or die "\nERROR: Could not open STDOUT\n";
+	}
+	else {
+	    open $fh, '>', $file or die "\nERROR: Could not open file: $file\n";
+	}
     }
 
     return $fh;
-}
-
-sub compress {
-    my ($compress, $fp, $rp, $fs, $rs) = @_;
-
-    load_classes('IO::Compress::Gzip', 'IO::Compress::Bzip2');
-
-    my $fpo = $fp;
-    my $rpo = $rp if defined $rp;
-    my $fso = $fs if defined $fs;
-    my $rso = $rs if defined $rs;
-
-    if ($compress eq 'gzip') {
-	$pfo .= ".gz" if $fpo !~ /\.gz$/;
-	$rpo .= ".gz" if defined $rpo && $rpo !~ /\.gz$/;
-	$fso .= ".gz" if defined $fso && $fso !~ /\.gz$/;
-	$rso .= ".gz" if defined $rso && $rso !~ /\.gz$/;
-
-	IO::Compress::Gzip::gzip($fp, $fpo) || 
-	    die "gzip failed: $IO::Compress::Gzip::GzipError\n";
-	IO::Compress::Gzip::gzip($rp, $rpo) || 
-	    die "gzip failed: $IO::Compress::Gzip::GzipError\n" if defined $rp;
-	IO::Compress::Gzip::gzip($fs, $fso) || 
-	    die "gzip failed: $IO::Compress::Gzip::GzipError\n" if defined $fs;
-        IO::Compress::Gzip::gzip($rs, $rso) || 
-	    die "gzip failed: $IO::Compress::Gzip::GzipError\n" if defined $rs;
-    }
-    elsif ($compress eq 'bzip2') {
-	$pfo .= ".bz2" if $fpo !~ /\.bz2$/;
-        $rpo .= ".bz2" if defined $rpo && $rpo !~ /\.bz2$/;
-        $fso .= ".bz2" if defined $fso && $fso !~ /\.bz2$/;
-        $rso .= ".bz2" if defined $rso && $rso !~ /\.bz2$/;
-
-	IO::Compress::Bzip2::bzip2($fp, $fpo) || 
-	    die "bzip2 failed: $IO::Compress::Bzip2::Bzip2Error\n";
-	IO::Compress::Bzip2::bzip2($rp, $rpo) || 
-	    die "bzip2 failed: $IO::Compress::Bzip2::Bzip2Error\n" if defined $rp;
-	IO::Compress::Bzip2::bzip2($fs, $fso) || 
-	    die "bzip2 failed: $IO::Compress::Bzip2::Bzip2Error\n" if defined $fs;
-	IO::Compress::Bzip2::bzip2($rs, $rso) || 
-	    die "bzip2 failed: $IO::Compress::Bzip2::Bzip2Error\n" if defined $rs;
-    }
-    unlink $fp;
-    unlink $rp if defined $rp;
-    unlink $fs if defined $fs;
-    unlink $rs if defined $rs;
-
-    return;
 }
 
 sub store_pair {
