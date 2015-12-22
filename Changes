@@ -1,7 +1,16 @@
 Revision history for Pairfq
 
 Version	Date	Location
-0.14.7	1/18/2015	Vancouver, BC
+0.15	12/22/2015	Vancouver, BC
+
+- Major change in how compressing output is performed. Now, the data is piped directly
+  to the compression program so it is much more efficient that writing twice and deleting
+  the original data.
+- The minor improvements with the new compression mechanism is that the file extension is
+  handled correctly, and there are fewer Perl dependencies since the compression is done
+  externally.
+
+0.14.7	11/18/2015	Vancouver, BC
 
 - Fix bug in compression method (syntax error with imported method).
 
