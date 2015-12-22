@@ -208,8 +208,8 @@ sub make_pairs_and_singles {
 		    say $rp join "\n", ">".$rev_id, $rseqpairs->{$fname};
 		} 
 		else {
-		    say $fp join "\n",">".$fname.q{/1}, $fseq;
-		    say $rp join "\n",">".$fname.q{/2}, $rseqpairs->{$fname};
+		    say $fp join "\n",">".$fname."/1", $fseq;
+		    say $rp join "\n",">".$fname."/2", $rseqpairs->{$fname};
 		}
 	    }
 	    delete $rseqpairs->{$fname};
@@ -436,7 +436,7 @@ sub pairs_to_interleaved {
 	    $rname = mk_key($rname, $rcomm);
 	}
 	else {
-	    say "\nERROR: Could not determine FastA/Q format. ".
+	    say "\nERROR: Could not determine FASTA/Q format. ".
 		"Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
 	    exit(1);
 	}
@@ -562,38 +562,38 @@ sub compress {
 
     load_classes('IO::Compress::Gzip', 'IO::Compress::Bzip2');
 
+    my $fpo = $fp;
+    my $rpo = $rp if defined $rp;
+    my $fso = $fs if defined $fs;
+    my $rso = $rs if defined $rs;
+
     if ($compress eq 'gzip') {
-	my $fpo = $fp.".gz";
-	my $rpo = $rp.".gz" if defined $rp;
-	my $fso = $fs.".gz" if defined $fs;
-	my $rso = $rs.".gz" if defined $rs;
+	$pfo .= ".gz" if $fpo !~ /\.gz$/;
+	$rpo .= ".gz" if defined $rpo && $rpo !~ /\.gz$/;
+	$fso .= ".gz" if defined $fso && $fso !~ /\.gz$/;
+	$rso .= ".gz" if defined $rso && $rso !~ /\.gz$/;
 	
 	IO::Compress::Gzip::gzip $fp => $fpo or die "gzip failed: $IO::Compress::Gzip::GzipError\n";
 	IO::Compress::Gzip::gzip $rp => $rpo or die "gzip failed: $IO::Compress::Gzip::GzipError\n" if defined $rp;
 	IO::Compress::Gzip::gzip $fs => $fso or die "gzip failed: $IO::Compress::Gzip::GzipError\n" if defined $fs;
         IO::Compress::Gzip::gzip $rs => $rso or die "gzip failed: $IO::Compress::Gzip::GzipError\n" if defined $rs;
-
-	unlink $fp;
-	unlink $rp if defined $rp;
-	unlink $fs if defined $fs;
-	unlink $rs if defined $rs;
     }
     elsif ($compress eq 'bzip2') {
-	my $fpo = $fp.".bz2";
-	my $rpo = $rp.".bz2" if defined $rp;
-	my $fso = $fs.".bz2" if defined $fs;
-	my $rso = $rs.".bz2" if defined $rs;
+	$pfo .= ".bz2" if $fpo !~ /\.bz2$/;
+        $rpo .= ".bz2" if defined $rpo && $rpo !~ /\.bz2$/;
+        $fso .= ".bz2" if defined $fso && $fso !~ /\.bz2$/;
+        $rso .= ".bz2" if defined $rso && $rso !~ /\.bz2$/;
 
 	IO::Compress::Bzip2::bzip2 $fp => $fpo or die "bzip2 failed: $IO::Compress::Bzip2::Bzip2Error\n";
 	IO::Compress::Bzip2::bzip2 $rp => $rpo or die "bzip2 failed: $IO::Compress::Bzip2::Bzip2Error\n" if defined $rp;
 	IO::Compress::Bzip2::bzip2 $fs => $fso or die "bzip2 failed: $IO::Compress::Bzip2::Bzip2Error\n" if defined $fs;
 	IO::Compress::Bzip2::bzip2 $rs => $rso or die "bzip2 failed: $IO::Compress::Bzip2::Bzip2Error\n" if defined $rs;
-
-	unlink $fp; 
-	unlink $rp if defined $rp;
-	unlink $fs if defined $fs;
-	unlink $rs if defined $rs;
     }
+    unlink $fp;
+    unlink $rp if defined $rp;
+    unlink $fs if defined $fs;
+    unlink $rs if defined $rs;
+
     return;
 }
 
