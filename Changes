@@ -1,7 +1,11 @@
 Revision history for Pairfq
 
 Version	Date	Location
-0.14.5  10/03/2015      Vancouver, BC
+0.14.7	1/18/2015	Vancouver, BC
+
+- Fix bug in compression method (syntax error with imported method).
+
+0.14.6  10/03/2015      Vancouver, BC
 
 - Use dispatch tables in main application for looking up methods and usage.
   This makes adding methods easier and reduces the problem of checking input

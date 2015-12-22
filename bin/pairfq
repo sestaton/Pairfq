@@ -8,7 +8,7 @@ use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.14.6';
+our $VERSION = '0.14.7';
 
 my $script = basename($0, ());
 $script = "pairfq" if $script =~ /^-$|stdin/i;
@@ -572,11 +572,15 @@ sub compress {
 	$rpo .= ".gz" if defined $rpo && $rpo !~ /\.gz$/;
 	$fso .= ".gz" if defined $fso && $fso !~ /\.gz$/;
 	$rso .= ".gz" if defined $rso && $rso !~ /\.gz$/;
-	
-	IO::Compress::Gzip::gzip $fp => $fpo or die "gzip failed: $IO::Compress::Gzip::GzipError\n";
-	IO::Compress::Gzip::gzip $rp => $rpo or die "gzip failed: $IO::Compress::Gzip::GzipError\n" if defined $rp;
-	IO::Compress::Gzip::gzip $fs => $fso or die "gzip failed: $IO::Compress::Gzip::GzipError\n" if defined $fs;
-        IO::Compress::Gzip::gzip $rs => $rso or die "gzip failed: $IO::Compress::Gzip::GzipError\n" if defined $rs;
+
+	IO::Compress::Gzip::gzip($fp, $fpo) || 
+	    die "gzip failed: $IO::Compress::Gzip::GzipError\n";
+	IO::Compress::Gzip::gzip($rp, $rpo) || 
+	    die "gzip failed: $IO::Compress::Gzip::GzipError\n" if defined $rp;
+	IO::Compress::Gzip::gzip($fs, $fso) || 
+	    die "gzip failed: $IO::Compress::Gzip::GzipError\n" if defined $fs;
+        IO::Compress::Gzip::gzip($rs, $rso) || 
+	    die "gzip failed: $IO::Compress::Gzip::GzipError\n" if defined $rs;
     }
     elsif ($compress eq 'bzip2') {
 	$pfo .= ".bz2" if $fpo !~ /\.bz2$/;
@@ -584,10 +588,14 @@ sub compress {
         $fso .= ".bz2" if defined $fso && $fso !~ /\.bz2$/;
         $rso .= ".bz2" if defined $rso && $rso !~ /\.bz2$/;
 
-	IO::Compress::Bzip2::bzip2 $fp => $fpo or die "bzip2 failed: $IO::Compress::Bzip2::Bzip2Error\n";
-	IO::Compress::Bzip2::bzip2 $rp => $rpo or die "bzip2 failed: $IO::Compress::Bzip2::Bzip2Error\n" if defined $rp;
-	IO::Compress::Bzip2::bzip2 $fs => $fso or die "bzip2 failed: $IO::Compress::Bzip2::Bzip2Error\n" if defined $fs;
-	IO::Compress::Bzip2::bzip2 $rs => $rso or die "bzip2 failed: $IO::Compress::Bzip2::Bzip2Error\n" if defined $rs;
+	IO::Compress::Bzip2::bzip2($fp, $fpo) || 
+	    die "bzip2 failed: $IO::Compress::Bzip2::Bzip2Error\n";
+	IO::Compress::Bzip2::bzip2($rp, $rpo) || 
+	    die "bzip2 failed: $IO::Compress::Bzip2::Bzip2Error\n" if defined $rp;
+	IO::Compress::Bzip2::bzip2($fs, $fso) || 
+	    die "bzip2 failed: $IO::Compress::Bzip2::Bzip2Error\n" if defined $fs;
+	IO::Compress::Bzip2::bzip2($rs, $rso) || 
+	    die "bzip2 failed: $IO::Compress::Bzip2::Bzip2Error\n" if defined $rs;
     }
     unlink $fp;
     unlink $rp if defined $rp;
