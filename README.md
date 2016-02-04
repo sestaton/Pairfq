@@ -9,12 +9,20 @@ Sync paired-end FASTA/Q files and keep singleton reads
 
 There is a standalone script in the 'scripts' directory that has no dependencies and will work with Perl version 5.6 or newer. This script has fewer features (mainly, it lacks the indexing function for working with large data) than the main application but it may be useful in an environment where installing libraries is not convenient. Obtaining this version can be done with curl:
 
-    curl -L git.io/pairfq_lite > pairfq_lite
+    curl -sL git.io/pairfq_lite > pairfq_lite
 
 You can then make the script executable and check the usage:
 
     chmod +x pairfq_lite
     ./pairfq_lite -h
+
+Alternatively, you can use this version without storing it locally.
+
+    curl -sL git.io/pairfq_lite | perl -
+
+The above command will show the options. To see a specific subcommand menu, for example the `makepairs` command, just type that subcommand with no options.
+
+    curl -sL git.io/pairfq_lite | perl - makepairs
 
 For a full explanation of all commands, please see the Support and Documenation section below.
  
@@ -61,4 +69,4 @@ This project uses the [readfq](https://github.com/lh3/readfq) library written by
 
 The MIT License should included with the project. If not, it can be found at: http://opensource.org/licenses/mit-license.php
 
-Copyright (C) 2013-2015 S. Evan Staton
+Copyright (C) 2013-2016 S. Evan Staton
