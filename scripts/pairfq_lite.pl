@@ -755,7 +755,7 @@ information on which Perls have been tested.
  
 The MIT License should included with the project. If not, it can be found at: http://opensource.org/licenses/mit-license.php
 
-Copyright (C) 2013-2015 S. Evan Staton
+Copyright (C) 2013-2016 S. Evan Staton
  
 =head1 TESTED WITH:
 
@@ -779,7 +779,8 @@ Perl 5.16.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga))
 =item *
 Perl 5.18.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga))
 
-=item *                                                                                                                                                     Perl 5.20.1 (Red Hat Enterprise Linux Server release 5.9 (Tikanga))
+=item *
+Perl 5.20.1 (Red Hat Enterprise Linux Server release 5.9 (Tikanga))
 
 =back
 
