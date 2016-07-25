@@ -1,6 +1,11 @@
 Revision history for Pairfq
 
 Version	Date	Location
+0.16	07/24/2016	Vancouver, BC
+
+- Clean up Unix paths correctly (e.g. '/some/relative/../path' becomes '/some/path'). 
+  Fixes #10 on github.
+
 0.15	12/22/2015	Vancouver, BC
 
 - Major change in how compressing output is performed. Now, the data is piped directly
