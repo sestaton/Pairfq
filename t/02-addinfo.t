@@ -63,6 +63,7 @@ check_pairinfo($tmpfq_out, $tmpfa_out);
 check_pairinfo($fqfile, $fafile);
 unlink $fq_data, $fa_data;
 
+done_testing();
 #
 # methods
 #
@@ -77,14 +78,17 @@ sub check_pairinfo {
 	   ok ($line =~ qr/\/1$/, 'Can properly add pair information to fastq');
       	}
     }
+    close $fq;
 
     while (my $line = <$fa>) {
         if ($line =~ /^\>HWI/) {
             ok($line =~ qr/\/1$/, 'Can properly add pair information to fasta');
         }
     }
+    close $fa;
 
-    unlink $tmpfq_out, $tmpfa_out;
+    #unlink $tmpfq_out, $tmpfa_out;
+    return;
 }
 
 sub _build_fq_data {
