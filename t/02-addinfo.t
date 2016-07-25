@@ -87,7 +87,7 @@ sub check_pairinfo {
     }
     close $fa;
 
-    #unlink $tmpfq_out, $tmpfa_out;
+    unlink $tmpfq_out, $tmpfa_out;
     return;
 }
 
