@@ -7,7 +7,7 @@ use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.15';
+our $VERSION = '0.16';
 
 my $script = basename($0, ());
 $script = "pairfq" if $script =~ /^-$|stdin/i;
@@ -520,6 +520,11 @@ sub interleaved_to_pairs {
 sub get_fh {
     my ($file) = @_;
 
+    unless ($file =~ /^-$|STDIN/i) {
+	load_classes('Cwd');
+	$file = Cwd::abs_path($file);
+    }
+
     my $fh;
     if ($file =~ /\.gz$/) {
         open $fh, '-|', 'zcat', $file or die "\nERROR: Could not open file: $file\n";
@@ -539,6 +544,11 @@ sub get_fh {
 
 sub get_outfh {
     my ($file, $compress) = @_;
+
+    unless ($file =~ /^-$|STDOUT/i) {
+	load_classes('Cwd');
+	$file = Cwd::abs_path($file);
+    }
 
     my $fh;
     if (defined $compress) {

@@ -2,12 +2,12 @@
 
 use strict;
 use warnings;
-use Cwd;
+use Cwd qw(getcwd abs_path);
 use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.15';
+our $VERSION = '0.16';
 
 my $infile;     # input file for 'addinfo', 'splitpairs' and 'makepairs' methods
 my $outfile;    # output file for 'addinfo' method
@@ -488,6 +488,10 @@ sub interleaved_to_pairs {
 sub get_fh {
     my ($file) = @_;
 
+    unless ($file =~ /^-$|STDIN/i) {
+        $file = abs_path($file);
+    }
+
     my $fh;
     if ($file =~ /\.gz$/) {
         open $fh, '-|', 'zcat', $file or die "\nERROR: Could not open file: $file\n";
@@ -507,6 +511,10 @@ sub get_fh {
 
 sub get_outfh {
     my ($file) = @_;
+
+    unless ($file =~ /^-$|STDOUT/i) {
+        $file = abs_path($file);
+    }
 
     my $fh;
     if ($file =~ /^-$|STDOUT/i) {
