@@ -9,6 +9,7 @@ use Pod::Usage;
 
 our $VERSION = '0.16.1';
 
+my $method = shift;
 my $infile;     # input file for 'addinfo', 'splitpairs' and 'makepairs' methods
 my $outfile;    # output file for 'addinfo' method
 my $fread;      # file of forward reads for 'splitpairs', 'makepairs' and 'joinpairs' methods
@@ -48,12 +49,9 @@ GetOptions(
 # Check @ARGV
 #
 usage($script) and exit(0) if $help;
-
 pod2usage( -verbose => 2 ) if $man;
-
 print $VERSION and exit(0) if $version;
 
-my $method = shift;
 if (!defined $method) {
     print "\nERROR: Command line not parsed correctly. Check input.\n\n";
     usage($script);

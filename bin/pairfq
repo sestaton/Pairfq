@@ -9,6 +9,7 @@ use Pod::Usage;
 
 our $VERSION = '0.16.1';
 
+my $method = shift;
 my $script = basename($0, ());
 $script = "pairfq" if $script =~ /^-$|stdin/i;
 
@@ -44,12 +45,9 @@ GetOptions(\%opt,
 # Check @ARGV
 #
 $usage_table{main}->($script) and exit(0) if $opt{help};
-
 pod2usage( -verbose => 2 ) if $opt{man};
-
 say $VERSION and exit(0) if $opt{version};
 
-my $method = shift;    
 if (!defined $method) {
     say "\nERROR: Command line not parsed correctly. Check input.\n";
     $usage_table{main}->($script);
