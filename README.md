@@ -3,7 +3,7 @@ Pairfq
 
 Sync paired-end FASTA/Q files and keep singleton reads
 
-[![Build Status](https://travis-ci.org/sestaton/Pairfq.svg?branch=master)](https://travis-ci.org/sestaton/Pairfq)
+[![Build Status](https://travis-ci.org/sestaton/Pairfq.svg?branch=master)](https://travis-ci.org/sestaton/Pairfq) [![GitHub version](https://badge.fury.io/gh/sestaton%2FPairfq.svg)](https://badge.fury.io/gh/sestaton%2FPairfq)
 
 **BASIC USAGE**
 
