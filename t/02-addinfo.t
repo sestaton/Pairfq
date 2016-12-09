@@ -33,7 +33,6 @@ my $tmpfa_stdout = File::Temp->new( TEMPLATE => "pairfq_fa_XXXX",
                                  SUFFIX   => ".fasta",
                                  UNLINK   => 0 );
 
-
 system("$cmd addinfo -i $fq_data -o $tmpfq_out -p 1 2>&1") == 0 
     or die "system failed: $?";
 system("$cmd addinfo -i $fa_data -o $tmpfa_out -p 1 2>&1") == 0 
