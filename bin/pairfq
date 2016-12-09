@@ -7,12 +7,12 @@ use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.16.0';
+our $VERSION = '0.16.1';
 
 my $script = basename($0, ());
 $script = "pairfq" if $script =~ /^-$|stdin/i;
 
-my %usage_table= (
+my %usage_table = (
     'main'       => \&usage,
     'makepairs'  => \&makepairs_usage,
     'addinfo'    => \&addinfo_usage,
@@ -21,23 +21,23 @@ my %usage_table= (
 );
 
 my %opt;
-GetOptions(%opt,
-	   'i|infile=s'         => \$opt{infile},
-	   'o|outfile=s'        => \$opt{outfile},
-	   'p|pairnum=i'        => \$opt{pairnum}, 
-	   'f|forward=s'        => \$opt{fread},
-	   'r|reverse=s'        => \$opt{rread},
-	   'fp|forw_paired=s'   => \$opt{fpread},
-	   'rp|rev_paired=s'    => \$opt{rpread},
-	   'fs|forw_unpaired=s' => \$opt{fsread},
-	   'rs|rev_unpaired=s'  => \$opt{rsread},
-	   'idx|index'          => \$opt{index},
-	   'c|compress=s'       => \$opt{compress},
-	   'uc|uppercase'       => \$opt{uppercase},
-	   's|stats'            => \$opt{stats},
-	   'version'            => \$opt{version},
-	   'h|help'             => \$opt{help},
-	   'm|man'              => \$opt{man},
+GetOptions(\%opt,
+	   'infile|i=s',
+	   'outfile|o=s',      
+	   'pairnum|p=i',      
+	   'forward|f=s',      
+	   'reverse|r=s',      
+	   'forw_paired|fp=s', 
+	   'rev_paired|rp=s',  
+	   'forw_unpaired|fs=s',
+	   'rev_unpaired|rs=s',
+	   'index|idx',   
+	   'compress|c=s',
+	   'uppercase|uc',
+	   'stats|s', 
+	   'version',
+	   'help|h', 
+	   'man|m',
 	  ) or pod2usage( "Try '$script --man' for more information." );
 
 #
@@ -129,7 +129,7 @@ sub makepairs {
     my ($opt, $usage_table, $script) = @_;
     my ($infile, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $compress, $stats, $index) =
 	map { defined $opt->{$_} ? $opt->{$_} : undef } 
-            qw(infile fread rread fpread rpread fsread rsread compress stats index);
+            qw(infile forward reverse forw_paired rev_paired forw_unpaired rev_unpaired compress stats index);
 
     if ($infile && $fpread && $rpread && $fsread && $rsread) {
 	interleaved_to_pairs_and_singles($script, $infile, $fpread, $rpread, $fsread, 
@@ -146,6 +146,7 @@ sub makepairs {
     }
 
 }
+
 sub make_pairs_and_singles {
     my ($script, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $index, $compress, $stats) = @_;
 
@@ -405,7 +406,7 @@ sub interleaved_to_pairs_and_singles {
 sub pairs_to_interleaved {
     my ($opt, $usage_table, $script) = @_;
     my ($forward, $reverse, $outfile, $index, $compress) =
-	map { defined $opt->{$_} ? $opt->{$_} : undef } qw(fread rread outfile index compress);
+	map { defined $opt->{$_} ? $opt->{$_} : undef } qw(forward reverse outfile index compress);
 
     if (!$forward || !$reverse || !$outfile) {
 	say "\nERROR: Command line not parsed correctly. Check input.\n";
@@ -481,7 +482,7 @@ sub pairs_to_interleaved {
 sub interleaved_to_pairs {
     my ($opt, $usage_table, $script) = @_;
     my ($infile, $forward, $reverse, $compress) =
-	map { defined $opt->{$_} ? $opt->{$_} : undef } qw(infile fread rread compress);
+	map { defined $opt->{$_} ? $opt->{$_} : undef } qw(infile forward reverse compress);
 
     if (!$infile || !$forward || !$reverse) {
 	say "\nERROR: Command line not parsed correctly. Check input.\n";
