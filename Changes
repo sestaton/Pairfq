@@ -1,10 +1,13 @@
 Revision history for Pairfq
 
 Version	Date	Location
-0.17.0	03/07/2017	Vancouver, Bc
+0.17.0	03/07/2017	Vancouver, BC
 
 - Bug fix for handling opened processes. When the input is a named pipes or piped processes 
   through process substitution, these processes are now opened correctly.
+- Bug fix for handling options to main program. The help/man/version options were not being
+  processed in the right order and were being treated as subcommands. Added an explicit
+  test for this behaviour and version information is now logged to the console during testing.
 
 0.16.1	12/09/2016	Vancouver, BC
 
