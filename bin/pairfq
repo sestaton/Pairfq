@@ -7,9 +7,8 @@ use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.16.1';
+our $VERSION = '0.17.0';
 
-my $method = shift;
 my $script = basename($0, ());
 $script = "pairfq" if $script =~ /^-$|stdin/i;
 
@@ -48,6 +47,7 @@ $usage_table{main}->($script) and exit(0) if $opt{help};
 pod2usage( -verbose => 2 ) if $opt{man};
 say $VERSION and exit(0) if $opt{version};
 
+my $method = shift;
 if (!defined $method) {
     say "\nERROR: Command line not parsed correctly. Check input.\n";
     $usage_table{main}->($script);
@@ -106,7 +106,13 @@ sub add_pair_info {
 	exit(1);
     }
 
-    my $fh  = get_fh($infile);
+    my $fh;
+    if (-p $infile) {
+	open $fh, $infile or die "\nERROR: Could not open process: $infile\n";
+    }
+    else { 
+	$fh = get_fh($infile);
+    }
     my $out = get_outfh($outfile, $compress);
 
     my @aux = undef;
@@ -156,7 +162,14 @@ sub make_pairs_and_singles {
     my ($fname, $fcomm, $fseq, $fqual, $forw_id, $rev_id);
     my ($fct, $fpct, $rpct, $pct, $fsct, $rsct, $sct) = (0, 0, 0, 0, 0, 0, 0);
 
-    my $fh = get_fh($fread);
+    my $fh;
+    if (-p $fread) {
+        open $fh, $fread or die "\nERROR: Could not open process: $fread\n";
+    }
+    else {
+        $fh = get_fh($fread);
+    }
+    #my $fh = get_fh($fread);
     my $fp = get_outfh($fpread, $compress);
     my $rp = get_outfh($rpread, $compress);
     my $fs = get_outfh($fsread, $compress);
@@ -287,7 +300,14 @@ sub make_pairs_and_singles {
 sub interleaved_to_pairs_and_singles {
     my ($script, $infile, $fpread, $rpread, $fsread, $rsread, $compress, $stats) = @_;
 
-    my $fh = get_fh($infile);
+    my $fh;
+    if (-p $infile) {
+        open $fh, $infile or die "\nERROR: Could not open process: $infile\n";
+    }
+    else {
+        $fh = get_fh($infile);
+    }
+    #my $fh = get_fh($infile);
     my $fp = get_outfh($fpread, $compress);
     my $rp = get_outfh($rpread, $compress);
     my $fs = get_outfh($fsread, $compress);
@@ -416,7 +436,14 @@ sub pairs_to_interleaved {
 
     local @SIG{qw(INT TERM HUP)} = sub { untie %$pairs if defined $index; unlink $db_file if -e $db_file; };
 
-    my $fh  = get_fh($reverse);
+    my $fh;
+    if (-p $reverse) {
+        open $fh, $reverse or die "\nERROR: Could not open process: $reverse\n";
+    }
+    else {
+        $fh = get_fh($reverse);
+    }
+    #my $fh  = get_fh($reverse);
     my $out = get_outfh($outfile, $compress);
 
     my @raux = undef;
@@ -488,7 +515,14 @@ sub interleaved_to_pairs {
 	exit(1);
     }
 
-    my $fh = get_fh($infile);
+    my $fh;
+    if (-p $infile) {
+        open $fh, $infile or die "\nERROR: Could not open process: $infile\n";
+    }
+    else {
+        $fh = get_fh($infile);
+    }
+    #my $fh = get_fh($infile);
     my $f  = get_outfh($forward, $compress);
     my $r  = get_outfh($reverse, $compress);
 
@@ -603,7 +637,13 @@ sub store_pair {
     my @raux = undef;
     my ($rname, $rcomm, $rseq, $rqual);
 
-    my $fh = get_fh($file);
+    my $fh;
+    if (-p $file) {
+        open $fh, $file or die "\nERROR: Could not open process: $file\n";
+    }
+    else {
+        $fh = get_fh($file);
+    }
 
     {
 	local @SIG{qw(INT TERM HUP)} = sub { 
