@@ -6,7 +6,13 @@ use warnings FATAL => 'all';
 use File::Spec;
 use File::Find;
 use File::Basename;
-use Test::More tests => 1;
+
+use Test::More tests => 2;
 
 my $cmd = File::Spec->catfile('blib', 'bin', 'pairfq');
 ok(-x $cmd, 'Can execute pairfq');
+
+my $vers = qx($cmd --version);
+chomp $vers;
+ok( $vers =~ /\d+\.\d+\.\d+/, 'Can get pairfq version' );
+diag( "Testing Pairfq $vers, Perl $], $^X" );
