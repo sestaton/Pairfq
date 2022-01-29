@@ -69,4 +69,4 @@ This project uses the [readfq](https://github.com/lh3/readfq) library written by
 
 The MIT License should included with the project. If not, it can be found at: http://opensource.org/licenses/mit-license.php
 
-Copyright (C) 2013-2016 S. Evan Staton
+Copyright (C) 2013-2022 S. Evan Staton
