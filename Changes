@@ -1,6 +1,11 @@
 Revision history for Pairfq
 
 Version	Date	Location
+0.18.0	05/02/2024	RTP, NC USA
+
+- Allow pairing without having pair info in the name for the 'makepairs' command. This
+  removes the need for creating extra files or having pair info of a certain format.
+
 0.17.0	03/07/2017	Vancouver, BC
 
 - Bug fix for handling opened processes. When the input is a named pipes or piped processes 
