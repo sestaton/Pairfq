@@ -53,14 +53,14 @@ print $VERSION and exit(0) if $version;
 
 my $method = shift;
 if (!defined $method) {
-    print "\nERROR: Command line not parsed correctly. Check input.\n\n";
+    print STDERR "\nERROR: Command line not parsed correctly. Check input.\n\n";
     usage($script);
     exit(1);
 }
 
 if ($method eq 'addinfo') {
     if (!$pairnum || !$infile || !$outfile) {
-	print "\nERROR: Command line not parsed correctly. Check input.\n\n";
+	print STDERR "\nERROR: Command line not parsed correctly. Check input.\n\n";
 	addinfo_usage($script);
 	exit(1);
     }
@@ -74,14 +74,14 @@ elsif ($method eq 'makepairs') {
         make_pairs_and_singles($script, $fread, $rread, $fpread, $rpread, $fsread, $rsread, $stats);
     }
     else {
-        print "\nERROR: Command line not parsed correctly. Check input.\n\n";
+        print STDERR "\nERROR: Command line not parsed correctly. Check input.\n\n";
         makepairs_usage($script);
         exit(1);
     }
 }
 elsif ($method eq 'joinpairs') {
     if (!$fread || !$rread || !$outfile) {
-	print "\nERROR: Command line not parsed correctly. Check input.\n\n";
+	print STDERR "\nERROR: Command line not parsed correctly. Check input.\n\n";
 	joinpairs_usage($script);
 	exit(1);
     }
@@ -89,14 +89,14 @@ elsif ($method eq 'joinpairs') {
 }
 elsif ($method eq 'splitpairs') {
     if (!$infile || !$fread || !$rread) {
-	print "\nERROR: Command line not parsed correctly. Check input.\n\n";
+	print STDERR "\nERROR: Command line not parsed correctly. Check input.\n\n";
 	splitpairs_usage($script);
 	exit(1);
     }
     interleaved_to_pairs($infile, $fread, $rread);
 }
 else {
-    print "\nERROR: '$method' is not recognized. See the manual by typing 'perl $script -m',".
+    print STDERR "\nERROR: '$method' is not recognized. See the manual by typing 'perl $script -m',".
 	" or see https://github.com/sestaton/Pairfq.\n\n";
     exit(1);
 }
@@ -116,7 +116,7 @@ sub add_pair_info {
 	$pair = "/2";
     }
     else {
-	print "\nERROR: $pairnum is not correct. Must be 1 or 2. Exiting.\n";
+	print STDERR "\nERROR: $pairnum is not correct. Must be 1 or 2. Exiting.\n";
 	exit(1);
     }
 
@@ -134,7 +134,7 @@ sub add_pair_info {
     close $fh;
     close $out;
 
-    exit;
+    return;
 }
 
 sub make_pairs_and_singles {
@@ -161,7 +161,7 @@ sub make_pairs_and_singles {
 	    $fname = mk_key($fname, $fcomm);
 	}
 	else {
-	    print "\nERROR: Could not determine FASTA/Q format. ".
+	    print STDERR "\nERROR: Could not determine FASTA/Q format. ".
 		"Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n\n";
 	    exit(1);
 	}
@@ -269,7 +269,8 @@ sub make_pairs_and_singles {
 	printf "%-${offset}s %s %10d\n", "Total paired reads", ":",  $pct;
 	printf "%-${offset}s %s %10d\n", "Total unpaired reads", ":", $sct;
     }
-    exit;
+    
+   return;
 }
 
 sub interleaved_to_pairs_and_singles {
@@ -386,7 +387,8 @@ sub interleaved_to_pairs_and_singles {
         printf "%-${offset}s %s %10d\n", "Total paired reads", ":",  $pct;
         printf "%-${offset}s %s %10d\n", "Total unpaired reads", ":", $sct;
     }
-    exit;
+    
+    return;
 }
 
 sub pairs_to_interleaved {
@@ -409,7 +411,7 @@ sub pairs_to_interleaved {
 	    $rname = mk_key($rname, $rcomm);
 	}
 	else {
-	    print "\nERROR: Could not determine FastA/Q format. ".
+	    print STDERR "\nERROR: Could not determine FastA/Q format. ".
 		"Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n\n";
 	    exit(1);
 	}
@@ -449,7 +451,7 @@ sub pairs_to_interleaved {
     close $fh;
     close $out;
 
-    exit;
+    return;
 }
 
 sub interleaved_to_pairs {
@@ -480,7 +482,7 @@ sub interleaved_to_pairs {
     close $f;
     close $r;
 
-    exit;
+    return;
 }
 
 sub get_fh {
@@ -547,7 +549,7 @@ sub store_pair {
 	    $rname = mk_key($rname, $rcomm);
 	}
 	else {
-	    print "\nERROR: Could not determine FASTA/Q format. ".
+	    print STDERR "\nERROR: Could not determine FASTA/Q format. ".
 		"Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n\n";
 	    exit(1);
 	}
@@ -761,7 +763,7 @@ information on which Perls have been tested.
  
 The MIT License should included with the project. If not, it can be found at: http://opensource.org/licenses/mit-license.php
 
-Copyright (C) 2013-2016 S. Evan Staton
+Copyright (C) 2013-2024 S. Evan Staton
  
 =head1 TESTED WITH:
 
@@ -788,6 +790,9 @@ Perl 5.18.0 (Red Hat Enterprise Linux Server release 5.9 (Tikanga))
 =item *
 Perl 5.20.1 (Red Hat Enterprise Linux Server release 5.9 (Tikanga))
 
+=item *
+Perl 5.34.2 (Ubuntu 22 LTS)
+
 =back
 
 =head1 AUTHOR 
@@ -796,7 +801,7 @@ S. Evan Staton
 
 =head1 CONTACT
  
-statonse at gmail dot com
+evan at evanstaton dot com
 
 =head1 REQUIRED ARGUMENTS
 

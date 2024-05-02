@@ -7,7 +7,7 @@ use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
 
-our $VERSION = '0.17.0';
+our $VERSION = '0.18.0';
 
 my $script = basename($0, ());
 $script = "pairfq" if $script =~ /^-$|stdin/i;
@@ -49,14 +49,14 @@ say $VERSION and exit(0) if $opt{version};
 
 my $method = shift;
 if (!defined $method) {
-    say "\nERROR: Command line not parsed correctly. Check input.\n";
+    say STDERR "\nERROR: Command line not parsed correctly. Check input.\n";
     $usage_table{main}->($script);
     exit(1);
 }
 
 if ($opt{compress}) {
     unless ($opt{compress} eq 'gzip' || $opt{compress} eq 'bzip2') {
-	say "\nERROR: '$opt{compress}' is not recognized as an argument to the --compress option.".
+	say STDERR "\nERROR: '$opt{compress}' is not recognized as an argument to the --compress option.".
 	    " Must be 'gzip' or 'bzip2'. Exiting.\n";
 	exit(1);
     }
@@ -73,7 +73,7 @@ if (exists $method_table{$method}) {
     $method_table{$method}->(\%opt, \%usage_table, $script);
 }
 else {
-    say "\nERROR: '$method' is not recognized. See the manual by typing '$script -m',".
+    say STDERR "\nERROR: '$method' is not recognized. See the manual by typing '$script -m',".
 	" or see https://github.com/sestaton/Pairfq.\n";
     exit(1);
 }
@@ -88,7 +88,7 @@ sub add_pair_info {
 	map { defined $opt->{$_} ? $opt->{$_} : undef } qw(pairnum infile outfile compress uppercase);
 
     if (!$pairnum || !$infile || !$outfile) {
-	say "\nERROR: Command line not parsed correctly. Check input.\n";
+	say STDERR "\nERROR: Command line not parsed correctly. Check input.\n";
 	$usage_table->{addinfo}->($script);
 	exit(1);
     }
@@ -102,7 +102,7 @@ sub add_pair_info {
 	$pair = "/2";
     }
     else {
-	say "\nERROR: $pairnum is not correct. Must be 1 or 2. Exiting.";
+	say STDERR "\nERROR: $pairnum is not correct. Must be 1 or 2. Exiting.";
 	exit(1);
     }
 
@@ -126,7 +126,7 @@ sub add_pair_info {
     close $fh;
     close $out;
 
-    exit;
+    return;
 }
 
 sub makepairs {
@@ -144,11 +144,12 @@ sub makepairs {
 			       $rsread, $index, $compress, $stats);
     }
     else {
-	say "\nERROR: Command line not parsed correctly. Check input.\n";
+	say STDERR "\nERROR: Command line not parsed correctly. Check input.\n";
             $usage_table->{makepairs}->($script);
 	exit(1);
     }
 
+    return;
 }
 
 sub make_pairs_and_singles {
@@ -184,9 +185,7 @@ sub make_pairs_and_singles {
 	    $fname = mk_key($fname, $fcomm);
 	}
 	else {
-	    say "\nERROR: Could not determine FASTA/Q format. ".
-		"Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
-	    exit(1);
+	    say STDERR "\nWARNING: Could not determine pair information from FASTA/Q file. We will use the full name instead.\n";
 	}
 	
 	if ($fname =~ /\|\|/) {
@@ -294,7 +293,8 @@ sub make_pairs_and_singles {
 	printf "%-${offset}s %s %10d\n", "Total paired reads", ":",  $pct;
 	printf "%-${offset}s %s %10d\n", "Total unpaired reads", ":", $sct;
     }
-    exit;
+    
+    return;
 }
 
 sub interleaved_to_pairs_and_singles {
@@ -418,7 +418,8 @@ sub interleaved_to_pairs_and_singles {
         printf "%-${offset}s %s %10d\n", "Total paired reads", ":",  $pct;
         printf "%-${offset}s %s %10d\n", "Total unpaired reads", ":", $sct;
     }
-    exit;
+
+    return;
 }
 
 sub pairs_to_interleaved {
@@ -427,7 +428,7 @@ sub pairs_to_interleaved {
 	map { defined $opt->{$_} ? $opt->{$_} : undef } qw(forward reverse outfile index compress);
 
     if (!$forward || !$reverse || !$outfile) {
-	say "\nERROR: Command line not parsed correctly. Check input.\n";
+	say STDERR "\nERROR: Command line not parsed correctly. Check input.\n";
 	$usage_table->{joinpairs}->($script);
 	exit(1);
     }
@@ -458,7 +459,7 @@ sub pairs_to_interleaved {
 	    $rname = mk_key($rname, $rcomm);
 	}
 	else {
-	    say "\nERROR: Could not determine FASTA/Q format. ".
+	    say STDERR "\nERROR: Could not determine FASTA/Q format. ".
 		"Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
 	    exit(1);
 	}
@@ -501,7 +502,7 @@ sub pairs_to_interleaved {
     untie %$pairs if defined $index;
     unlink $db_file if -e $db_file;
 
-    exit;
+    return;
 }
 
 sub interleaved_to_pairs {
@@ -510,7 +511,7 @@ sub interleaved_to_pairs {
 	map { defined $opt->{$_} ? $opt->{$_} : undef } qw(infile forward reverse compress);
 
     if (!$infile || !$forward || !$reverse) {
-	say "\nERROR: Command line not parsed correctly. Check input.\n";
+	say STDERR "\nERROR: Command line not parsed correctly. Check input.\n";
 	$usage_table->{splitpairs}->($script);
 	exit(1);
     }
@@ -661,9 +662,7 @@ sub store_pair {
 		$rname = mk_key($rname, $rcomm);
 	    }
 	    else {
-		say "\nERROR: Could not determine FASTA/Q format. ".
-		    "Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
-		exit(1);
+		say "\nWARNING: Could not determine pair information from FASTA/Q file. We will use the full name instead.\n";
 	    }
 
 	    $rseqpairs{$rname} = mk_key($rseq, $rqual) if defined $rqual;
@@ -902,7 +901,7 @@ See below for information on which Perls have been tested.
  
 The MIT License should included with the project. If not, it can be found at: http://opensource.org/licenses/mit-license.php
 
-Copyright (C) 2013-2016 S. Evan Staton
+Copyright (C) 2013-2024 S. Evan Staton
  
 =head1 TESTED WITH:
 
@@ -938,6 +937,9 @@ Perl 5.18.1 (Ubuntu 12.04.3 LTS)
 =item *
 Perl 5.20.1 (Red Hat Enterprise Linux Server release 5.9 (Tikanga))
 
+=item *
+Perl 5.34.2 (Ubuntu 22 LTS)
+
 =back
 
 =head1 AUTHOR 
@@ -946,7 +948,7 @@ S. Evan Staton
 
 =head1 CONTACT
  
-statonse at gmail dot com
+evan at evanstaton dot com
 
 =head1 REQUIRED ARGUMENTS
 
