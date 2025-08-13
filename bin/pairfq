@@ -177,73 +177,65 @@ sub make_pairs_and_singles {
 
     while (($fname, $fcomm, $fseq, $fqual) = readfq(\*$fh, \@faux)) {
 	$fct++;
-	if ($fname =~ /(\/\d)$/) {
-	    $fname =~ s/$1//;
-	}
-	elsif (defined $fcomm && $fcomm =~ /^\d/) {
-	    $fcomm =~ s/^\d//;
-	    $fname = mk_key($fname, $fcomm);
-	}
-	else {
-	    say STDERR "\nWARNING: Could not determine pair information from FASTA/Q file. We will use the full name instead.\n";
-	}
-	
-	if ($fname =~ /\|\|/) {
-	    my ($name, $comm);
-	    ($name, $comm) = mk_vec($fname);
-	    $forw_id = $name." 1".$comm if defined $comm;
-	    $forw_id = $name."/1" if !defined $comm;
-	    $rev_id  = $name." 2".$comm if defined $comm;
-	    $rev_id  = $name."/2" if !defined $comm;
-	}
+	my ($base_name, $base_comm, $fwd_format_info) = parse_pair_format($fname, $fcomm);
 
-	if (exists $rseqpairs->{$fname}) {
+	if (exists $rseqpairs->{$base_name}) {
 	    $fpct++; 
 	    $rpct++;
+	    my ($rread, $rqual_r, $rev_format_info) = mk_vec($rseqpairs->{$base_name});
+	    
+	    my ($fwd_name, $fwd_comm) = reconstruct_format($base_name, $base_comm, $fwd_format_info);
+	    my ($rev_name, $rev_comm) = reconstruct_format($base_name, $base_comm, $rev_format_info);
+	    
 	    if (defined $fqual) {
-		my ($rread, $rqual) = mk_vec($rseqpairs->{$fname});
-		if ($fname =~ /\|\|/) {
-		    say $fp join "\n", "@".$forw_id, $fseq, "+", $fqual;
-		    say $rp join "\n", "@".$rev_id, $rread, "+", $rqual;
-		} 
-		else {
-		    say $fp join "\n", "@".$fname."/1", $fseq, "+", $fqual;
-		    say $rp join "\n", "@".$fname."/2", $rread, "+", $rqual;
+		if (defined $fwd_comm && $fwd_comm ne '') {
+		    say $fp join "\n", "@".$fwd_name." ".$fwd_comm, $fseq, "+", $fqual;
+		} else {
+		    say $fp join "\n", "@".$fwd_name, $fseq, "+", $fqual;
+		}
+		
+		if ($rqual_r ne '' && defined $rqual_r) {
+		    if (defined $rev_comm && $rev_comm ne '') {
+			say $rp join "\n", "@".$rev_name." ".$rev_comm, $rread, "+", $rqual_r;
+		    } else {
+			say $rp join "\n", "@".$rev_name, $rread, "+", $rqual_r;
+		    }
 		}
 	    } 
 	    else {
-		if ($fname =~ /\|\|/) {
-		    say $fp join "\n", ">".$forw_id, $fseq;
-		    say $rp join "\n", ">".$rev_id, $rseqpairs->{$fname};
-		} 
-		else {
-		    say $fp join "\n",">".$fname."/1", $fseq;
-		    say $rp join "\n",">".$fname."/2", $rseqpairs->{$fname};
+		if (defined $fwd_comm && $fwd_comm ne '') {
+		    say $fp join "\n", ">".$fwd_name." ".$fwd_comm, $fseq;
+		} else {
+		    say $fp join "\n", ">".$fwd_name, $fseq;
+		}
+		
+		if (defined $rev_comm && $rev_comm ne '') {
+		    say $rp join "\n", ">".$rev_name." ".$rev_comm, $rread;
+		} else {
+		    say $rp join "\n", ">".$rev_name, $rread;
 		}
 	    }
-	    delete $rseqpairs->{$fname};
+	    delete $rseqpairs->{$base_name};
 	} 
 	else {
 	    $fsct++;
+	    my ($fwd_name, $fwd_comm) = reconstruct_format($base_name, $base_comm, $fwd_format_info);
+	    
 	    if (defined $fqual) {
-		if ($fname =~ /\|\|/) {
-		    say $fs join "\n", "@".$forw_id, $fseq, "+", $fqual;
-		} 
-		else {
-		    say $fs join "\n", "@".$fname."/1", $fseq, "+", $fqual;
+		if (defined $fwd_comm && $fwd_comm ne '') {
+		    say $fs join "\n", "@".$fwd_name." ".$fwd_comm, $fseq, "+", $fqual;
+		} else {
+		    say $fs join "\n", "@".$fwd_name, $fseq, "+", $fqual;
 		}
 	    } 
 	    else {
-		if ($fname =~ /\|\|/) {
-		    say $fs join "\n", ">".$forw_id, $fseq;
-		} 
-		else {
-		    say $fs join "\n", ">".$fname."/1", $fseq;
+		if (defined $fwd_comm && $fwd_comm ne '') {
+		    say $fs join "\n", ">".$fwd_name." ".$fwd_comm, $fseq;
+		} else {
+		    say $fs join "\n", ">".$fwd_name, $fseq;
 		}
 	    }
 	}
-	undef $forw_id;
-	undef $rev_id;
     }
     close $fh;
     close $fp;
@@ -252,24 +244,25 @@ sub make_pairs_and_singles {
 
     my $rs = get_outfh($rsread, $compress);
 
-    while (my ($rname_up_unenc, $rseq_up_unenc) = each %$rseqpairs) {
+    while (my ($base_name_up, $rseq_data) = each %$rseqpairs) {
 	$rsct++;
-	my ($rname_up, $rcomm_up) = mk_vec($rname_up_unenc);
-	my ($rseq_up, $rqual_up)  = mk_vec($rseq_up_unenc);
-
-	my $rev_id_up .= $rname_up." 2".$rcomm_up if defined $rcomm_up;
+	my ($rseq_up, $rqual_up, $rev_format_info) = mk_vec($rseq_data);
+	
+	my ($rev_name, $rev_comm) = reconstruct_format($base_name_up, undef, $rev_format_info);
     
-	if (defined $rcomm_up && defined $rqual_up) {
-	    say $rs join "\n", "@".$rev_id_up, $rseq_up, "+", $rqual_up;
-	} 
-	elsif (defined $rcomm_up && !defined $rqual_up) {
-	    say $rs join "\n", ">".$rev_id_up, $rseq_up_unenc;
-	} 
-	elsif (!defined $rcomm_up && defined $rqual_up) {
-	    say $rs join "\n", "@".$rname_up."/2", $rseq_up, "+", $rqual_up;
+	if (defined $rqual_up && $rqual_up ne '') {
+	    if (defined $rev_comm && $rev_comm ne '') {
+		say $rs join "\n", "@".$rev_name." ".$rev_comm, $rseq_up, "+", $rqual_up;
+	    } else {
+		say $rs join "\n", "@".$rev_name, $rseq_up, "+", $rqual_up;
+	    }
 	}
 	else {
-	    say $rs join "\n", ">".$rname_up."/2", $rseq_up_unenc;
+	    if (defined $rev_comm && $rev_comm ne '') {
+		say $rs join "\n", ">".$rev_name." ".$rev_comm, $rseq_up;
+	    } else {
+		say $rs join "\n", ">".$rev_name, $rseq_up;
+	    }
 	}
     }
     close $rs;
@@ -448,50 +441,39 @@ sub pairs_to_interleaved {
     my $out = get_outfh($outfile, $compress);
 
     my @raux = undef;
-    my ($rname, $rcomm, $rseq, $rqual, $forw_id, $rev_id);
+    my ($rname, $rcomm, $rseq, $rqual);
 
     while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$fh, \@raux)) {
-	if ($rname =~ /(\/\d)$/) {
-	    $rname =~ s/$1//;
-	}
-	elsif (defined $rcomm && $rcomm =~ /^\d/) {
-	    $rcomm =~ s/^\d//;
-	    $rname = mk_key($rname, $rcomm);
-	}
-	else {
-	    say STDERR "\nERROR: Could not determine FASTA/Q format. ".
-		"Please see https://github.com/sestaton/Pairfq or the README for supported formats. Exiting.\n";
-	    exit(1);
-	}
+	my ($base_name, $base_comm, $rev_format_info) = parse_pair_format($rname, $rcomm);
 
-	if ($rname =~ /\|\|/) {
-	    my ($name, $comm) = mk_vec($rname);
-	    $forw_id = $name." 1".$comm if defined $comm;
-	    $forw_id = $name."/1" if !defined $comm;
-	    $rev_id  = $name." 2".$comm if defined $comm;
-	    $rev_id  = $name."/2" if !defined $comm;
-	}
-
-	if (exists $pairs->{$rname}) {
+	if (exists $pairs->{$base_name}) {
+	    my ($seqf, $qualf, $fwd_format_info) = mk_vec($pairs->{$base_name});
+	    
+	    my ($fwd_name, $fwd_comm) = reconstruct_format($base_name, $base_comm, $fwd_format_info);
+	    my ($rev_name, $rev_comm) = reconstruct_format($base_name, $base_comm, $rev_format_info);
+	    
 	    if (defined $rqual) {
-		my ($seqf, $qualf) = mk_vec($pairs->{$rname});
-		if ($rname =~ /\|\|/) {
-		    say $out join "\n", "@".$forw_id, $seqf, "+", $qualf;
-		    say $out join "\n", "@".$rev_id, $rseq, "+", $rqual;
+		if (defined $fwd_comm && $fwd_comm ne '') {
+		    say $out join "\n", "@".$fwd_name." ".$fwd_comm, $seqf, "+", $qualf;
+		} else {
+		    say $out join "\n", "@".$fwd_name, $seqf, "+", $qualf;
 		}
-		else {
-		    say $out join "\n", "@".$rname."/1", $seqf, "+", $qualf;
-		    say $out join "\n", "@".$rname."/2", $rseq, "+", $rqual;
+		if (defined $rev_comm && $rev_comm ne '') {
+		    say $out join "\n", "@".$rev_name." ".$rev_comm, $rseq, "+", $rqual;
+		} else {
+		    say $out join "\n", "@".$rev_name, $rseq, "+", $rqual;
 		}
 	    }
 	    else {
-		if ($rname =~ /\|\|/) {
-		    say $out join "\n", ">".$forw_id, $pairs->{$rname};
-		    say $out join "\n", ">".$rev_id, $rseq;
+		if (defined $fwd_comm && $fwd_comm ne '') {
+		    say $out join "\n", ">".$fwd_name." ".$fwd_comm, $seqf;
+		} else {
+		    say $out join "\n", ">".$fwd_name, $seqf;
 		}
-		else {
-		    say $out join "\n", ">".$rname."/1", $pairs->{$rname};
-		    say $out join "\n", ">".$rname."/2", $rseq;                                               
+		if (defined $rev_comm && $rev_comm ne '') {
+		    say $out join "\n", ">".$rev_name." ".$rev_comm, $rseq;
+		} else {
+		    say $out join "\n", ">".$rev_name, $rseq;                                               
 		}
 	    }
 	}
@@ -654,19 +636,13 @@ sub store_pair {
 
 	while (($rname, $rcomm, $rseq, $rqual) = readfq(\*$fh, \@raux)) {
 	    $rct++;
-	    if ($rname =~ /(\/\d)$/) {
-		$rname =~ s/$1//;
-	    }
-	    elsif (defined $rcomm && $rcomm =~ /^\d/) {
-		$rcomm =~ s/^\d//;
-		$rname = mk_key($rname, $rcomm);
-	    }
-	    else {
-		say "\nWARNING: Could not determine pair information from FASTA/Q file. We will use the full name instead.\n";
-	    }
+	    my ($base_name, $base_comm, $format_info) = parse_pair_format($rname, $rcomm);
 
-	    $rseqpairs{$rname} = mk_key($rseq, $rqual) if defined $rqual;
-	    $rseqpairs{$rname} = $rseq if !defined $rqual;
+	    if (defined $rqual) {
+		$rseqpairs{$base_name} = mk_key($rseq, $rqual, $format_info);
+	    } else {
+		$rseqpairs{$base_name} = mk_key($rseq, '', $format_info);
+	    }
 	}
 	close $fh;
     }
@@ -734,6 +710,70 @@ sub load_classes {
 		"Here is the exception: $error." if $error;
 	};
     }
+}
+
+sub parse_pair_format {
+    my ($name, $comm) = @_;
+    my ($base_name, $base_comm, $format_info) = ($name, $comm, 'none');
+    
+    # Pattern 1: /1 or /2 in sequence name
+    if ($name =~ /(\/[12])$/) {
+        $format_info = "name$1";
+        $base_name =~ s/\/[12]$//;
+    }
+    # Pattern 2: 1: or 2: at start of comment  
+    elsif (defined $comm && $comm =~ /^([12]:)/) {
+        $format_info = "comm_start$1";
+        $base_comm =~ s/^[12]://;
+        $base_name = mk_key($base_name, $base_comm);
+    }
+    # Pattern 3: /1 or /2 at end of comment
+    elsif (defined $comm && $comm =~ /(\/[12])$/) {
+        $format_info = "comm_end$1";
+        $base_comm =~ s/\/[12]$//;
+        $base_name = mk_key($base_name, $base_comm);
+    }
+    
+    return ($base_name, $base_comm, $format_info);
+}
+
+sub reconstruct_format {
+    my ($base_name, $base_comm, $format_info) = @_;
+    my ($out_name, $out_comm);
+    
+    if ($format_info =~ /^name(\/[12])$/) {
+        $out_name = $base_name . $1;
+        $out_comm = $base_comm;
+    }
+    elsif ($format_info =~ /^comm_start([12]:)$/) {
+        my $pair_prefix = $1;
+        if ($base_name =~ /\|\|/) {
+            my ($name, $comm) = mk_vec($base_name);
+            $out_name = $name;
+            $out_comm = $pair_prefix . $comm;
+        } else {
+            $out_name = $base_name;
+            $out_comm = $pair_prefix . ($base_comm || '');
+        }
+    }
+    elsif ($format_info =~ /^comm_end(\/[12])$/) {
+        my $pair_suffix = $1;
+        if ($base_name =~ /\|\|/) {
+            my ($name, $comm) = mk_vec($base_name);
+            $out_name = $name;
+            $out_comm = $comm . $pair_suffix;
+        } else {
+            $out_name = $base_name;
+            $out_comm = ($base_comm || '') . $pair_suffix;
+        }
+    }
+    else {
+        # No format info or unrecognized format - return as is
+        $out_name = $base_name;
+        $out_comm = $base_comm;
+    }
+    
+    return ($out_name, $out_comm);
 }
 
 sub mk_key { return join "||", @_ }
