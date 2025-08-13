@@ -1,10 +1,12 @@
 Revision history for Pairfq
 
 Version	Date	Location
-0.18.0	05/02/2024	RTP, NC USA
+0.18.0	08/13/2024	RTP, NC USA
 
 - Allow pairing without having pair info in the name for the 'makepairs' command. This
   removes the need for creating extra files or having pair info of a certain format.
+- Expand FASTQ header formats for working with SRA data that may contain pair info at
+  the end of the comment.
 
 0.17.0	03/07/2017	Vancouver, BC
 
