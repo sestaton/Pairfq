@@ -1,115 +1,118 @@
-# Pairfq
+# 🧬 Pairfq
 
-Sync paired-end FASTA/FASTQ files and keep singleton reads.
+> **Sync paired-end FASTA/FASTQ files and keep singleton reads.** 🚀
 
-## Build Status
+[![CI](https://github.com/sestaton/Pairfq/actions/workflows/main.yml/badge.svg)](https://github.com/sestaton/Pairfq/actions/workflows/main.yml)
+[![GitHub version](https://badge.fury.io/gh/sestaton%2FPairfq.svg)](https://badge.fury.io/gh/sestaton%2FPairfq)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[![CI](https://github.com/sestaton/Pairfq/actions/workflows/main.yml/badge.svg)](https://github.com/sestaton/Pairfq/actions/workflows/main.yml) | [![GitHub version](https://badge.fury.io/gh/sestaton%2FPairfq.svg)](https://badge.fury.io/gh/sestaton%2FPairfq)
+**Pairfq** is a high-performance tool designed to handle paired-end sequencing data. Originally written in Perl, it has been **ported to Rust** 🦀 to provide blazing fast speed, memory safety, and efficient handling of massive datasets.
 
-## Installation
+---
+
+## ✨ Features
+
+*   **🦀 Rust Power**: Built with Rust for maximum performance and reliability.
+*   **⚡️ Blazing Fast**: Uses `needletail` for rapid FASTX parsing.
+*   **🗄️ Low Memory Footprint**: Optional on-disk indexing with `sled` allows processing of huge datasets (tens of millions of reads) with constant low memory usage.
+*   **📦 Zero Dependencies**: The main binary is self-contained (no external DB drivers needed).
+*   **🔧 Versatile**: Handles FASTA and FASTQ formats, gzip/bzip2 compression, and interleaved or separate files.
+
+---
+
+## 📦 Installation
 
 ### From Source (Rust)
 
-To build and install `pairfq` from source, you need to have Rust installed. You can install Rust using [rustup](https://rustup.rs/).
+You need to have [Rust installed](https://rustup.rs/).
 
 ```bash
+# Clone the repository
 git clone https://github.com/sestaton/Pairfq.git
 cd Pairfq
+
+# Build for release
 cargo build --release
-```
 
-The binary will be located in `target/release/pairfq`. You can copy it to a directory in your PATH, e.g.:
-
-```bash
+# Install (optional)
 cp target/release/pairfq /usr/local/bin/
 ```
 
-## Usage
+---
 
-`pairfq` provides several subcommands to manipulate paired-end data.
+## 🚀 Usage
 
-### `makepairs`
+`pairfq` provides a suite of subcommands to manipulate your data.
 
-Syncs paired-end reads from two separate files or an interleaved file.
+### 1️⃣ `makepairs`
+**Sync paired-end reads.**
+Matches forward and reverse reads, keeping them in sync and separating singletons.
 
 ```bash
-pairfq makepairs -f forward.fastq -r reverse.fastq -fp forward_paired.fastq -rp reverse_paired.fastq -fs forward_unpaired.fastq -rs reverse_unpaired.fastq
+pairfq makepairs \
+  -f forward.fastq -r reverse.fastq \
+  -fp forward_paired.fastq -rp reverse_paired.fastq \
+  -fs forward_unpaired.fastq -rs reverse_unpaired.fastq
 ```
 
-**Options:**
-*   `-f, --forward`: Input forward reads.
-*   `-r, --reverse`: Input reverse reads.
-*   `-i, --infile`: Input interleaved file (alternative to -f/-r).
-*   `-p, --forw_paired`: Output paired forward reads.
-*   `-P, --rev_paired`: Output paired reverse reads.
-*   `-s, --forw_unpaired`: Output unpaired forward reads.
-*   `-S, --rev_unpaired`: Output unpaired reverse reads.
-*   `--index`: Use on-disk indexing for large files. This uses `sled`, a high-performance embedded database, to store reads on disk instead of in memory. This allows processing of massive datasets (tens of millions of reads) with constant low memory usage, similar to the original Perl version's SQLite implementation but faster and without external dependencies.
-*   `--stats`: Print statistics.
+**Key Options:**
+*   `--index`: **Recommended for large files!** Uses `sled` (embedded DB) to index reads on disk, keeping memory usage low. 📉
+*   `--stats`: Print detailed statistics after processing. 📊
 
-### `joinpairs`
-
-Interleaves two paired-end files into a single file.
+### 2️⃣ `joinpairs`
+**Interleave paired files.**
+Combines separate forward and reverse files into a single interleaved file.
 
 ```bash
 pairfq joinpairs -f forward.fastq -r reverse.fastq -o interleaved.fastq
 ```
 
-### `splitpairs`
-
-Splits an interleaved file into two separate files.
+### 3️⃣ `splitpairs`
+**De-interleave files.**
+Splits a single interleaved file back into separate forward and reverse files.
 
 ```bash
 pairfq splitpairs -i interleaved.fastq -f forward.fastq -r reverse.fastq
 ```
 
-### `addinfo`
-
-Adds pairing information (e.g., `/1`, `/2`) to read headers.
+### 4️⃣ `addinfo`
+**Fix headers.**
+Adds standard pairing information (e.g., `/1`, `/2`) to read headers.
 
 ```bash
 pairfq addinfo -i input.fastq -o output.fastq -p 1
 ```
 
-## For Developers
+---
 
-### Building
+## 🛠️ For Developers
 
-```bash
-cargo build
-```
-
-### Testing
-
-Run the test suite:
+Want to contribute? Great!
 
 ```bash
+# Run the test suite (includes ported Perl tests)
 cargo test
 ```
 
-The test suite includes integration tests that verify the functionality of all subcommands against the expected behavior defined in the original Perl test suite.
+---
 
-## Legacy Lite Script
+## 📜 Legacy Lite Script
 
-There is a standalone script in the 'scripts' directory that has no dependencies and will work with Perl version 5.6 or newer. This script has fewer features (mainly, it lacks the indexing function for working with large data) than the main application but it may be useful in an environment where installing libraries is not convenient. Obtaining this version can be done with curl:
+For environments where you cannot install the Rust binary, we preserve the legacy Perl script. It has **no dependencies** and works with Perl 5.6+.
 
-    curl -sL git.io/pairfq_lite > pairfq_lite
+> ⚠️ **Note:** This version lacks the high-performance indexing of the Rust version.
 
-You can then make the script executable and check the usage:
+**Quick Install:**
+```bash
+curl -sL git.io/pairfq_lite > pairfq_lite
+chmod +x pairfq_lite
+./pairfq_lite -h
+```
 
-    chmod +x pairfq_lite
-    ./pairfq_lite -h
+---
 
-Alternatively, you can use this version without storing it locally.
+## 📄 License
 
-    curl -sL git.io/pairfq_lite | perl -
-
-The above command will show the options. To see a specific subcommand menu, for example the `makepairs` command, just type that subcommand with no options.
-
-    curl -sL git.io/pairfq_lite | perl - makepairs
-
-## License
-
-The MIT License should included with the project. If not, it can be found at: http://opensource.org/licenses/mit-license.php
+This project is licensed under the **MIT License**.
 
 Copyright (C) 2013-2025 S. Evan Staton
