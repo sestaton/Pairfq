@@ -1,0 +1,20 @@
+[package]
+name = "pairfq"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.4", features = ["derive"] }
+needletail = "0.5"
+flate2 = "1.0"
+bzip2 = "0.4"
+sled = "0.34"
+anyhow = "1.0"
+log = "0.4"
+env_logger = "0.10"
+thiserror = "1.0"
+tempfile = "3.8"
+
+[dev-dependencies]
+assert_cmd = "2.0"
+predicates = "3.0"
