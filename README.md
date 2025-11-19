@@ -6,14 +6,13 @@
 [![GitHub version](https://badge.fury.io/gh/sestaton%2FPairfq.svg)](https://badge.fury.io/gh/sestaton%2FPairfq)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Pairfq** is a high-performance tool designed to handle paired-end sequencing data. Originally written in Perl, it has been **ported to Rust** 🦀 to provide blazing fast speed, memory safety, and efficient handling of massive datasets.
+**Pairfq** is a high-performance tool designed to handle paired-end sequencing data. It provides blazing fast speed, memory safety, and efficient handling of massive datasets.
 
 ---
 
 ## ✨ Features
 
-*   **🦀 Rust Power**: Built with Rust for maximum performance and reliability.
-*   **⚡️ Blazing Fast**: Uses `needletail` for rapid FASTX parsing.
+*   **⚡️ Blazing Fast**: Uses the Rust library `needletail` for rapid FASTX parsing.
 *   **🗄️ Low Memory Footprint**: Optional on-disk indexing with `sled` allows processing of huge datasets (tens of millions of reads) with constant low memory usage.
 *   **📦 Zero Dependencies**: The main binary is self-contained (no external DB drivers needed).
 *   **🔧 Versatile**: Handles FASTA and FASTQ formats, gzip/bzip2 compression, and interleaved or separate files.
@@ -22,7 +21,7 @@
 
 ## 📦 Installation
 
-### From Source (Rust)
+### From Source
 
 You need to have [Rust installed](https://rustup.rs/).
 
