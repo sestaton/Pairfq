@@ -41,7 +41,7 @@ cp target/release/pairfq /usr/local/bin/
 
 ## 🚀 Usage
 
-`pairfq` provides a suite of subcommands to manipulate your data.
+`pairfq` provides a suite of subcommands to deal with paired-end FASTA/FASTQ files.
 
 ### 1️⃣ `makepairs`
 **Sync paired-end reads.**
