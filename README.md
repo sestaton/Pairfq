@@ -109,6 +109,20 @@ chmod +x pairfq_lite
 ./pairfq_lite -h
 ```
 
+Alternatively, you can use this version without storing it locally.
+
+```bash
+    curl -sL git.io/pairfq_lite | perl -
+```
+
+The above command will show the options. To see a specific subcommand menu, for example the `pairfq makepairs` command, just type that subcommand with no options.
+
+```bash
+    curl -sL git.io/pairfq_lite | perl - makepairs
+```
+
+However, repeatedly running the above command with `curl` is not efficient. You can save it to a file and make it executable as shown above for the quick install.
+
 ---
 
 ## 📄 License
