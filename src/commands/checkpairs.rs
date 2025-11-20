@@ -61,19 +61,6 @@ fn print_row(res: &FileCheckResult, paired_ok: bool, other: &FileCheckResult) {
         std::cmp::min(res.count, other.count)
     };
 
-    let unpaired_reads = if paired_ok {
-        0
-    } else {
-        if res.count > other.count {
-            res.count - other.count
-        } else {
-            0 // If this file has fewer reads, it doesn't have "unpaired" reads in the sense of extras, 
-              // but the other file does. Or should we report the difference? 
-              // User said "unpaired_reads". If F=100, R=90. F has 10 unpaired. R has 0 unpaired (all 90 are paired with first 90 of F).
-              // So: max(0, self.count - other.count)
-        }
-    };
-    
     // Calculate unpaired logic:
     // If F > R: F has (F-R) unpaired. R has 0.
     // If R > F: R has (R-F) unpaired. F has 0.
