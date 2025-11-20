@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 use anyhow::Result;
-use log::error;
+
 
 mod commands;
 mod utils;

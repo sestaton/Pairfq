@@ -6,7 +6,7 @@ use bzip2::read::BzDecoder;
 use bzip2::write::BzEncoder;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, BufWriter, Write};
-use std::path::Path;
+
 
 pub fn get_reader(path: &str) -> Result<Box<dyn BufRead + Send>> {
     let reader: Box<dyn BufRead + Send> = if path == "-" {
