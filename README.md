@@ -74,7 +74,29 @@ Splits a single interleaved file back into separate forward and reverse files.
 pairfq splitpairs -i interleaved.fastq -f forward.fastq -r reverse.fastq
 ```
 
-### 4️⃣ `addinfo`
+### 4️⃣### `checkpairs`
+
+Check the integrity and pairing of forward and reverse files.
+
+```bash
+pairfq checkpairs -f <forward_reads> -r <reverse_reads>
+```
+
+**Output:**
+A tab-delimited table showing the status of each file:
+- **integrity**: Checks if the file can be parsed (validates gzip/bzip2 compression if applicable).
+- **paired**: Checks if the file has the same number of records as its pair.
+- **paired_reads**: Count of reads that are paired.
+- **unpaired_reads**: Count of reads that are unpaired (difference in counts).
+
+Example:
+```
+file	integrity	paired	paired_reads	unpaired_reads
+file1.fq	✅	✅	100	0
+file2.fq	✅	✅	100	0
+```
+
+### `addinfo`
 **Fix headers.**
 Adds standard pairing information (e.g., `/1`, `/2`) to read headers.
 
