@@ -120,6 +120,16 @@ enum Commands {
         #[arg(long, short = 'u', alias = "uc")]
         uppercase: bool,
     },
+    /// Check the integrity and pairing of forward and reverse files.
+    Checkpairs {
+        /// File of foward reads.
+        #[arg(short = 'f', long = "forward")]
+        forward: String,
+
+        /// File of reverse reads.
+        #[arg(short = 'r', long = "reverse")]
+        reverse: String,
+    },
 }
 
 fn main() -> Result<()> {
@@ -138,6 +148,9 @@ fn main() -> Result<()> {
         }
         Commands::Addinfo { infile, outfile, pairnum, compress, uppercase } => {
             commands::addinfo::run(infile, outfile, pairnum, compress, uppercase)
+        }
+        Commands::Checkpairs { forward, reverse } => {
+            commands::checkpairs::run(forward, reverse)
         }
     }
 }
