@@ -18,13 +18,17 @@ struct Cli {
 enum Commands {
     /// Pair the forward and reverse reads and write singletons
     Makepairs {
+        /// Input file (interleaved)
+        #[arg(short = 'i', long = "infile", conflicts_with_all = ["forward", "reverse"])]
+        infile: Option<String>,
+
         /// Forward reads input
-        #[arg(short = 'f', long = "forward")]
-        forward: String,
+        #[arg(short = 'f', long = "forward", required_unless_present = "infile", requires = "reverse")]
+        forward: Option<String>,
 
         /// Reverse reads input
-        #[arg(short = 'r', long = "reverse")]
-        reverse: String,
+        #[arg(short = 'r', long = "reverse", required_unless_present = "infile", requires = "forward")]
+        reverse: Option<String>,
 
         /// Forward paired output
         #[arg(long = "forw_paired", short = 'p', alias = "fp")] // alias for -fp
@@ -43,7 +47,7 @@ enum Commands {
         rs: String,
 
         /// Use disk-based index (slower but less memory)
-        #[arg(long, short = 'i', alias = "idx")]
+        #[arg(long, short = 'x', alias = "idx")] // Changed short flag to 'x' to avoid conflict with 'i' (infile)
         index: bool,
 
         /// Compress output (gzip or bzip2)
@@ -69,7 +73,7 @@ enum Commands {
         outfile: String,
 
         /// Use disk-based index
-        #[arg(long, short = 'i', alias = "idx")]
+        #[arg(long, short = 'x', alias = "idx")]
         index: bool,
 
         /// Compress output
@@ -123,8 +127,8 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Makepairs { forward, reverse, fp, rp, fs, rs, index, compress, stats } => {
-            commands::makepairs::run(forward, reverse, fp, rp, fs, rs, index, compress, stats)
+        Commands::Makepairs { forward, reverse, infile, fp, rp, fs, rs, index, compress, stats } => {
+            commands::makepairs::run(forward, reverse, infile, fp, rp, fs, rs, index, compress, stats)
         }
         Commands::Joinpairs { forward, reverse, outfile, index, compress } => {
             commands::joinpairs::run(forward, reverse, outfile, index, compress)
