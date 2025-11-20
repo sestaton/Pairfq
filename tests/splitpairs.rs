@@ -1,5 +1,5 @@
 use assert_cmd::Command;
-use predicates::prelude::*;
+
 use tempfile::NamedTempFile;
 use std::io::{Write, Read};
 
