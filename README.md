@@ -43,7 +43,7 @@ cp target/release/pairfq /usr/local/bin/
 
 `pairfq` provides a suite of subcommands to deal with paired-end FASTA/FASTQ files.
 
-### 1️⃣ `makepairs`
+### `makepairs`
 **Sync paired-end reads.**
 Matches forward and reverse reads, keeping them in sync and separating singletons.
 
@@ -58,7 +58,7 @@ pairfq makepairs \
 *   `--index`: **Recommended for large files!** Uses `sled` (embedded DB) to index reads on disk, keeping memory usage low. 📉
 *   `--stats`: Print detailed statistics after processing. 📊
 
-### 2️⃣ `joinpairs`
+### `joinpairs`
 **Interleave paired files.**
 Combines separate forward and reverse files into a single interleaved file.
 
@@ -66,7 +66,7 @@ Combines separate forward and reverse files into a single interleaved file.
 pairfq joinpairs -f forward.fastq -r reverse.fastq -o interleaved.fastq
 ```
 
-### 3️⃣ `splitpairs`
+### `splitpairs`
 **De-interleave files.**
 Splits a single interleaved file back into separate forward and reverse files.
 
@@ -74,7 +74,7 @@ Splits a single interleaved file back into separate forward and reverse files.
 pairfq splitpairs -i interleaved.fastq -f forward.fastq -r reverse.fastq
 ```
 
-### 4️⃣### `checkpairs`
+### `checkpairs`
 
 Check the integrity and pairing of forward and reverse files.
 
