@@ -3,6 +3,8 @@
 Cargo.lock
 .DS_Store
 
-# Added by cargo
+# Benchmark data
+/tests/data
 
-/target
+# emacs 
+*~
