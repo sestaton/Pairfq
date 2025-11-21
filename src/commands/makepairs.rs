@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
-use crate::utils::{get_writer, format_fastq, get_reader};
+use crate::utils::{get_writer, get_reader, write_fastq};
 use needletail::parse_fastx_file;
-use std::collections::HashMap;
+use ahash::AHashMap;
 use log::info;
 use std::io::Write;
 
@@ -70,10 +70,7 @@ pub fn run(
                 stats_counts.total_paired += 2;
 
                 // Write first record (forward)
-                let f_id = std::str::from_utf8(&first_record.id)?;
-                let f_seq = std::str::from_utf8(&first_record.seq)?;
-                let f_qual = first_record.qual.as_deref().map(std::str::from_utf8).transpose()?;
-                write!(fp_writer, "{}", format_fastq(f_id, f_seq, f_qual))?;
+                write_fastq(&mut fp_writer, &first_record.id, &first_record.seq, first_record.qual.as_deref())?;
 
                 // Write second record (reverse)
                 write_record(&mut rp_writer, &record)?;
@@ -93,10 +90,7 @@ pub fn run(
              stats_counts.forward_unpaired += 1;
              stats_counts.total_unpaired += 1;
              
-             let f_id = std::str::from_utf8(&record.id)?;
-             let f_seq = std::str::from_utf8(&record.seq)?;
-             let f_qual = record.qual.as_deref().map(std::str::from_utf8).transpose()?;
-             write!(fs_writer, "{}", format_fastq(f_id, f_seq, f_qual))?;
+             write_fastq(&mut fs_writer, &record.id, &record.seq, record.qual.as_deref())?;
         }
 
     } else if let (Some(f_path), Some(r_path)) = (forward, reverse) {
@@ -134,8 +128,8 @@ fn run_ondisk<W: Write>(
     while let Some(record) = reader.next() {
         let record = record?;
         stats.reverse_reads += 1;
-        let id = std::str::from_utf8(record.id())?.to_string();
-        let base_id = id.trim_end_matches("/2").trim_end_matches("/1");
+        let id = record.id();
+        let base_id = get_base_id(id);
         
         let seq = record.seq();
         let qual = record.qual();
@@ -159,8 +153,8 @@ fn run_ondisk<W: Write>(
     while let Some(record) = reader.next() {
         let record = record?;
         stats.forward_reads += 1;
-        let id = std::str::from_utf8(record.id())?.to_string();
-        let base_id = id.trim_end_matches("/1").trim_end_matches("/2");
+        let id = record.id();
+        let base_id = get_base_id(id);
 
         if let Some(val) = db.remove(base_id)? {
             // Match found
@@ -179,16 +173,15 @@ fn run_ondisk<W: Write>(
                 (&val_vec[..], None)
             };
             
-            let r_seq = std::str::from_utf8(r_seq_bytes)?;
-            let r_qual = r_qual_bytes.map(|q| std::str::from_utf8(q)).transpose()?;
-            
-            let r_id = if id.ends_with("/1") {
-                format!("{}/2", base_id)
+            let r_id = if id.ends_with(b"/1") {
+                let mut rid = base_id.to_vec();
+                rid.extend_from_slice(b"/2");
+                rid
             } else {
-                base_id.to_string()
+                base_id.to_vec()
             };
 
-            write!(rp_writer, "{}", format_fastq(&r_id, r_seq, r_qual))?;
+            write_fastq(rp_writer, &r_id, r_seq_bytes, r_qual_bytes)?;
 
         } else {
             // No match, write to singles
@@ -203,7 +196,7 @@ fn run_ondisk<W: Write>(
         let (key, val) = item?;
         stats.reverse_unpaired += 1;
         stats.total_unpaired += 1;
-        let base_id = std::str::from_utf8(&key)?;
+        let base_id = key;
         
         let val_vec = val.to_vec();
         let (r_seq_bytes, r_qual_bytes) = if let Some(pos) = val_vec.iter().position(|&x| x == b'|') {
@@ -212,11 +205,10 @@ fn run_ondisk<W: Write>(
             (&val_vec[..], None)
         };
         
-        let r_seq = std::str::from_utf8(r_seq_bytes)?;
-        let r_qual = r_qual_bytes.map(|q| std::str::from_utf8(q)).transpose()?;
-        let r_id = format!("{}/2", base_id);
+        let mut r_id = base_id.to_vec();
+        r_id.extend_from_slice(b"/2");
 
-        write!(rs_writer, "{}", format_fastq(&r_id, r_seq, r_qual))?;
+        write_fastq(rs_writer, &r_id, r_seq_bytes, r_qual_bytes)?;
     }
 
     Ok(())
@@ -231,15 +223,15 @@ fn run_inmemory<W: Write>(
     rs_writer: &mut W,
     stats: &mut Stats,
 ) -> Result<()> {
-    let mut r_map = HashMap::new();
+    let mut r_map = AHashMap::new();
 
     // 1. Load reverse reads
     let mut reader = parse_fastx_file(reverse).with_context(|| format!("Failed to open {}", reverse))?;
     while let Some(record) = reader.next() {
         let record = record?;
         stats.reverse_reads += 1;
-        let id = std::str::from_utf8(record.id())?.to_string();
-        let base_id = id.trim_end_matches("/2").trim_end_matches("/1").to_string();
+        let id = record.id();
+        let base_id = get_base_id(id).to_vec();
         
         let seq = record.seq().to_vec();
         let qual = record.qual().map(|q| q.to_vec());
@@ -252,8 +244,8 @@ fn run_inmemory<W: Write>(
     while let Some(record) = reader.next() {
         let record = record?;
         stats.forward_reads += 1;
-        let id = std::str::from_utf8(record.id())?.to_string();
-        let base_id = id.trim_end_matches("/1").trim_end_matches("/2");
+        let id = record.id();
+        let base_id = get_base_id(id);
 
         if let Some((r_seq, r_qual)) = r_map.remove(base_id) {
             // Match
@@ -265,16 +257,15 @@ fn run_inmemory<W: Write>(
             write_record(fp_writer, &record)?;
 
             // Write reverse
-            let r_seq_str = std::str::from_utf8(&r_seq)?;
-            let r_qual_str = r_qual.as_ref().map(|q| std::str::from_utf8(q)).transpose()?;
-            
-            let r_id = if id.ends_with("/1") {
-                format!("{}/2", base_id)
+            let r_id = if id.ends_with(b"/1") {
+                let mut rid = base_id.to_vec();
+                rid.extend_from_slice(b"/2");
+                rid
             } else {
-                base_id.to_string()
+                base_id.to_vec()
             };
 
-            write!(rp_writer, "{}", format_fastq(&r_id, r_seq_str, r_qual_str))?;
+            write_fastq(rp_writer, &r_id, &r_seq, r_qual.as_deref())?;
 
         } else {
             // No match
@@ -288,22 +279,30 @@ fn run_inmemory<W: Write>(
     for (base_id, (r_seq, r_qual)) in r_map {
         stats.reverse_unpaired += 1;
         stats.total_unpaired += 1;
-        let r_seq_str = std::str::from_utf8(&r_seq)?;
-        let r_qual_str = r_qual.as_ref().map(|q| std::str::from_utf8(q)).transpose()?;
-        let r_id = format!("{}/2", base_id);
-        write!(rs_writer, "{}", format_fastq(&r_id, r_seq_str, r_qual_str))?;
+        
+        let mut r_id = base_id;
+        r_id.extend_from_slice(b"/2");
+        
+        write_fastq(rs_writer, &r_id, &r_seq, r_qual.as_deref())?;
     }
 
     Ok(())
 }
 
 fn write_record<W: Write>(writer: &mut W, record: &needletail::parser::SequenceRecord) -> Result<()> {
-    record.write(writer, None)?;
-    Ok(())
+    write_fastq(writer, record.id(), &record.seq(), record.qual())
+}
+
+fn get_base_id(id: &[u8]) -> &[u8] {
+    if id.ends_with(b"/1") || id.ends_with(b"/2") {
+        &id[..id.len()-2]
+    } else {
+        id
+    }
 }
 
 fn print_stats(stats: &Stats, _time: &str) {
-    println!("========= pairfq version : 0.18.0 (completion time: TODO)");
+    println!("========= pairfq version : 1.1.0 (completion time: TODO)");
     println!("{:<40} : {:>10}", "Total forward reads", stats.forward_reads);
     println!("{:<40} : {:>10}", "Total reverse reads", stats.reverse_reads);
     println!("{:<40} : {:>10}", "Total forward paired reads", stats.forward_paired);

@@ -8,17 +8,19 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader, BufWriter, Write};
 
 
+const BUF_SIZE: usize = 64 * 1024;
+
 pub fn get_reader(path: &str) -> Result<Box<dyn BufRead + Send>> {
     let reader: Box<dyn BufRead + Send> = if path == "-" {
-        Box::new(BufReader::new(io::stdin()))
+        Box::new(BufReader::with_capacity(BUF_SIZE, io::stdin()))
     } else {
         let file = File::open(path).with_context(|| format!("Failed to open file: {}", path))?;
         if path.ends_with(".gz") {
-            Box::new(BufReader::new(MultiGzDecoder::new(file)))
+            Box::new(BufReader::with_capacity(BUF_SIZE, MultiGzDecoder::new(file)))
         } else if path.ends_with(".bz2") {
-            Box::new(BufReader::new(BzDecoder::new(file)))
+            Box::new(BufReader::with_capacity(BUF_SIZE, BzDecoder::new(file)))
         } else {
-            Box::new(BufReader::new(file))
+            Box::new(BufReader::with_capacity(BUF_SIZE, file))
         }
     };
     Ok(reader)
@@ -39,14 +41,14 @@ pub fn get_writer(path: &str, compress: Option<&str>) -> Result<Box<dyn Write + 
         match compression_type {
             "gzip" => Box::new(GzEncoder::new(io::stdout(), Compression::default())),
             "bzip2" => Box::new(BzEncoder::new(io::stdout(), bzip2::Compression::default())),
-            _ => Box::new(BufWriter::new(io::stdout())),
+            _ => Box::new(BufWriter::with_capacity(BUF_SIZE, io::stdout())),
         }
     } else {
         let file = File::create(path).with_context(|| format!("Failed to create file: {}", path))?;
         match compression_type {
             "gzip" => Box::new(GzEncoder::new(file, Compression::default())),
             "bzip2" => Box::new(BzEncoder::new(file, bzip2::Compression::default())),
-            _ => Box::new(BufWriter::new(file)),
+            _ => Box::new(BufWriter::with_capacity(BUF_SIZE, file)),
         }
     };
     Ok(writer)
@@ -59,4 +61,24 @@ pub fn format_fastq(id: &str, seq: &str, qual: Option<&str>) -> String {
     } else {
         format!(">{}\n{}\n", id, seq)
     }
+}
+
+// Zero-allocation FASTQ writer
+pub fn write_fastq<W: Write>(writer: &mut W, id: &[u8], seq: &[u8], qual: Option<&[u8]>) -> Result<()> {
+    if let Some(q) = qual {
+        writer.write_all(b"@")?;
+        writer.write_all(id)?;
+        writer.write_all(b"\n")?;
+        writer.write_all(seq)?;
+        writer.write_all(b"\n+\n")?;
+        writer.write_all(q)?;
+        writer.write_all(b"\n")?;
+    } else {
+        writer.write_all(b">")?;
+        writer.write_all(id)?;
+        writer.write_all(b"\n")?;
+        writer.write_all(seq)?;
+        writer.write_all(b"\n")?;
+    }
+    Ok(())
 }
