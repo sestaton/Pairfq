@@ -494,7 +494,7 @@ sub get_fh {
 
     my $fh;
     if ($file =~ /\.gz$/) {
-        open $fh, '-|', 'zcat', $file or die "\nERROR: Could not open file: $file\n";
+        open $fh, '-|', 'gzip', '-dc', $file or die "\nERROR: Could not open file: $file\n";
     }
     elsif ($file =~ /\.bz2$/) {
         open $fh, '-|', 'bzcat', $file or die "\nERROR: Could not open file: $file\n";
