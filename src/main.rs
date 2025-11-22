@@ -1,6 +1,5 @@
-use clap::{Parser, Subcommand};
 use anyhow::Result;
-
+use clap::{Parser, Subcommand};
 
 mod commands;
 mod utils;
@@ -8,7 +7,10 @@ mod utils;
 #[derive(Parser)]
 #[command(name = "pairfq")]
 #[command(version = "1.0.0")]
-#[command(about = "Sync paired-end sequences from separate FASTA/Q files", long_about = "Re-pair paired-end sequences that may have been separated by quality trimming.\nThis script also writes the unpaired forward and reverse sequences to separate\nfiles so that they may be used for assembly or mapping. The input may be FastA\nor FastQ format in either Illumina 1.3+ or Illumina 1.8 format. The input files\nmay be compressed with gzip or bzip2. Optionally, the script can interleave paired\nfiles, separate interleaved files into separate forward and reverse files, and\nfix paired-end files which have lost the pair information.")]
+#[command(
+    about = "Sync paired-end sequences from separate FASTA/Q files",
+    long_about = "Re-pair paired-end sequences that may have been separated by quality trimming.\nThis script also writes the unpaired forward and reverse sequences to separate\nfiles so that they may be used for assembly or mapping. The input may be FastA\nor FastQ format in either Illumina 1.3+ or Illumina 1.8 format. The input files\nmay be compressed with gzip or bzip2. Optionally, the script can interleave paired\nfiles, separate interleaved files into separate forward and reverse files, and\nfix paired-end files which have lost the pair information."
+)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -23,11 +25,21 @@ enum Commands {
         infile: Option<String>,
 
         /// File of foward reads (usually with "/1" or " 1" in the header).
-        #[arg(short = 'f', long = "forward", required_unless_present = "infile", requires = "reverse")]
+        #[arg(
+            short = 'f',
+            long = "forward",
+            required_unless_present = "infile",
+            requires = "reverse"
+        )]
         forward: Option<String>,
 
         /// File of reverse reads (usually with "/2" or " 2" in the header).
-        #[arg(short = 'r', long = "reverse", required_unless_present = "infile", requires = "forward")]
+        #[arg(
+            short = 'r',
+            long = "reverse",
+            required_unless_present = "infile",
+            requires = "forward"
+        )]
         reverse: Option<String>,
 
         /// Name for the file of paired forward reads.
@@ -137,20 +149,40 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Makepairs { forward, reverse, infile, fp, rp, fs, rs, index, compress, stats } => {
-            commands::makepairs::run(forward, reverse, infile, fp, rp, fs, rs, index, compress, stats)
-        }
-        Commands::Joinpairs { forward, reverse, outfile, index, compress } => {
-            commands::joinpairs::run(forward, reverse, outfile, index, compress)
-        }
-        Commands::Splitpairs { infile, forward, reverse, compress } => {
-            commands::splitpairs::run(infile, forward, reverse, compress)
-        }
-        Commands::Addinfo { infile, outfile, pairnum, compress, uppercase } => {
-            commands::addinfo::run(infile, outfile, pairnum, compress, uppercase)
-        }
-        Commands::Checkpairs { forward, reverse } => {
-            commands::checkpairs::run(forward, reverse)
-        }
+        Commands::Makepairs {
+            forward,
+            reverse,
+            infile,
+            fp,
+            rp,
+            fs,
+            rs,
+            index,
+            compress,
+            stats,
+        } => commands::makepairs::run(
+            forward, reverse, infile, fp, rp, fs, rs, index, compress, stats,
+        ),
+        Commands::Joinpairs {
+            forward,
+            reverse,
+            outfile,
+            index,
+            compress,
+        } => commands::joinpairs::run(forward, reverse, outfile, index, compress),
+        Commands::Splitpairs {
+            infile,
+            forward,
+            reverse,
+            compress,
+        } => commands::splitpairs::run(infile, forward, reverse, compress),
+        Commands::Addinfo {
+            infile,
+            outfile,
+            pairnum,
+            compress,
+            uppercase,
+        } => commands::addinfo::run(infile, outfile, pairnum, compress, uppercase),
+        Commands::Checkpairs { forward, reverse } => commands::checkpairs::run(forward, reverse),
     }
 }

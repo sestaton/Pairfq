@@ -1,8 +1,8 @@
-use anyhow::{Context, Result};
-use crate::utils::{get_writer, get_reader, write_fastq};
-use needletail::parse_fastx_file;
+use crate::utils::{get_reader, get_writer, write_fastq};
 use ahash::AHashMap;
+use anyhow::{Context, Result};
 use log::info;
+use needletail::parse_fastx_file;
 use std::io::Write;
 use std::time::Instant;
 
@@ -52,7 +52,7 @@ pub fn run(
         // Interleaved input mode
         let reader = get_reader(&infile_path)?;
         let mut parser = needletail::parse_fastx_reader(reader)?;
-        
+
         struct BufferedRecord {
             id: Vec<u8>,
             seq: Vec<u8>,
@@ -72,7 +72,12 @@ pub fn run(
                 stats_counts.total_paired += 2;
 
                 // Write first record (forward)
-                write_fastq(&mut fp_writer, &first_record.id, &first_record.seq, first_record.qual.as_deref())?;
+                write_fastq(
+                    &mut fp_writer,
+                    &first_record.id,
+                    &first_record.seq,
+                    first_record.qual.as_deref(),
+                )?;
 
                 // Write second record (reverse)
                 write_record(&mut rp_writer, &record)?;
@@ -85,21 +90,41 @@ pub fn run(
                 });
             }
         }
-        
+
         // If there's a record left in the buffer, it's a singleton (unpaired forward)
         if let Some(record) = record_buffer {
-             stats_counts.forward_reads += 1;
-             stats_counts.forward_unpaired += 1;
-             stats_counts.total_unpaired += 1;
-             
-             write_fastq(&mut fs_writer, &record.id, &record.seq, record.qual.as_deref())?;
-        }
+            stats_counts.forward_reads += 1;
+            stats_counts.forward_unpaired += 1;
+            stats_counts.total_unpaired += 1;
 
+            write_fastq(
+                &mut fs_writer,
+                &record.id,
+                &record.seq,
+                record.qual.as_deref(),
+            )?;
+        }
     } else if let (Some(f_path), Some(r_path)) = (forward, reverse) {
         if index {
-            run_ondisk(&f_path, &r_path, &mut fp_writer, &mut rp_writer, &mut fs_writer, &mut rs_writer, &mut stats_counts)?;
+            run_ondisk(
+                &f_path,
+                &r_path,
+                &mut fp_writer,
+                &mut rp_writer,
+                &mut fs_writer,
+                &mut rs_writer,
+                &mut stats_counts,
+            )?;
         } else {
-            run_inmemory(&f_path, &r_path, &mut fp_writer, &mut rp_writer, &mut fs_writer, &mut rs_writer, &mut stats_counts)?;
+            run_inmemory(
+                &f_path,
+                &r_path,
+                &mut fp_writer,
+                &mut rp_writer,
+                &mut fs_writer,
+                &mut rs_writer,
+                &mut stats_counts,
+            )?;
         }
     } else {
         anyhow::bail!("Must provide either --infile or both --forward and --reverse");
@@ -127,16 +152,17 @@ fn run_ondisk<W: Write>(
     let db = sled::open(tmp_dir.path().join("pairfq_db"))?;
 
     // 1. Index reverse reads
-    let mut reader = parse_fastx_file(reverse).with_context(|| format!("Failed to open {}", reverse))?;
+    let mut reader =
+        parse_fastx_file(reverse).with_context(|| format!("Failed to open {}", reverse))?;
     while let Some(record) = reader.next() {
         let record = record?;
         stats.reverse_reads += 1;
         let id = record.id();
         let base_id = get_base_id(id);
-        
+
         let seq = record.seq();
         let qual = record.qual();
-        
+
         let val = if let Some(q) = qual {
             let mut v = Vec::with_capacity(seq.len() + 1 + q.len());
             v.extend_from_slice(&seq);
@@ -146,13 +172,14 @@ fn run_ondisk<W: Write>(
         } else {
             seq.to_vec()
         };
-        
+
         db.insert(base_id, val)?;
     }
     db.flush()?;
 
     // 2. Process forward reads
-    let mut reader = parse_fastx_file(forward).with_context(|| format!("Failed to open {}", forward))?;
+    let mut reader =
+        parse_fastx_file(forward).with_context(|| format!("Failed to open {}", forward))?;
     while let Some(record) = reader.next() {
         let record = record?;
         stats.forward_reads += 1;
@@ -170,12 +197,13 @@ fn run_ondisk<W: Write>(
 
             // Write reverse (reconstruct from DB value)
             let val_vec = val.to_vec();
-            let (r_seq_bytes, r_qual_bytes) = if let Some(pos) = val_vec.iter().position(|&x| x == b'|') {
-                (&val_vec[..pos], Some(&val_vec[pos+1..]))
-            } else {
-                (&val_vec[..], None)
-            };
-            
+            let (r_seq_bytes, r_qual_bytes) =
+                if let Some(pos) = val_vec.iter().position(|&x| x == b'|') {
+                    (&val_vec[..pos], Some(&val_vec[pos + 1..]))
+                } else {
+                    (&val_vec[..], None)
+                };
+
             let r_id = if id.ends_with(b"/1") {
                 let mut rid = base_id.to_vec();
                 rid.extend_from_slice(b"/2");
@@ -185,7 +213,6 @@ fn run_ondisk<W: Write>(
             };
 
             write_fastq(rp_writer, &r_id, r_seq_bytes, r_qual_bytes)?;
-
         } else {
             // No match, write to singles
             stats.forward_unpaired += 1;
@@ -200,14 +227,15 @@ fn run_ondisk<W: Write>(
         stats.reverse_unpaired += 1;
         stats.total_unpaired += 1;
         let base_id = key;
-        
+
         let val_vec = val.to_vec();
-        let (r_seq_bytes, r_qual_bytes) = if let Some(pos) = val_vec.iter().position(|&x| x == b'|') {
-            (&val_vec[..pos], Some(&val_vec[pos+1..]))
+        let (r_seq_bytes, r_qual_bytes) = if let Some(pos) = val_vec.iter().position(|&x| x == b'|')
+        {
+            (&val_vec[..pos], Some(&val_vec[pos + 1..]))
         } else {
             (&val_vec[..], None)
         };
-        
+
         let mut r_id = base_id.to_vec();
         r_id.extend_from_slice(b"/2");
 
@@ -229,21 +257,23 @@ fn run_inmemory<W: Write>(
     let mut r_map = AHashMap::new();
 
     // 1. Load reverse reads
-    let mut reader = parse_fastx_file(reverse).with_context(|| format!("Failed to open {}", reverse))?;
+    let mut reader =
+        parse_fastx_file(reverse).with_context(|| format!("Failed to open {}", reverse))?;
     while let Some(record) = reader.next() {
         let record = record?;
         stats.reverse_reads += 1;
         let id = record.id();
         let base_id = get_base_id(id).to_vec();
-        
+
         let seq = record.seq().to_vec();
         let qual = record.qual().map(|q| q.to_vec());
-        
+
         r_map.insert(base_id, (seq, qual));
     }
 
     // 2. Process forward reads
-    let mut reader = parse_fastx_file(forward).with_context(|| format!("Failed to open {}", forward))?;
+    let mut reader =
+        parse_fastx_file(forward).with_context(|| format!("Failed to open {}", forward))?;
     while let Some(record) = reader.next() {
         let record = record?;
         stats.forward_reads += 1;
@@ -269,7 +299,6 @@ fn run_inmemory<W: Write>(
             };
 
             write_fastq(rp_writer, &r_id, &r_seq, r_qual.as_deref())?;
-
         } else {
             // No match
             stats.forward_unpaired += 1;
@@ -282,37 +311,64 @@ fn run_inmemory<W: Write>(
     for (base_id, (r_seq, r_qual)) in r_map {
         stats.reverse_unpaired += 1;
         stats.total_unpaired += 1;
-        
+
         let mut r_id = base_id;
         r_id.extend_from_slice(b"/2");
-        
+
         write_fastq(rs_writer, &r_id, &r_seq, r_qual.as_deref())?;
     }
 
     Ok(())
 }
 
-fn write_record<W: Write>(writer: &mut W, record: &needletail::parser::SequenceRecord) -> Result<()> {
+fn write_record<W: Write>(
+    writer: &mut W,
+    record: &needletail::parser::SequenceRecord,
+) -> Result<()> {
     write_fastq(writer, record.id(), &record.seq(), record.qual())
 }
 
 fn get_base_id(id: &[u8]) -> &[u8] {
     if id.ends_with(b"/1") || id.ends_with(b"/2") {
-        &id[..id.len()-2]
+        &id[..id.len() - 2]
     } else {
         id
     }
 }
 
 fn print_stats(stats: &Stats, duration: std::time::Duration) {
-    println!("========= pairfq version : 1.1.0 (completion time: {:.2?})", duration);
-    println!("{:<40} : {:>10}", "Total forward reads", stats.forward_reads);
-    println!("{:<40} : {:>10}", "Total reverse reads", stats.reverse_reads);
-    println!("{:<40} : {:>10}", "Total forward paired reads", stats.forward_paired);
-    println!("{:<40} : {:>10}", "Total reverse paired reads", stats.reverse_paired);
-    println!("{:<40} : {:>10}", "Total forward unpaired reads", stats.forward_unpaired);
-    println!("{:<40} : {:>10}", "Total reverse unpaired reads", stats.reverse_unpaired);
+    println!(
+        "========= pairfq version : 1.1.0 (completion time: {:.2?})",
+        duration
+    );
+    println!(
+        "{:<40} : {:>10}",
+        "Total forward reads", stats.forward_reads
+    );
+    println!(
+        "{:<40} : {:>10}",
+        "Total reverse reads", stats.reverse_reads
+    );
+    println!(
+        "{:<40} : {:>10}",
+        "Total forward paired reads", stats.forward_paired
+    );
+    println!(
+        "{:<40} : {:>10}",
+        "Total reverse paired reads", stats.reverse_paired
+    );
+    println!(
+        "{:<40} : {:>10}",
+        "Total forward unpaired reads", stats.forward_unpaired
+    );
+    println!(
+        "{:<40} : {:>10}",
+        "Total reverse unpaired reads", stats.reverse_unpaired
+    );
     println!();
     println!("{:<40} : {:>10}", "Total paired reads", stats.total_paired);
-    println!("{:<40} : {:>10}", "Total unpaired reads", stats.total_unpaired);
+    println!(
+        "{:<40} : {:>10}",
+        "Total unpaired reads", stats.total_unpaired
+    );
 }

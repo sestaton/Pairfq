@@ -1,7 +1,7 @@
-use anyhow::{Context, Result};
 use crate::utils::get_reader;
-use needletail::parse_fastx_reader;
+use anyhow::{Context, Result};
 use log::info;
+use needletail::parse_fastx_reader;
 
 struct FileCheckResult {
     path: String,
@@ -16,7 +16,7 @@ pub fn run(forward: String, reverse: String) -> Result<()> {
     let r_res = check_file(&reverse)?;
 
     let paired_ok = f_res.integrity_ok && r_res.integrity_ok && f_res.count == r_res.count;
-    
+
     // Header
     println!("file\tintegrity\tpaired\tpaired_reads\tunpaired_reads");
 
@@ -29,7 +29,7 @@ pub fn run(forward: String, reverse: String) -> Result<()> {
 fn check_file(path: &str) -> Result<FileCheckResult> {
     let reader = get_reader(path).with_context(|| format!("Failed to open {}", path))?;
     let mut parser = parse_fastx_reader(reader)?;
-    
+
     let mut count = 0;
     let mut integrity_ok = true;
 
@@ -52,7 +52,11 @@ fn check_file(path: &str) -> Result<FileCheckResult> {
 }
 
 fn print_row(res: &FileCheckResult, paired_ok: bool, other: &FileCheckResult) {
-    let integrity_symbol = if res.integrity_ok { "\u{2705}" } else { "\u{274C}" }; // Check mark or Cross
+    let integrity_symbol = if res.integrity_ok {
+        "\u{2705}"
+    } else {
+        "\u{274C}"
+    }; // Check mark or Cross
     let paired_symbol = if paired_ok { "\u{2705}" } else { "\u{274C}" };
 
     let paired_reads = if paired_ok {
@@ -70,11 +74,8 @@ fn print_row(res: &FileCheckResult, paired_ok: bool, other: &FileCheckResult) {
         0
     };
 
-    println!("{}\t{}\t{}\t{}\t{}", 
-        res.path, 
-        integrity_symbol, 
-        paired_symbol, 
-        paired_reads, 
-        unpaired_count
+    println!(
+        "{}\t{}\t{}\t{}\t{}",
+        res.path, integrity_symbol, paired_symbol, paired_reads, unpaired_count
     );
 }

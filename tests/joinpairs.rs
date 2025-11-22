@@ -1,7 +1,7 @@
 use assert_cmd::Command;
 
-use tempfile::NamedTempFile;
 use std::io::Read;
+use tempfile::NamedTempFile;
 
 mod common;
 
@@ -35,9 +35,12 @@ IIII
     let mut cmd = Command::cargo_bin("pairfq").unwrap();
     let assert = cmd
         .arg("joinpairs")
-        .arg("-f").arg(fq1.path())
-        .arg("-r").arg(fq2.path())
-        .arg("-o").arg(outfile.path())
+        .arg("-f")
+        .arg(fq1.path())
+        .arg("-r")
+        .arg(fq2.path())
+        .arg("-o")
+        .arg(outfile.path())
         .assert();
 
     assert.success();
@@ -47,6 +50,6 @@ IIII
     let mut content = String::new();
     file.read_to_string(&mut content).unwrap();
     let line_count = content.lines().count();
-    
+
     assert_eq!(line_count, 16);
 }

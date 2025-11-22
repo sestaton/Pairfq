@@ -1,7 +1,7 @@
 use assert_cmd::Command;
 use predicates::prelude::*;
-use tempfile::NamedTempFile;
 use std::io::Write;
+use tempfile::NamedTempFile;
 
 mod common;
 
@@ -9,15 +9,17 @@ mod common;
 fn test_checkpairs_valid() {
     let content1 = "@seq1/1\nACGT\n+\nIIII\n@seq2/1\nGGGG\n+\nIIII\n";
     let content2 = "@seq1/2\nTGCA\n+\nIIII\n@seq2/2\nCCCC\n+\nIIII\n";
-    
+
     let fq1 = common::create_fastq_file(content1);
     let fq2 = common::create_fastq_file(content2);
 
     let mut cmd = Command::cargo_bin("pairfq").unwrap();
     let assert = cmd
         .arg("checkpairs")
-        .arg("-f").arg(fq1.path())
-        .arg("-r").arg(fq2.path())
+        .arg("-f")
+        .arg(fq1.path())
+        .arg("-r")
+        .arg(fq2.path())
         .assert();
 
     assert
@@ -29,15 +31,17 @@ fn test_checkpairs_valid() {
 fn test_checkpairs_unpaired() {
     let content1 = "@seq1/1\nACGT\n+\nIIII\n@seq2/1\nGGGG\n+\nIIII\n";
     let content2 = "@seq1/2\nTGCA\n+\nIIII\n"; // Missing second read
-    
+
     let fq1 = common::create_fastq_file(content1);
     let fq2 = common::create_fastq_file(content2);
 
     let mut cmd = Command::cargo_bin("pairfq").unwrap();
     let assert = cmd
         .arg("checkpairs")
-        .arg("-f").arg(fq1.path())
-        .arg("-r").arg(fq2.path())
+        .arg("-f")
+        .arg(fq1.path())
+        .arg("-r")
+        .arg(fq2.path())
         .assert();
 
     assert

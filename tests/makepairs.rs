@@ -1,7 +1,7 @@
 use assert_cmd::Command;
 use predicates::prelude::*;
-use tempfile::NamedTempFile;
 use std::io::Write;
+use tempfile::NamedTempFile;
 
 mod common;
 
@@ -16,12 +16,18 @@ fn test_makepairs_inmemory() {
     let mut cmd = Command::cargo_bin("pairfq").unwrap();
     let assert = cmd
         .arg("makepairs")
-        .arg("-f").arg(fq1.path())
-        .arg("-r").arg(fq2.path())
-        .arg("-p").arg(fp.path())
-        .arg("-P").arg(rp.path())
-        .arg("-s").arg(fs.path())
-        .arg("-S").arg(rs.path())
+        .arg("-f")
+        .arg(fq1.path())
+        .arg("-r")
+        .arg(fq2.path())
+        .arg("-p")
+        .arg(fp.path())
+        .arg("-P")
+        .arg(rp.path())
+        .arg("-s")
+        .arg(fs.path())
+        .arg("-S")
+        .arg(rs.path())
         .arg("--stats")
         .assert();
 
@@ -29,12 +35,26 @@ fn test_makepairs_inmemory() {
         .success()
         .stdout(predicate::str::contains("Total forward reads").and(predicate::str::contains("8")))
         .stdout(predicate::str::contains("Total reverse reads").and(predicate::str::contains("6")))
-        .stdout(predicate::str::contains("Total forward paired reads").and(predicate::str::contains("6")))
-        .stdout(predicate::str::contains("Total reverse paired reads").and(predicate::str::contains("6")))
-        .stdout(predicate::str::contains("Total forward unpaired reads").and(predicate::str::contains("2")))
-        .stdout(predicate::str::contains("Total reverse unpaired reads").and(predicate::str::contains("0")))
+        .stdout(
+            predicate::str::contains("Total forward paired reads")
+                .and(predicate::str::contains("6")),
+        )
+        .stdout(
+            predicate::str::contains("Total reverse paired reads")
+                .and(predicate::str::contains("6")),
+        )
+        .stdout(
+            predicate::str::contains("Total forward unpaired reads")
+                .and(predicate::str::contains("2")),
+        )
+        .stdout(
+            predicate::str::contains("Total reverse unpaired reads")
+                .and(predicate::str::contains("0")),
+        )
         .stdout(predicate::str::contains("Total paired reads").and(predicate::str::contains("12")))
-        .stdout(predicate::str::contains("Total unpaired reads").and(predicate::str::contains("2")));
+        .stdout(
+            predicate::str::contains("Total unpaired reads").and(predicate::str::contains("2")),
+        );
 }
 
 #[test]
@@ -48,12 +68,18 @@ fn test_makepairs_ondisk() {
     let mut cmd = Command::cargo_bin("pairfq").unwrap();
     let assert = cmd
         .arg("makepairs")
-        .arg("-f").arg(fq1.path())
-        .arg("-r").arg(fq2.path())
-        .arg("-p").arg(fp.path())
-        .arg("-P").arg(rp.path())
-        .arg("-s").arg(fs.path())
-        .arg("-S").arg(rs.path())
+        .arg("-f")
+        .arg(fq1.path())
+        .arg("-r")
+        .arg(fq2.path())
+        .arg("-p")
+        .arg(fp.path())
+        .arg("-P")
+        .arg(rp.path())
+        .arg("-s")
+        .arg(fs.path())
+        .arg("-S")
+        .arg(rs.path())
         .arg("--index") // Enable on-disk indexing
         .arg("--stats")
         .assert();
@@ -62,12 +88,26 @@ fn test_makepairs_ondisk() {
         .success()
         .stdout(predicate::str::contains("Total forward reads").and(predicate::str::contains("8")))
         .stdout(predicate::str::contains("Total reverse reads").and(predicate::str::contains("6")))
-        .stdout(predicate::str::contains("Total forward paired reads").and(predicate::str::contains("6")))
-        .stdout(predicate::str::contains("Total reverse paired reads").and(predicate::str::contains("6")))
-        .stdout(predicate::str::contains("Total forward unpaired reads").and(predicate::str::contains("2")))
-        .stdout(predicate::str::contains("Total reverse unpaired reads").and(predicate::str::contains("0")))
+        .stdout(
+            predicate::str::contains("Total forward paired reads")
+                .and(predicate::str::contains("6")),
+        )
+        .stdout(
+            predicate::str::contains("Total reverse paired reads")
+                .and(predicate::str::contains("6")),
+        )
+        .stdout(
+            predicate::str::contains("Total forward unpaired reads")
+                .and(predicate::str::contains("2")),
+        )
+        .stdout(
+            predicate::str::contains("Total reverse unpaired reads")
+                .and(predicate::str::contains("0")),
+        )
         .stdout(predicate::str::contains("Total paired reads").and(predicate::str::contains("12")))
-        .stdout(predicate::str::contains("Total unpaired reads").and(predicate::str::contains("2")));
+        .stdout(
+            predicate::str::contains("Total unpaired reads").and(predicate::str::contains("2")),
+        );
 }
 
 #[test]
@@ -109,11 +149,16 @@ IIII
     let mut cmd = Command::cargo_bin("pairfq").unwrap();
     let assert = cmd
         .arg("makepairs")
-        .arg("-i").arg(infile.path())
-        .arg("-p").arg(fp.path())
-        .arg("-P").arg(rp.path())
-        .arg("-s").arg(fs.path())
-        .arg("-S").arg(rs.path())
+        .arg("-i")
+        .arg(infile.path())
+        .arg("-p")
+        .arg(fp.path())
+        .arg("-P")
+        .arg(rp.path())
+        .arg("-s")
+        .arg(fs.path())
+        .arg("-S")
+        .arg(rs.path())
         .arg("--stats")
         .assert();
 
@@ -121,10 +166,24 @@ IIII
         .success()
         .stdout(predicate::str::contains("Total forward reads").and(predicate::str::contains("3")))
         .stdout(predicate::str::contains("Total reverse reads").and(predicate::str::contains("2")))
-        .stdout(predicate::str::contains("Total forward paired reads").and(predicate::str::contains("2")))
-        .stdout(predicate::str::contains("Total reverse paired reads").and(predicate::str::contains("2")))
-        .stdout(predicate::str::contains("Total forward unpaired reads").and(predicate::str::contains("1")))
-        .stdout(predicate::str::contains("Total reverse unpaired reads").and(predicate::str::contains("0")))
+        .stdout(
+            predicate::str::contains("Total forward paired reads")
+                .and(predicate::str::contains("2")),
+        )
+        .stdout(
+            predicate::str::contains("Total reverse paired reads")
+                .and(predicate::str::contains("2")),
+        )
+        .stdout(
+            predicate::str::contains("Total forward unpaired reads")
+                .and(predicate::str::contains("1")),
+        )
+        .stdout(
+            predicate::str::contains("Total reverse unpaired reads")
+                .and(predicate::str::contains("0")),
+        )
         .stdout(predicate::str::contains("Total paired reads").and(predicate::str::contains("4")))
-        .stdout(predicate::str::contains("Total unpaired reads").and(predicate::str::contains("1")));
+        .stdout(
+            predicate::str::contains("Total unpaired reads").and(predicate::str::contains("1")),
+        );
 }

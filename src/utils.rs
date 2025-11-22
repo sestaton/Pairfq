@@ -1,12 +1,11 @@
 use anyhow::{Context, Result};
+use bzip2::read::BzDecoder;
+use bzip2::write::BzEncoder;
 use flate2::read::MultiGzDecoder;
 use flate2::write::GzEncoder;
 use flate2::Compression;
-use bzip2::read::BzDecoder;
-use bzip2::write::BzEncoder;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, BufWriter, Write};
-
 
 const BUF_SIZE: usize = 64 * 1024;
 
@@ -16,7 +15,10 @@ pub fn get_reader(path: &str) -> Result<Box<dyn BufRead + Send>> {
     } else {
         let file = File::open(path).with_context(|| format!("Failed to open file: {}", path))?;
         if path.ends_with(".gz") {
-            Box::new(BufReader::with_capacity(BUF_SIZE, MultiGzDecoder::new(file)))
+            Box::new(BufReader::with_capacity(
+                BUF_SIZE,
+                MultiGzDecoder::new(file),
+            ))
         } else if path.ends_with(".bz2") {
             Box::new(BufReader::with_capacity(BUF_SIZE, BzDecoder::new(file)))
         } else {
@@ -44,7 +46,8 @@ pub fn get_writer(path: &str, compress: Option<&str>) -> Result<Box<dyn Write + 
             _ => Box::new(BufWriter::with_capacity(BUF_SIZE, io::stdout())),
         }
     } else {
-        let file = File::create(path).with_context(|| format!("Failed to create file: {}", path))?;
+        let file =
+            File::create(path).with_context(|| format!("Failed to create file: {}", path))?;
         match compression_type {
             "gzip" => Box::new(GzEncoder::new(file, Compression::default())),
             "bzip2" => Box::new(BzEncoder::new(file, bzip2::Compression::default())),
@@ -64,7 +67,12 @@ pub fn format_fastq(id: &str, seq: &str, qual: Option<&str>) -> String {
 }
 
 // Zero-allocation FASTQ writer
-pub fn write_fastq<W: Write>(writer: &mut W, id: &[u8], seq: &[u8], qual: Option<&[u8]>) -> Result<()> {
+pub fn write_fastq<W: Write>(
+    writer: &mut W,
+    id: &[u8],
+    seq: &[u8],
+    qual: Option<&[u8]>,
+) -> Result<()> {
     if let Some(q) = qual {
         writer.write_all(b"@")?;
         writer.write_all(id)?;

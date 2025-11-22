@@ -1,7 +1,7 @@
+use crate::utils::{format_fastq, get_writer};
 use anyhow::{Context, Result};
-use crate::utils::{get_writer, format_fastq};
-use needletail::parse_fastx_file;
 use log::info;
+use needletail::parse_fastx_file;
 
 pub fn run(
     infile: String,
@@ -13,9 +13,10 @@ pub fn run(
 
     let mut f_writer = get_writer(&forward, compress.as_deref())?;
     let mut r_writer = get_writer(&reverse, compress.as_deref())?;
-    
-    let mut reader = parse_fastx_file(&infile).with_context(|| format!("Failed to open {}", infile))?;
-    
+
+    let mut reader =
+        parse_fastx_file(&infile).with_context(|| format!("Failed to open {}", infile))?;
+
     let mut count = 0;
     while let Some(record) = reader.next() {
         let record = record?;
@@ -23,11 +24,11 @@ pub fn run(
         let seq_cow = record.seq();
         let seq = std::str::from_utf8(&seq_cow)?;
         let qual = record.qual().map(|q| std::str::from_utf8(q)).transpose()?;
-        
+
         // Check suffix or just alternate
         // Perl script checks for /1 or /2 or comments.
         // If explicit suffix found, use it. Else alternate.
-        
+
         let is_forward = if id.ends_with("/1") {
             true
         } else if id.ends_with("/2") {
@@ -41,7 +42,7 @@ pub fn run(
         } else {
             write!(r_writer, "{}", format_fastq(id, seq, qual))?;
         }
-        
+
         count += 1;
     }
 

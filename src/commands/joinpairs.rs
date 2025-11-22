@@ -1,7 +1,7 @@
+use crate::utils::{format_fastq, get_writer};
 use anyhow::{Context, Result};
-use crate::utils::{get_writer, format_fastq};
-use needletail::parse_fastx_file;
 use log::info;
+use needletail::parse_fastx_file;
 
 pub fn run(
     forward: String,
@@ -13,9 +13,11 @@ pub fn run(
     info!("Starting joinpairs");
 
     let mut writer = get_writer(&outfile, compress.as_deref())?;
-    
-    let mut f_reader = parse_fastx_file(&forward).with_context(|| format!("Failed to open {}", forward))?;
-    let mut r_reader = parse_fastx_file(&reverse).with_context(|| format!("Failed to open {}", reverse))?;
+
+    let mut f_reader =
+        parse_fastx_file(&forward).with_context(|| format!("Failed to open {}", forward))?;
+    let mut r_reader =
+        parse_fastx_file(&reverse).with_context(|| format!("Failed to open {}", reverse))?;
 
     loop {
         let f_rec = f_reader.next();
@@ -28,11 +30,11 @@ pub fn run(
 
                 let f_id = std::str::from_utf8(f.id())?;
                 let r_id = std::str::from_utf8(r.id())?;
-                
+
                 // Basic check for ID match (ignoring suffixes)
                 let f_base = f_id.trim_end_matches("/1");
                 let r_base = r_id.trim_end_matches("/2");
-                
+
                 if f_base != r_base {
                     log::warn!("IDs do not match: {} vs {}", f_id, r_id);
                 }
@@ -40,7 +42,7 @@ pub fn run(
                 let f_seq_cow = f.seq();
                 let f_seq = std::str::from_utf8(&f_seq_cow)?;
                 let f_qual = f.qual().map(|q| std::str::from_utf8(q)).transpose()?;
-                
+
                 let r_seq_cow = r.seq();
                 let r_seq = std::str::from_utf8(&r_seq_cow)?;
                 let r_qual = r.qual().map(|q| std::str::from_utf8(q)).transpose()?;
