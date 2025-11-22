@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2025-11-22
+
+### Performance
+- Optimized `makepairs` command, achieving ~3.6x speedup over Perl implementation.
+- Switched to `AHashMap` for faster hashing.
+- Implemented zero-copy FASTQ writing to reduce allocations.
+- Tuned I/O buffer sizes to 64KB.
+
+### Added
+- Added execution time reporting to `makepairs` command output.
+- Added automated release workflow to build and attach binaries for Linux, macOS, and Windows.
+- Added benchmark scripts (`scripts/benchmark.sh`) and results.
+
+### Infrastructure
+- Enhanced CI with `cargo fmt` and `cargo clippy` checks.
+- Migrated default branch from `master` to `main`.
+
 ## [1.1.0] - 2025-11-20
 ### Added
 - Added `checkpairs` command to verify file integrity and pairing status.
