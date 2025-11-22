@@ -286,10 +286,7 @@ fn write_record<W: Write>(
 
 fn get_base_id(id: &[u8]) -> &[u8] {
     // Split at whitespace to get the name part
-    let name = id
-        .split(|&b| b == b' ' || b == b'\t')
-        .next()
-        .unwrap_or(id);
+    let name = id.split(|&b| b == b' ' || b == b'\t').next().unwrap_or(id);
 
     // Strip /1 or /2 suffix from the name
     if name.ends_with(b"/1") || name.ends_with(b"/2") {
