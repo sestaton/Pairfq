@@ -211,6 +211,8 @@ fn run_ondisk<W: Write>(
     Ok(())
 }
 
+type ReverseRecord = (Vec<u8>, Vec<u8>, Option<Vec<u8>>);
+
 fn run_inmemory<W: Write>(
     forward: &str,
     reverse: &str,
@@ -220,8 +222,8 @@ fn run_inmemory<W: Write>(
     rs_writer: &mut W,
     stats: &mut Stats,
 ) -> Result<()> {
-    // Map key: base_id, Value: (full_header, seq, qual)
-    let mut r_map: AHashMap<Vec<u8>, (Vec<u8>, Vec<u8>, Option<Vec<u8>>)> = AHashMap::new();
+    // Map key: base_id, Value: ReverseRecord
+    let mut r_map: AHashMap<Vec<u8>, ReverseRecord> = AHashMap::new();
 
     // 1. Load reverse reads
     let mut reader =
