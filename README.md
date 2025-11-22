@@ -146,6 +146,18 @@ However, repeatedly running the above command with `curl` is not efficient. You 
 
 ---
 
+## 📊 Benchmark Results
+
+Pairfq is designed to be efficient and portable. Here are some benchmark results with hyperfine comparing Pairfq to the legacy Perl implementation with a test set of 1M reads in the R1 file and 900k reads in the R2 file. For transparency, I have included the scripts to create the test data and run the benchmarks in the `scripts/` directory.
+
+| Command | Mean [s] | Min [s] | Max [s] | Relative |
+|:---|---:|---:|---:|---:|
+| `Rust (pairfq)` | 2.702 ± 0.084 | 2.610 | 2.891 | 1.00 |
+| `Perl (pairfq_lite.pl)` | 9.806 ± 0.326 | 9.461 | 10.446 | 3.63 ± 0.17 |
+
+---
+
+
 ## 📄 License
 
 This project is licensed under the **MIT License**.
