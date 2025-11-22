@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-11-22
+
+### Changed
+- **Flexible Pairing**: `makepairs` now supports flexible ID matching. It splits IDs at whitespace and strips `/1` or `/2` suffixes only from the name part, enabling support for SRA-style headers and headers with comments.
+- **Header Retention**: The full original header of the reverse read is now stored and written to the output, preserving comments and original formatting instead of reconstructing it from the forward read.
+
 ## [1.1.1] - 2025-11-22
 
 ### Performance
