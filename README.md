@@ -21,9 +21,13 @@
 
 ## 📦 Installation
 
+### Release Binaries (Recommended)
+
+You can download the release binaries from [GitHub releases](https://github.com/sestaton/Pairfq/releases).
+
 ### From Source
 
-You need to have [Rust installed](https://rustup.rs/).
+You need to have Rust installed via [rustup](https://rustup.rs/), or with your package manager such as `brew` on macOS or `apt` on Linux. 
 
 ```bash
 # Clone the repository
