@@ -4,6 +4,7 @@ use needletail::parse_fastx_file;
 use ahash::AHashMap;
 use log::info;
 use std::io::Write;
+use std::time::Instant;
 
 struct Stats {
     forward_reads: usize,
@@ -28,6 +29,7 @@ pub fn run(
     compress: Option<String>,
     stats: bool,
 ) -> Result<()> {
+    let start_time = Instant::now();
     info!("Starting makepairs");
 
     let mut fp_writer = get_writer(&fp, compress.as_deref())?;
@@ -104,7 +106,8 @@ pub fn run(
     }
 
     if stats {
-        print_stats(&stats_counts, "TODO"); // TODO: Add timing
+        let duration = start_time.elapsed();
+        print_stats(&stats_counts, duration);
     }
 
     Ok(())
@@ -301,8 +304,8 @@ fn get_base_id(id: &[u8]) -> &[u8] {
     }
 }
 
-fn print_stats(stats: &Stats, _time: &str) {
-    println!("========= pairfq version : 1.1.0 (completion time: TODO)");
+fn print_stats(stats: &Stats, duration: std::time::Duration) {
+    println!("========= pairfq version : 1.1.0 (completion time: {:.2?})", duration);
     println!("{:<40} : {:>10}", "Total forward reads", stats.forward_reads);
     println!("{:<40} : {:>10}", "Total reverse reads", stats.reverse_reads);
     println!("{:<40} : {:>10}", "Total forward paired reads", stats.forward_paired);
