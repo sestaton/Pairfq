@@ -17,6 +17,7 @@ struct Stats {
     total_unpaired: usize,
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn run(
     forward: Option<String>,
     reverse: Option<String>,

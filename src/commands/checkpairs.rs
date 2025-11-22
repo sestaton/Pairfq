@@ -68,11 +68,7 @@ fn print_row(res: &FileCheckResult, paired_ok: bool, other: &FileCheckResult) {
     // Calculate unpaired logic:
     // If F > R: F has (F-R) unpaired. R has 0.
     // If R > F: R has (R-F) unpaired. F has 0.
-    let unpaired_count = if res.count > other.count {
-        res.count - other.count
-    } else {
-        0
-    };
+    let unpaired_count = res.count.saturating_sub(other.count);
 
     println!(
         "{}\t{}\t{}\t{}\t{}",
