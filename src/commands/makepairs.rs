@@ -164,16 +164,7 @@ fn run_ondisk<W: Write>(
         let seq = record.seq();
         let qual = record.qual();
 
-        let val = if let Some(q) = qual {
-            let mut v = Vec::with_capacity(seq.len() + 1 + q.len());
-            v.extend_from_slice(&seq);
-            v.push(b'|');
-            v.extend_from_slice(q);
-            v
-        } else {
-            seq.to_vec()
-        };
-
+        let val = encode_value(id, &seq, qual);
         db.insert(base_id, val)?;
     }
     db.flush()?;
@@ -196,24 +187,9 @@ fn run_ondisk<W: Write>(
             // Write forward
             write_record(fp_writer, &record)?;
 
-            // Write reverse (reconstruct from DB value)
-            let val_vec = val.to_vec();
-            let (r_seq_bytes, r_qual_bytes) =
-                if let Some(pos) = val_vec.iter().position(|&x| x == b'|') {
-                    (&val_vec[..pos], Some(&val_vec[pos + 1..]))
-                } else {
-                    (&val_vec[..], None)
-                };
-
-            let r_id = if id.ends_with(b"/1") {
-                let mut rid = base_id.to_vec();
-                rid.extend_from_slice(b"/2");
-                rid
-            } else {
-                base_id.to_vec()
-            };
-
-            write_fastq(rp_writer, &r_id, r_seq_bytes, r_qual_bytes)?;
+            // Write reverse (using stored header)
+            let (r_id, r_seq, r_qual) = decode_value(&val);
+            write_fastq(rp_writer, r_id, r_seq, r_qual)?;
         } else {
             // No match, write to singles
             stats.forward_unpaired += 1;
@@ -224,23 +200,12 @@ fn run_ondisk<W: Write>(
 
     // 3. Write remaining reverse reads to singles
     for item in db.iter() {
-        let (key, val) = item?;
+        let (_, val) = item?;
         stats.reverse_unpaired += 1;
         stats.total_unpaired += 1;
-        let base_id = key;
 
-        let val_vec = val.to_vec();
-        let (r_seq_bytes, r_qual_bytes) = if let Some(pos) = val_vec.iter().position(|&x| x == b'|')
-        {
-            (&val_vec[..pos], Some(&val_vec[pos + 1..]))
-        } else {
-            (&val_vec[..], None)
-        };
-
-        let mut r_id = base_id.to_vec();
-        r_id.extend_from_slice(b"/2");
-
-        write_fastq(rs_writer, &r_id, r_seq_bytes, r_qual_bytes)?;
+        let (r_id, r_seq, r_qual) = decode_value(&val);
+        write_fastq(rs_writer, r_id, r_seq, r_qual)?;
     }
 
     Ok(())
@@ -255,7 +220,8 @@ fn run_inmemory<W: Write>(
     rs_writer: &mut W,
     stats: &mut Stats,
 ) -> Result<()> {
-    let mut r_map = AHashMap::new();
+    // Map key: base_id, Value: (full_header, seq, qual)
+    let mut r_map: AHashMap<Vec<u8>, (Vec<u8>, Vec<u8>, Option<Vec<u8>>)> = AHashMap::new();
 
     // 1. Load reverse reads
     let mut reader =
@@ -269,7 +235,7 @@ fn run_inmemory<W: Write>(
         let seq = record.seq().to_vec();
         let qual = record.qual().map(|q| q.to_vec());
 
-        r_map.insert(base_id, (seq, qual));
+        r_map.insert(base_id, (id.to_vec(), seq, qual));
     }
 
     // 2. Process forward reads
@@ -281,7 +247,7 @@ fn run_inmemory<W: Write>(
         let id = record.id();
         let base_id = get_base_id(id);
 
-        if let Some((r_seq, r_qual)) = r_map.remove(base_id) {
+        if let Some((r_id, r_seq, r_qual)) = r_map.remove(base_id) {
             // Match
             stats.forward_paired += 1;
             stats.reverse_paired += 1;
@@ -290,15 +256,7 @@ fn run_inmemory<W: Write>(
             // Write forward
             write_record(fp_writer, &record)?;
 
-            // Write reverse
-            let r_id = if id.ends_with(b"/1") {
-                let mut rid = base_id.to_vec();
-                rid.extend_from_slice(b"/2");
-                rid
-            } else {
-                base_id.to_vec()
-            };
-
+            // Write reverse (using stored header)
             write_fastq(rp_writer, &r_id, &r_seq, r_qual.as_deref())?;
         } else {
             // No match
@@ -309,12 +267,9 @@ fn run_inmemory<W: Write>(
     }
 
     // 3. Remaining reverse
-    for (base_id, (r_seq, r_qual)) in r_map {
+    for (_, (r_id, r_seq, r_qual)) in r_map {
         stats.reverse_unpaired += 1;
         stats.total_unpaired += 1;
-
-        let mut r_id = base_id;
-        r_id.extend_from_slice(b"/2");
 
         write_fastq(rs_writer, &r_id, &r_seq, r_qual.as_deref())?;
     }
@@ -330,11 +285,47 @@ fn write_record<W: Write>(
 }
 
 fn get_base_id(id: &[u8]) -> &[u8] {
-    if id.ends_with(b"/1") || id.ends_with(b"/2") {
-        &id[..id.len() - 2]
+    // Split at whitespace to get the name part
+    let name = id
+        .split(|&b| b == b' ' || b == b'\t')
+        .next()
+        .unwrap_or(id);
+
+    // Strip /1 or /2 suffix from the name
+    if name.ends_with(b"/1") || name.ends_with(b"/2") {
+        &name[..name.len() - 2]
     } else {
-        id
+        name
     }
+}
+
+fn encode_value(header: &[u8], seq: &[u8], qual: Option<&[u8]>) -> Vec<u8> {
+    let q = qual.unwrap_or(b"");
+    let mut val = Vec::with_capacity(8 + header.len() + 8 + seq.len() + q.len());
+    val.extend_from_slice(&(header.len() as u64).to_le_bytes());
+    val.extend_from_slice(header);
+    val.extend_from_slice(&(seq.len() as u64).to_le_bytes());
+    val.extend_from_slice(seq);
+    val.extend_from_slice(q);
+    val
+}
+
+fn decode_value(val: &[u8]) -> (&[u8], &[u8], Option<&[u8]>) {
+    let h_len = u64::from_le_bytes(val[0..8].try_into().unwrap()) as usize;
+    let header = &val[8..8 + h_len];
+
+    let s_start = 8 + h_len;
+    let s_len = u64::from_le_bytes(val[s_start..s_start + 8].try_into().unwrap()) as usize;
+    let seq = &val[s_start + 8..s_start + 8 + s_len];
+
+    let q_start = s_start + 8 + s_len;
+    let qual = if q_start < val.len() {
+        Some(&val[q_start..])
+    } else {
+        None
+    };
+
+    (header, seq, qual)
 }
 
 fn print_stats(stats: &Stats, duration: std::time::Duration) {
