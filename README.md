@@ -1,6 +1,6 @@
 # 🧬 Pairfq
 
-> **Sync paired-end FASTA/FASTQ files and keep singleton reads.** 🚀
+> **Sync paired-end FASTA/FASTQ files and keep singleton reads.** 
 
 [![CI](https://github.com/sestaton/Pairfq/actions/workflows/main.yml/badge.svg)](https://github.com/sestaton/Pairfq/actions/workflows/main.yml)
 [![GitHub version](https://badge.fury.io/gh/sestaton%2FPairfq.svg)](https://badge.fury.io/gh/sestaton%2FPairfq)
@@ -12,10 +12,9 @@
 
 ## ✨ Features
 
-*   **⚡️ Blazing Fast**: Uses the Rust library `needletail` for rapid FASTX parsing.
-*   **🗄️ Low Memory Footprint**: Optional on-disk indexing with `sled` allows processing of huge datasets (tens of millions of reads) with constant low memory usage.
-*   **📦 Zero Dependencies**: The main binary is self-contained (no external DB drivers needed).
-*   **🔧 Versatile**: Handles FASTA and FASTQ formats, gzip/bzip2 compression, and interleaved or separate files.
+*   **Low Memory Footprint**: Optional on-disk indexing with `sled` allows processing of huge datasets (tens of millions of reads) with constant low memory usage.
+*   **Zero Dependencies**: The main binary is self-contained (no external DB drivers needed).
+*   **Versatile**: Handles FASTA and FASTQ formats, gzip/bzip2 compression, and interleaved or separate files.
 
 ---
 
@@ -166,4 +165,4 @@ Pairfq is designed to be efficient and portable. Here are some benchmark results
 
 This project is licensed under the **MIT License**.
 
-Copyright (C) 2013-2025 S. Evan Staton
+Copyright (C) 2013-2026 S. Evan Staton
